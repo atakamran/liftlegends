@@ -1,13 +1,80 @@
-// Update this page (the content is just a fallback if you fail to update the page)
+
+import React from "react";
+import { Link } from "react-router-dom";
+import { Dumbbell, ClipboardList, Library, BarChart } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import AppLayout from "@/components/Layout/AppLayout";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-100">
-      <div className="text-center">
-        <h1 className="text-4xl font-bold mb-4">Welcome to Your Blank App</h1>
-        <p className="text-xl text-gray-600">Start building your amazing project here!</p>
-      </div>
-    </div>
+    <AppLayout className="flex flex-col items-center">
+      <section className="py-12 text-center max-w-4xl mx-auto">
+        <h1 className="text-4xl font-bold mb-6">لیفت لجندز</h1>
+        <p className="text-xl mb-8">
+          برنامه تمرینی هوشمند برای بدنسازان و ورزشکاران حرفه‌ای
+        </p>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Button asChild size="lg" className="gap-2">
+            <Link to="/workout-tracker">
+              <Dumbbell className="h-5 w-5" />
+              شروع تمرین
+            </Link>
+          </Button>
+          <Button asChild variant="outline" size="lg" className="gap-2">
+            <Link to="/exercises">
+              <Library className="h-5 w-5" />
+              مشاهده تمرین‌ها
+            </Link>
+          </Button>
+        </div>
+      </section>
+
+      <section className="w-full py-8">
+        <h2 className="text-2xl font-bold mb-6 text-center">ویژگی‌های برنامه</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <Dumbbell className="h-8 w-8 mb-2" />
+              <CardTitle>برنامه‌های تمرینی شخصی</CardTitle>
+              <CardDescription>
+                برنامه‌های تمرینی اختصاصی مطابق با اهداف و سطح آمادگی شما
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <ClipboardList className="h-8 w-8 mb-2" />
+              <CardTitle>ثبت و پیگیری تمرینات</CardTitle>
+              <CardDescription>
+                امکان ثبت جزئیات تمرینات و پیگیری پیشرفت
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card>
+            <CardHeader>
+              <BarChart className="h-8 w-8 mb-2" />
+              <CardTitle>آمار و تحلیل پیشرفت</CardTitle>
+              <CardDescription>
+                مشاهده روند پیشرفت و تحلیل عملکرد در طول زمان
+              </CardDescription>
+            </CardHeader>
+          </Card>
+        </div>
+      </section>
+
+      <section className="w-full py-8 text-center">
+        <h2 className="text-2xl font-bold mb-6">شروع کنید</h2>
+        <p className="mb-8">
+          برای استفاده از تمام امکانات برنامه، همین حالا پروفایل خود را تکمیل کنید
+        </p>
+        <Button asChild>
+          <Link to="/profile">تکمیل پروفایل</Link>
+        </Button>
+      </section>
+    </AppLayout>
   );
 };
 

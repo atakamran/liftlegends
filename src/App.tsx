@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import ExercisesPage from "./pages/Exercises";
 import WorkoutTracker from "./pages/WorkoutTracker";
 import Profile from "./pages/Profile";
+import AiPlanner from "./pages/AiPlanner";
 
 const queryClient = new QueryClient();
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/exercises" element={<ExercisesPage />} />
           <Route path="/workout-tracker" element={<WorkoutTracker />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/ai-planner" element={<AiPlanner />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

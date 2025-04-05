@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Dumbbell, ClipboardList, Library, BarChart } from "lucide-react";
+import { Dumbbell, ClipboardList, Library, BarChart, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
@@ -16,9 +16,9 @@ const Index = () => {
         </p>
         <div className="flex flex-wrap justify-center gap-4">
           <Button asChild size="lg" className="gap-2">
-            <Link to="/workout-tracker">
-              <Dumbbell className="h-5 w-5" />
-              شروع تمرین
+            <Link to="/ai-planner">
+              <Brain className="h-5 w-5" />
+              مشاور هوش مصنوعی
             </Link>
           </Button>
           <Button asChild variant="outline" size="lg" className="gap-2">
@@ -33,6 +33,16 @@ const Index = () => {
       <section className="w-full py-8">
         <h2 className="text-2xl font-bold mb-6 text-center">ویژگی‌های برنامه</h2>
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+          <Card>
+            <CardHeader>
+              <Brain className="h-8 w-8 mb-2" />
+              <CardTitle>مشاور هوش مصنوعی</CardTitle>
+              <CardDescription>
+                دریافت برنامه‌های تمرینی و غذایی شخصی با استفاده از هوش مصنوعی
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
           <Card>
             <CardHeader>
               <Dumbbell className="h-8 w-8 mb-2" />
@@ -70,9 +80,14 @@ const Index = () => {
         <p className="mb-8">
           برای استفاده از تمام امکانات برنامه، همین حالا پروفایل خود را تکمیل کنید
         </p>
-        <Button asChild>
-          <Link to="/profile">تکمیل پروفایل</Link>
-        </Button>
+        <div className="flex flex-wrap justify-center gap-4">
+          <Button asChild>
+            <Link to="/profile">تکمیل پروفایل</Link>
+          </Button>
+          <Button asChild variant="outline">
+            <Link to="/workout-tracker">ثبت تمرین</Link>
+          </Button>
+        </div>
       </section>
     </AppLayout>
   );

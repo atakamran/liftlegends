@@ -1,7 +1,7 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Dumbbell, User, Menu } from "lucide-react";
+import { Dumbbell, User, Menu, Brain } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 
@@ -25,6 +25,7 @@ const Header: React.FC = () => {
             <SheetContent side="right">
               <nav className="flex flex-col gap-4 mt-8">
                 <Link to="/" className="px-4 py-2 rounded-md hover:bg-accent">خانه</Link>
+                <Link to="/ai-planner" className="px-4 py-2 rounded-md hover:bg-accent">مشاور هوش مصنوعی</Link>
                 <Link to="/exercises" className="px-4 py-2 rounded-md hover:bg-accent">تمرین‌ها</Link>
                 <Link to="/workout-tracker" className="px-4 py-2 rounded-md hover:bg-accent">ثبت تمرین</Link>
                 <Link to="/profile" className="px-4 py-2 rounded-md hover:bg-accent">پروفایل</Link>
@@ -36,6 +37,7 @@ const Header: React.FC = () => {
         {/* Desktop Menu */}
         <nav className="hidden md:flex items-center space-x-6 rtl:space-x-reverse">
           <Link to="/" className="px-3 py-2 rounded-md hover:bg-accent">خانه</Link>
+          <Link to="/ai-planner" className="px-3 py-2 rounded-md hover:bg-accent">مشاور هوش مصنوعی</Link>
           <Link to="/exercises" className="px-3 py-2 rounded-md hover:bg-accent">تمرین‌ها</Link>
           <Link to="/workout-tracker" className="px-3 py-2 rounded-md hover:bg-accent">ثبت تمرین</Link>
           <Link to="/profile" className="px-3 py-2 rounded-md hover:bg-accent flex items-center">

@@ -80,10 +80,13 @@ const WorkoutTracker = () => {
     const set = exercise.sets[setIndex];
     if (!set) return;
 
+    // Fix the type issue by handling each case separately
     if (field === "weight" || field === "reps") {
       set[field] = Number(value);
-    } else {
-      set[field] = value;
+    } else if (field === "completed") {
+      set[field] = Boolean(value);
+    } else if (field === "id" || field === "exerciseId") {
+      set[field] = String(value);
     }
 
     setWorkoutExercises(updatedExercises);

@@ -4,7 +4,7 @@ import { Workout } from "@/types";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { formatDistance } from "date-fns";
-import { fa } from "date-fns/locale";
+// Remove the fa import as it's not available
 import { Check, Clock } from "lucide-react";
 
 interface WorkoutListProps {
@@ -46,8 +46,8 @@ const WorkoutList: React.FC<WorkoutListProps> = ({ workouts, onWorkoutClick }) =
             </div>
             <CardDescription>
               {formatDistance(workout.date, new Date(), { 
-                addSuffix: true,
-                locale: fa 
+                addSuffix: true
+                // Remove locale: fa parameter
               })}
             </CardDescription>
           </CardHeader>

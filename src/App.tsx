@@ -10,6 +10,10 @@ import ExercisesPage from "./pages/Exercises";
 import WorkoutTracker from "./pages/WorkoutTracker";
 import Profile from "./pages/Profile";
 import AiPlanner from "./pages/AiPlanner";
+import SplashScreen from "./pages/SplashScreen";
+import Login from "./pages/Login";
+import ProfileForm from "./pages/ProfileForm";
+import Payment from "./pages/Payment";
 
 const queryClient = new QueryClient();
 
@@ -20,7 +24,11 @@ const App = () => (
       <Sonner />
       <BrowserRouter>
         <Routes>
-          <Route path="/" element={<Index />} />
+          <Route path="/" element={<SplashScreen />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/profile-form" element={<ProfileForm />} />
+          <Route path="/payment" element={<Payment />} />
+          <Route path="/home" element={<Index />} />
           <Route path="/exercises" element={<ExercisesPage />} />
           <Route path="/workout-tracker" element={<WorkoutTracker />} />
           <Route path="/profile" element={<Profile />} />

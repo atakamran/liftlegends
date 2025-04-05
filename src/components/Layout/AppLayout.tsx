@@ -1,7 +1,6 @@
 
 import React from "react";
 import Header from "./Header";
-import Footer from "./Footer";
 import { cn } from "@/lib/utils";
 
 interface AppLayoutProps {
@@ -16,7 +15,6 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => {
       <main className={cn("flex-1 container mx-auto px-4 py-6", className)}>
         {children}
       </main>
-      <Footer />
     </div>
   );
 };

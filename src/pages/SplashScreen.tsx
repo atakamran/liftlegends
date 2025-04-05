@@ -1,7 +1,6 @@
 
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell } from "lucide-react";
 import { motion } from "framer-motion";
 
 const SplashScreen = () => {
@@ -31,7 +30,11 @@ const SplashScreen = () => {
           animate={{ rotate: 360 }}
           transition={{ duration: 1, ease: "easeInOut" }}
         >
-          <Dumbbell className="h-24 w-24 mb-4" />
+          <img 
+            src="/lovable-uploads/28fee595-d948-482e-8443-851c3a7b07c3.png" 
+            alt="Lift Legends Logo" 
+            className="h-32 w-32 mb-4" 
+          />
         </motion.div>
         <motion.h1 
           initial={{ opacity: 0 }}

@@ -1,7 +1,6 @@
 
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { Dumbbell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -41,7 +40,11 @@ const Login = () => {
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
       <div className="flex flex-col items-center mb-8">
-        <Dumbbell className="h-12 w-12 mb-2" />
+        <img 
+          src="/lovable-uploads/28fee595-d948-482e-8443-851c3a7b07c3.png" 
+          alt="Lift Legends Logo" 
+          className="h-20 w-20 mb-2" 
+        />
         <h1 className="text-3xl font-bold">لیفت لجندز</h1>
       </div>
       

@@ -9,7 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      user_profiles: {
+        Row: {
+          age: number | null
+          created_at: string | null
+          dietary_restrictions: boolean | null
+          dietary_restrictions_details: string | null
+          fitness_level: string | null
+          gender: string | null
+          height: number | null
+          id: string
+          name: string | null
+          primary_goal: string | null
+          steroids_interest: string | null
+          takes_supplements: boolean | null
+          training_days_per_week: string | null
+          training_place: string | null
+          updated_at: string | null
+          user_id: string | null
+          weight: number | null
+        }
+        Insert: {
+          age?: number | null
+          created_at?: string | null
+          dietary_restrictions?: boolean | null
+          dietary_restrictions_details?: string | null
+          fitness_level?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          primary_goal?: string | null
+          steroids_interest?: string | null
+          takes_supplements?: boolean | null
+          training_days_per_week?: string | null
+          training_place?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Update: {
+          age?: number | null
+          created_at?: string | null
+          dietary_restrictions?: boolean | null
+          dietary_restrictions_details?: string | null
+          fitness_level?: string | null
+          gender?: string | null
+          height?: number | null
+          id?: string
+          name?: string | null
+          primary_goal?: string | null
+          steroids_interest?: string | null
+          takes_supplements?: boolean | null
+          training_days_per_week?: string | null
+          training_place?: string | null
+          updated_at?: string | null
+          user_id?: string | null
+          weight?: number | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -12,9 +12,17 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
+import { getProfile, saveProfile, ProfileFormData } from "@/services/profileService";
+import { supabase } from "@/integrations/supabase/client";
+import { Loader2 } from "lucide-react";
 
 const Profile = () => {
   const { toast } = useToast();
+  const [loading, setLoading] = useState(true);
+  const [saving, setSaving] = useState(false);
+  const [session, setSession] = useState<any>(null);
+  
+  // Basic profile form data
   const [profile, setProfile] = useState<UserProfile>({
     name: "",
     age: 25,
@@ -24,8 +32,8 @@ const Profile = () => {
     goals: ["افزایش قدرت", "عضله‌سازی"],
   });
 
-  // Form data for detailed profile
-  const [formData, setFormData] = useState({
+  // Detailed profile form data
+  const [formData, setFormData] = useState<ProfileFormData>({
     // Personal Information
     name: "",
     gender: "",
@@ -34,34 +42,80 @@ const Profile = () => {
     weight: "",
 
     // Primary Goal
-    primaryGoal: "",
+    primary_goal: "",
 
     // Fitness Level
-    fitnessLevel: "",
+    fitness_level: "",
 
     // Exercise Experience
-    yearsOfTraining: "",
-    trainingDaysPerWeek: "",
-    currentTrainingType: "",
+    training_days_per_week: "",
+    training_place: "",
 
-    // Physical Condition
-    bodyFatPercentage: "",
-    weakPoints: "",
-    injuryHistory: "",
-
-    // Nutrition and Lifestyle
-    currentDiet: "",
-    dietaryRestrictions: [] as string[],
-    sleepHours: "",
-    stressLevel: "",
-
-    // Equipment Access
-    equipmentAccess: "",
-
-    // Supplements and Steroids
-    takesSupplements: "",
-    steroidsInterest: "",
+    // Nutrition and Supplements
+    dietary_restrictions: "no",
+    takes_supplements: "no",
+    steroids_interest: "",
   });
+
+  // Check authentication and load profile data
+  useEffect(() => {
+    const checkUser = async () => {
+      const { data } = await supabase.auth.getSession();
+      setSession(data.session);
+      
+      if (data.session) {
+        try {
+          const profileData = await getProfile();
+          if (profileData) {
+            // Update basic profile
+            setProfile({
+              name: profileData.name || "",
+              age: profileData.age || 25,
+              weight: profileData.weight || 70,
+              height: profileData.height || 175,
+              fitnessLevel: profileData.fitness_level as ExerciseLevel || "متوسط",
+              goals: ["افزایش قدرت", "عضله‌سازی"],
+            });
+            
+            // Update detailed profile
+            setFormData({
+              name: profileData.name || "",
+              gender: profileData.gender || "",
+              age: profileData.age || "",
+              height: profileData.height || "",
+              weight: profileData.weight || "",
+              primary_goal: profileData.primary_goal || "",
+              fitness_level: profileData.fitness_level || "",
+              training_days_per_week: profileData.training_days_per_week || "",
+              training_place: profileData.training_place || "",
+              dietary_restrictions: profileData.dietary_restrictions ? "yes" : "no",
+              takes_supplements: profileData.takes_supplements ? "yes" : "no",
+              steroids_interest: profileData.steroids_interest || "",
+            });
+          }
+        } catch (error) {
+          console.error("Error loading profile:", error);
+          toast({
+            title: "خطا در بارگیری پروفایل",
+            description: "لطفا دوباره تلاش کنید",
+            variant: "destructive"
+          });
+        }
+      }
+      setLoading(false);
+    };
+
+    checkUser();
+    
+    // Setup authentication listener
+    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
+      setSession(session);
+    });
+
+    return () => {
+      authListener.subscription.unsubscribe();
+    };
+  }, [toast]);
 
   const handleBasicChange = (field: keyof UserProfile, value: any) => {
     setProfile({
@@ -79,37 +133,89 @@ const Profile = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleCheckboxChange = (name: string, value: string, checked: boolean) => {
-    setFormData((prev) => {
-      const current = Array.isArray(prev[name as keyof typeof prev]) 
-        ? [...(prev[name as keyof typeof prev] as string[])] 
-        : [];
+  const handleBasicSave = async () => {
+    setSaving(true);
+    try {
+      // Convert basic profile to the format used by saveProfile
+      const basicProfileData: ProfileFormData = {
+        name: profile.name,
+        age: profile.age,
+        weight: profile.weight,
+        height: profile.height,
+        fitness_level: profile.fitnessLevel,
+      };
       
-      if (checked) {
-        return { ...prev, [name]: [...current, value] };
-      } else {
-        return { ...prev, [name]: current.filter((item) => item !== value) };
-      }
-    });
+      await saveProfile(basicProfileData);
+      
+      toast({
+        title: "پروفایل پایه ذخیره شد",
+        description: "اطلاعات پروفایل پایه شما با موفقیت ذخیره شد.",
+      });
+    } catch (error) {
+      console.error("Error saving basic profile:", error);
+      toast({
+        title: "خطا در ذخیره پروفایل",
+        description: "لطفا دوباره تلاش کنید",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleBasicSave = () => {
-    console.log("Saving basic profile:", profile);
-    
-    toast({
-      title: "پروفایل پایه ذخیره شد",
-      description: "اطلاعات پروفایل پایه شما با موفقیت ذخیره شد.",
-    });
+  const handleDetailedSave = async () => {
+    setSaving(true);
+    try {
+      await saveProfile(formData);
+      
+      toast({
+        title: "پروفایل تخصصی ذخیره شد",
+        description: "اطلاعات پروفایل تخصصی شما با موفقیت ذخیره شد.",
+      });
+    } catch (error) {
+      console.error("Error saving detailed profile:", error);
+      toast({
+        title: "خطا در ذخیره پروفایل",
+        description: "لطفا دوباره تلاش کنید",
+        variant: "destructive"
+      });
+    } finally {
+      setSaving(false);
+    }
   };
 
-  const handleDetailedSave = () => {
-    console.log("Saving detailed profile:", formData);
-    
-    toast({
-      title: "پروفایل تخصصی ذخیره شد",
-      description: "اطلاعات پروفایل تخصصی شما با موفقیت ذخیره شد.",
-    });
-  };
+  if (loading) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <Loader2 className="h-8 w-8 animate-spin" />
+          <p className="mt-2">در حال بارگذاری پروفایل...</p>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  if (!session) {
+    return (
+      <AppLayout>
+        <div className="flex flex-col items-center justify-center min-h-screen">
+          <Card className="w-full max-w-md">
+            <CardHeader>
+              <CardTitle>دسترسی محدود شده</CardTitle>
+              <CardDescription>
+                برای مشاهده و ویرایش پروفایل خود ابتدا باید وارد حساب کاربری شوید.
+              </CardDescription>
+            </CardHeader>
+            <CardFooter>
+              <Button className="w-full" onClick={() => window.location.href = "/login"}>
+                ورود به حساب کاربری
+              </Button>
+            </CardFooter>
+          </Card>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>
@@ -193,7 +299,9 @@ const Profile = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end">
-                <Button onClick={handleBasicSave}>ذخیره پروفایل</Button>
+                <Button onClick={handleBasicSave} disabled={saving}>
+                  {saving ? "در حال ذخیره..." : "ذخیره پروفایل"}
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>
@@ -284,8 +392,8 @@ const Profile = () => {
                     <h2 className="text-xl font-semibold">۲. هدف اصلی</h2>
                     <div>
                       <RadioGroup
-                        value={formData.primaryGoal}
-                        onValueChange={(value) => handleSelectChange("primaryGoal", value)}
+                        value={formData.primary_goal}
+                        onValueChange={(value) => handleSelectChange("primary_goal", value)}
                         className="flex flex-col space-y-1"
                       >
                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -308,17 +416,15 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Additional sections from the ProfileForm.tsx... */}
-                  {/* Adding remaining sections with condensed UI */}
-                  
+                  {/* Section 3: Training and Fitness */}
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">۳. تمرین و آمادگی</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
                         <Label htmlFor="fitnessLevel">سطح آمادگی</Label>
                         <Select 
-                          value={formData.fitnessLevel} 
-                          onValueChange={(value) => handleSelectChange("fitnessLevel", value)}
+                          value={formData.fitness_level} 
+                          onValueChange={(value) => handleSelectChange("fitness_level", value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="انتخاب کنید" />
@@ -334,8 +440,8 @@ const Profile = () => {
                       <div>
                         <Label htmlFor="trainingDaysPerWeek">روزهای تمرین در هفته</Label>
                         <Select 
-                          value={formData.trainingDaysPerWeek} 
-                          onValueChange={(value) => handleSelectChange("trainingDaysPerWeek", value)}
+                          value={formData.training_days_per_week} 
+                          onValueChange={(value) => handleSelectChange("training_days_per_week", value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="انتخاب کنید" />
@@ -354,10 +460,10 @@ const Profile = () => {
                     </div>
                     
                     <div>
-                      <Label htmlFor="equipmentAccess">مکان تمرین</Label>
+                      <Label htmlFor="training_place">مکان تمرین</Label>
                       <RadioGroup
-                        value={formData.equipmentAccess}
-                        onValueChange={(value) => handleSelectChange("equipmentAccess", value)}
+                        value={formData.training_place}
+                        onValueChange={(value) => handleSelectChange("training_place", value)}
                         className="flex flex-col space-y-1 mt-2"
                       >
                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -365,7 +471,7 @@ const Profile = () => {
                           <Label htmlFor="gym" className="mr-2">باشگاه</Label>
                         </div>
                         <div className="flex items-center space-x-2 space-x-reverse">
-                          <RadioGroupItem value="home-equipment" id="home-equipment" />
+                          <RadioGroupItem value="home" id="home-equipment" />
                           <Label htmlFor="home-equipment" className="mr-2">خانه</Label>
                         </div>
                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -376,17 +482,14 @@ const Profile = () => {
                     </div>
                   </div>
                   
+                  {/* Section 4: Nutrition and Supplements */}
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">۴. تغذیه و مکمل</h2>
                     <div>
                       <Label>محدودیت غذایی دارید؟</Label>
                       <RadioGroup
-                        value={formData.dietaryRestrictions.length > 0 ? "yes" : "no"}
-                        onValueChange={(value) => {
-                          if (value === "no") {
-                            setFormData(prev => ({ ...prev, dietaryRestrictions: [] }));
-                          }
-                        }}
+                        value={formData.dietary_restrictions?.toString()}
+                        onValueChange={(value) => handleSelectChange("dietary_restrictions", value)}
                         className="flex flex-row space-x-4 space-x-reverse mt-2"
                       >
                         <div className="flex items-center space-x-2 space-x-reverse">
@@ -402,10 +505,10 @@ const Profile = () => {
                     
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                       <div>
-                        <Label htmlFor="takesSupplements">مکمل مصرف می‌کنید؟</Label>
+                        <Label htmlFor="takes_supplements">مکمل مصرف می‌کنید؟</Label>
                         <Select 
-                          value={formData.takesSupplements} 
-                          onValueChange={(value) => handleSelectChange("takesSupplements", value)}
+                          value={formData.takes_supplements?.toString()} 
+                          onValueChange={(value) => handleSelectChange("takes_supplements", value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="انتخاب کنید" />
@@ -418,10 +521,10 @@ const Profile = () => {
                       </div>
                       
                       <div>
-                        <Label htmlFor="steroidsInterest">مایل به استفاده از استروئید هستید؟</Label>
+                        <Label htmlFor="steroids_interest">مایل به استفاده از استروئید هستید؟</Label>
                         <Select 
-                          value={formData.steroidsInterest} 
-                          onValueChange={(value) => handleSelectChange("steroidsInterest", value)}
+                          value={formData.steroids_interest} 
+                          onValueChange={(value) => handleSelectChange("steroids_interest", value)}
                         >
                           <SelectTrigger>
                             <SelectValue placeholder="انتخاب کنید" />
@@ -438,7 +541,9 @@ const Profile = () => {
                 </div>
               </CardContent>
               <CardFooter className="flex justify-end pt-6">
-                <Button onClick={handleDetailedSave}>ذخیره پروفایل تخصصی</Button>
+                <Button onClick={handleDetailedSave} disabled={saving}>
+                  {saving ? "در حال ذخیره..." : "ذخیره پروفایل تخصصی"}
+                </Button>
               </CardFooter>
             </Card>
           </TabsContent>

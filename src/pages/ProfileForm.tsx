@@ -21,6 +21,8 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
+import { saveProfile, ProfileFormData } from "@/services/profileService";
+import { supabase } from "@/integrations/supabase/client";
 
 const ProfileForm = () => {
   const navigate = useNavigate();
@@ -28,18 +30,18 @@ const ProfileForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form data state
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<ProfileFormData>({
     gender: "",
     age: "",
     height: "",
     weight: "",
-    goal: "",
-    fitnessLevel: "",
-    trainingDays: "",
-    trainingPlace: "",
-    dietaryRestrictions: "no",
-    supplements: "no",
-    steroids: "no",
+    primary_goal: "",
+    fitness_level: "",
+    training_days_per_week: "",
+    training_place: "",
+    dietary_restrictions: "no",
+    takes_supplements: "no",
+    steroids_interest: "no",
   });
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -51,24 +53,46 @@ const ProfileForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
 
     // Check required fields
-    const requiredFields = ["gender", "age", "height", "weight", "goal", "fitnessLevel", "trainingDays", "trainingPlace"];
+    const requiredFields = ["gender", "age", "height", "weight", "primary_goal", "fitness_level", "training_days_per_week", "training_place"];
     const isValid = requiredFields.every((field) => !!formData[field as keyof typeof formData]);
 
     if (isValid) {
-      // Simulate form processing
-      setTimeout(() => {
-        setIsSubmitting(false);
+      try {
+        // Save profile data to Supabase
+        const { data: session } = await supabase.auth.getSession();
+        
+        if (!session?.session) {
+          // If no session found, attempt to sign up as anonymous user
+          const { error } = await supabase.auth.signInAnonymously();
+          
+          if (error) {
+            throw new Error("خطا در ایجاد حساب: " + error.message);
+          }
+        }
+        
+        // Save profile data to Supabase
+        await saveProfile(formData);
+        
         toast({
           title: "اطلاعات شما ثبت شد",
           description: "در حال هدایت به صفحه پرداخت...",
         });
+        
         navigate("/payment");
-      }, 1000);
+      } catch (error) {
+        console.error("Error submitting form:", error);
+        toast({
+          title: "خطا در ثبت اطلاعات",
+          description: "لطفاً دوباره تلاش کنید یا با پشتیبانی تماس بگیرید.",
+          variant: "destructive",
+        });
+        setIsSubmitting(false);
+      }
     } else {
       setIsSubmitting(false);
       toast({
@@ -157,10 +181,10 @@ const ProfileForm = () => {
 
             {/* 4. هدف اصلی */}
             <div className="space-y-2">
-              <Label htmlFor="goal">۴. هدف اصلی</Label>
+              <Label htmlFor="primary_goal">۴. هدف اصلی</Label>
               <Select
-                value={formData.goal}
-                onValueChange={(value) => handleSelectChange("goal", value)}
+                value={formData.primary_goal}
+                onValueChange={(value) => handleSelectChange("primary_goal", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="هدف خود را انتخاب کنید" />
@@ -176,10 +200,10 @@ const ProfileForm = () => {
 
             {/* 5. سطح آمادگی: مبتدی / متوسط / پیشرفته */}
             <div className="space-y-2">
-              <Label htmlFor="fitnessLevel">۵. سطح آمادگی</Label>
+              <Label htmlFor="fitness_level">۵. سطح آمادگی</Label>
               <Select
-                value={formData.fitnessLevel}
-                onValueChange={(value) => handleSelectChange("fitnessLevel", value)}
+                value={formData.fitness_level}
+                onValueChange={(value) => handleSelectChange("fitness_level", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="سطح آمادگی خود را انتخاب کنید" />
@@ -194,10 +218,10 @@ const ProfileForm = () => {
 
             {/* 6. تعداد روزهای تمرین در هفته: 1 تا 7 */}
             <div className="space-y-2">
-              <Label htmlFor="trainingDays">۶. تعداد روزهای تمرین در هفته</Label>
+              <Label htmlFor="training_days_per_week">۶. تعداد روزهای تمرین در هفته</Label>
               <Select
-                value={formData.trainingDays}
-                onValueChange={(value) => handleSelectChange("trainingDays", value)}
+                value={formData.training_days_per_week}
+                onValueChange={(value) => handleSelectChange("training_days_per_week", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب کنید" />
@@ -216,10 +240,10 @@ const ProfileForm = () => {
 
             {/* 7. مکان تمرین: باشگاه / خانه / بدون تجهیزات */}
             <div className="space-y-2">
-              <Label htmlFor="trainingPlace">۷. مکان تمرین</Label>
+              <Label htmlFor="training_place">۷. مکان تمرین</Label>
               <Select
-                value={formData.trainingPlace}
-                onValueChange={(value) => handleSelectChange("trainingPlace", value)}
+                value={formData.training_place}
+                onValueChange={(value) => handleSelectChange("training_place", value)}
               >
                 <SelectTrigger>
                   <SelectValue placeholder="انتخاب کنید" />
@@ -236,8 +260,8 @@ const ProfileForm = () => {
             <div className="space-y-2">
               <Label>۸. محدودیت غذایی</Label>
               <RadioGroup
-                value={formData.dietaryRestrictions}
-                onValueChange={(value) => handleSelectChange("dietaryRestrictions", value)}
+                value={formData.dietary_restrictions?.toString()}
+                onValueChange={(value) => handleSelectChange("dietary_restrictions", value)}
                 className="flex flex-row space-x-4 space-x-reverse mt-2"
               >
                 <div className="flex items-center space-x-2 space-x-reverse">
@@ -255,8 +279,8 @@ const ProfileForm = () => {
             <div className="space-y-2">
               <Label>۹. مکمل مصرف می‌کنی؟</Label>
               <RadioGroup
-                value={formData.supplements}
-                onValueChange={(value) => handleSelectChange("supplements", value)}
+                value={formData.takes_supplements?.toString()}
+                onValueChange={(value) => handleSelectChange("takes_supplements", value)}
                 className="flex flex-row space-x-4 space-x-reverse mt-2"
               >
                 <div className="flex items-center space-x-2 space-x-reverse">
@@ -274,8 +298,8 @@ const ProfileForm = () => {
             <div className="space-y-2">
               <Label>۱۰. مایل به استفاده از استروئید هستی؟</Label>
               <RadioGroup
-                value={formData.steroids}
-                onValueChange={(value) => handleSelectChange("steroids", value)}
+                value={formData.steroids_interest}
+                onValueChange={(value) => handleSelectChange("steroids_interest", value)}
                 className="flex flex-row space-x-4 space-x-reverse mt-2"
               >
                 <div className="flex items-center space-x-2 space-x-reverse">
@@ -287,7 +311,7 @@ const ProfileForm = () => {
                   <Label htmlFor="steroids-no" className="mr-2">نه</Label>
                 </div>
                 <div className="flex items-center space-x-2 space-x-reverse">
-                  <RadioGroupItem value="dont-know" id="steroids-dont-know" />
+                  <RadioGroupItem value="need-more-info" id="steroids-dont-know" />
                   <Label htmlFor="steroids-dont-know" className="mr-2">نمی‌دونم</Label>
                 </div>
               </RadioGroup>

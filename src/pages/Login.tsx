@@ -4,17 +4,19 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
     setIsLoading(true);
     
@@ -26,7 +28,7 @@ const Login = () => {
           title: "ورود موفقیت‌آمیز",
           description: "به لیفت لجندز خوش آمدید!",
         });
-        navigate("/profile-form");
+        navigate("/home");
       } else {
         toast({
           title: "خطا در ورود",
@@ -34,6 +36,44 @@ const Login = () => {
           variant: "destructive",
         });
       }
+    }, 1000);
+  };
+
+  const handleRegister = (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    // Simulate registration process
+    setTimeout(() => {
+      setIsLoading(false);
+      if (name && email && password) {
+        toast({
+          title: "ثبت‌نام موفقیت‌آمیز",
+          description: "اطلاعات شما با موفقیت ثبت شد",
+        });
+        navigate("/profile-form");
+      } else {
+        toast({
+          title: "خطا در ثبت‌نام",
+          description: "لطفاً تمام فیلدها را پر کنید",
+          variant: "destructive",
+        });
+      }
+    }, 1000);
+  };
+
+  const handleGoogleLogin = () => {
+    setIsLoading(true);
+    
+    // Simulate Google login process
+    setTimeout(() => {
+      setIsLoading(false);
+      toast({
+        title: "ورود با گوگل موفقیت‌آمیز",
+        description: "به لیفت لجندز خوش آمدید!",
+      });
+      // Assuming this is a new user that needs to complete their profile
+      navigate("/profile-form");
     }, 1000);
   };
 
@@ -50,37 +90,111 @@ const Login = () => {
       
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
-          <CardTitle>ورود</CardTitle>
-          <CardDescription>برای استفاده از لیفت لجندز وارد شوید</CardDescription>
+          <CardTitle>ورود یا ثبت‌نام</CardTitle>
+          <CardDescription>برای استفاده از لیفت لجندز حساب کاربری بسازید یا وارد شوید</CardDescription>
         </CardHeader>
+        
         <CardContent>
-          <form onSubmit={handleSubmit} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">ایمیل</Label>
-              <Input 
-                id="email" 
-                type="email" 
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                placeholder="example@domain.com"
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">رمز عبور</Label>
-              <Input 
-                id="password" 
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "در حال ورود..." : "ورود"}
-            </Button>
-          </form>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2 mb-4">
+              <TabsTrigger value="login">ورود</TabsTrigger>
+              <TabsTrigger value="register">ثبت‌نام</TabsTrigger>
+            </TabsList>
+            
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="login-email">ایمیل</Label>
+                  <Input 
+                    id="login-email" 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@domain.com"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="login-password">رمز عبور</Label>
+                  <Input 
+                    id="login-password" 
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "در حال ورود..." : "ورود"}
+                </Button>
+              </form>
+            </TabsContent>
+            
+            <TabsContent value="register">
+              <form onSubmit={handleRegister} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="register-name">نام</Label>
+                  <Input 
+                    id="register-name" 
+                    type="text" 
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-email">ایمیل</Label>
+                  <Input 
+                    id="register-email" 
+                    type="email" 
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    placeholder="example@domain.com"
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="register-password">رمز عبور</Label>
+                  <Input 
+                    id="register-password" 
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "در حال ثبت‌نام..." : "ثبت‌نام"}
+                </Button>
+              </form>
+            </TabsContent>
+          </Tabs>
         </CardContent>
+        
+        <CardFooter className="flex flex-col">
+          <div className="relative w-full mb-4">
+            <div className="absolute inset-0 flex items-center">
+              <span className="w-full border-t border-muted" />
+            </div>
+            <div className="relative flex justify-center text-xs uppercase">
+              <span className="bg-card px-2 text-muted-foreground">یا</span>
+            </div>
+          </div>
+          
+          <Button 
+            variant="outline" 
+            className="w-full" 
+            onClick={handleGoogleLogin} 
+            disabled={isLoading}
+          >
+            <img 
+              src="https://www.svgrepo.com/show/475656/google-color.svg" 
+              alt="Google logo" 
+              className="mr-2 h-4 w-4" 
+            />
+            ورود با گوگل
+          </Button>
+        </CardFooter>
       </Card>
     </div>
   );

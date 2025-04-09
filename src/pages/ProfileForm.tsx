@@ -97,7 +97,7 @@ const ProfileForm = () => {
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-6">
-            {/* 1. Gender */}
+            {/* 1. جنسیت: مرد / زن */}
             <div className="space-y-2">
               <Label>۱. جنسیت</Label>
               <RadioGroup
@@ -116,7 +116,7 @@ const ProfileForm = () => {
               </RadioGroup>
             </div>
 
-            {/* 2. Age */}
+            {/* 2. سن: (ورودی عددی) */}
             <div className="space-y-2">
               <Label htmlFor="age">۲. سن</Label>
               <Input
@@ -129,7 +129,7 @@ const ProfileForm = () => {
               />
             </div>
 
-            {/* 3. Height and Weight */}
+            {/* 3. قد و وزن: (سانتی‌متر و کیلوگرم) */}
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label htmlFor="height">۳. قد (سانتی‌متر)</Label>
@@ -155,7 +155,7 @@ const ProfileForm = () => {
               </div>
             </div>
 
-            {/* 4. Primary Goal */}
+            {/* 4. هدف اصلی */}
             <div className="space-y-2">
               <Label htmlFor="goal">۴. هدف اصلی</Label>
               <Select
@@ -174,7 +174,7 @@ const ProfileForm = () => {
               </Select>
             </div>
 
-            {/* 5. Fitness Level */}
+            {/* 5. سطح آمادگی: مبتدی / متوسط / پیشرفته */}
             <div className="space-y-2">
               <Label htmlFor="fitnessLevel">۵. سطح آمادگی</Label>
               <Select
@@ -192,7 +192,7 @@ const ProfileForm = () => {
               </Select>
             </div>
 
-            {/* 6. Training Days */}
+            {/* 6. تعداد روزهای تمرین در هفته: 1 تا 7 */}
             <div className="space-y-2">
               <Label htmlFor="trainingDays">۶. تعداد روزهای تمرین در هفته</Label>
               <Select
@@ -214,7 +214,7 @@ const ProfileForm = () => {
               </Select>
             </div>
 
-            {/* 7. Training Place */}
+            {/* 7. مکان تمرین: باشگاه / خانه / بدون تجهیزات */}
             <div className="space-y-2">
               <Label htmlFor="trainingPlace">۷. مکان تمرین</Label>
               <Select
@@ -232,7 +232,7 @@ const ProfileForm = () => {
               </Select>
             </div>
 
-            {/* 8. Dietary Restrictions */}
+            {/* 8. محدودیت غذایی: دارد / ندارد */}
             <div className="space-y-2">
               <Label>۸. محدودیت غذایی</Label>
               <RadioGroup
@@ -251,7 +251,7 @@ const ProfileForm = () => {
               </RadioGroup>
             </div>
 
-            {/* 9. Supplements */}
+            {/* 9. مکمل مصرف می‌کنی؟ بله / نه */}
             <div className="space-y-2">
               <Label>۹. مکمل مصرف می‌کنی؟</Label>
               <RadioGroup
@@ -270,7 +270,7 @@ const ProfileForm = () => {
               </RadioGroup>
             </div>
 
-            {/* 10. Steroids */}
+            {/* 10. مایل به استفاده از استروئید هستی؟ بله / نه / نمی‌دونم */}
             <div className="space-y-2">
               <Label>۱۰. مایل به استفاده از استروئید هستی؟</Label>
               <RadioGroup

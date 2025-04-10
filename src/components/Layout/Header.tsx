@@ -1,7 +1,7 @@
 
 import React, { useState, useEffect } from "react";
 import { Link } from "react-router-dom";
-import { Dumbbell, User, Menu, Bell, BarChart, Fire } from "lucide-react";
+import { Dumbbell, User, Menu, Bell, BarChart, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
@@ -83,7 +83,7 @@ const Header: React.FC = () => {
             <div className="flex justify-between mt-6 mb-3">
               <div className="text-center flex flex-col items-center">
                 <div className="bg-accent-foreground/10 p-3 rounded-full mb-2">
-                  <Fire className="h-6 w-6" />
+                  <Flame className="h-6 w-6" />
                 </div>
                 <div className="font-bold">هفته {weekNumber}</div>
               </div>

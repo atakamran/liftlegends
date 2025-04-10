@@ -14,6 +14,8 @@ import SplashScreen from "./pages/SplashScreen";
 import Login from "./pages/Login";
 import ProfileForm from "./pages/ProfileForm";
 import Payment from "./pages/Payment";
+import FoodPlans from "./pages/FoodPlans";
+import Supplements from "./pages/Supplements";
 
 const queryClient = new QueryClient();
 
@@ -33,6 +35,8 @@ const App = () => (
           <Route path="/workout-tracker" element={<WorkoutTracker />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/ai-planner" element={<AiPlanner />} />
+          <Route path="/food-plans" element={<FoodPlans />} />
+          <Route path="/supplements" element={<Supplements />} />
           <Route path="*" element={<NotFound />} />
         </Routes>
       </BrowserRouter>

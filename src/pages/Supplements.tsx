@@ -2,7 +2,7 @@
 import React from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Pill, Flask } from "lucide-react";
+import { Pill, Beaker } from "lucide-react";
 
 const Supplements = () => {
   return (
@@ -22,7 +22,7 @@ const Supplements = () => {
 
         <Card>
           <CardHeader className="flex flex-row items-center gap-4">
-            <Flask className="h-8 w-8" />
+            <Beaker className="h-8 w-8" />
             <CardTitle>استروئیدها</CardTitle>
           </CardHeader>
           <CardContent>

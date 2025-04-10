@@ -47,10 +47,10 @@ const Footer: React.FC = () => {
               )
             }
           >
-            <div className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg mb-1">
+            <div className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg mb-1 flex items-center justify-center">
               <span className="text-lg font-bold">LL</span>
             </div>
-            <span>خانه</span>
+            <span>لیفت لجندز</span>
           </NavLink>
 
           {/* Food Plans */}

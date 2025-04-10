@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -12,7 +11,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getProfile, saveProfile, ProfileFormData } from "@/services/profileService";
+import { getProfile, saveProfile, ProfileFormData, DatabaseUserProfile } from "@/services/profileService";
 import { supabase } from "@/integrations/supabase/client";
 import { Loader2 } from "lucide-react";
 
@@ -22,7 +21,6 @@ const Profile = () => {
   const [saving, setSaving] = useState(false);
   const [session, setSession] = useState<any>(null);
   
-  // Basic profile form data
   const [profile, setProfile] = useState<UserProfile>({
     name: "",
     age: 25,
@@ -32,32 +30,25 @@ const Profile = () => {
     goals: ["افزایش قدرت", "عضله‌سازی"],
   });
 
-  // Detailed profile form data
   const [formData, setFormData] = useState<ProfileFormData>({
-    // Personal Information
     name: "",
     gender: "",
     age: "",
     height: "",
     weight: "",
 
-    // Primary Goal
     primary_goal: "",
 
-    // Fitness Level
     fitness_level: "",
 
-    // Exercise Experience
     training_days_per_week: "",
     training_place: "",
 
-    // Nutrition and Supplements
     dietary_restrictions: "no",
     takes_supplements: "no",
     steroids_interest: "",
   });
 
-  // Check authentication and load profile data
   useEffect(() => {
     const checkUser = async () => {
       const { data } = await supabase.auth.getSession();
@@ -67,7 +58,6 @@ const Profile = () => {
         try {
           const profileData = await getProfile();
           if (profileData) {
-            // Update basic profile
             setProfile({
               name: profileData.name || "",
               age: profileData.age || 25,
@@ -77,7 +67,6 @@ const Profile = () => {
               goals: ["افزایش قدرت", "عضله‌سازی"],
             });
             
-            // Update detailed profile
             setFormData({
               name: profileData.name || "",
               gender: profileData.gender || "",
@@ -107,7 +96,6 @@ const Profile = () => {
 
     checkUser();
     
-    // Setup authentication listener
     const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
       setSession(session);
     });
@@ -136,7 +124,6 @@ const Profile = () => {
   const handleBasicSave = async () => {
     setSaving(true);
     try {
-      // Convert basic profile to the format used by saveProfile
       const basicProfileData: ProfileFormData = {
         name: profile.name,
         age: profile.age,
@@ -316,7 +303,6 @@ const Profile = () => {
               </CardHeader>
               <CardContent>
                 <div className="space-y-8">
-                  {/* Section 1: Personal Information */}
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">۱. اطلاعات شخصی</h2>
                     <div className="space-y-4">
@@ -387,7 +373,6 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Section 2: Primary Goal */}
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">۲. هدف اصلی</h2>
                     <div>
@@ -416,7 +401,6 @@ const Profile = () => {
                     </div>
                   </div>
 
-                  {/* Section 3: Training and Fitness */}
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">۳. تمرین و آمادگی</h2>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -482,7 +466,6 @@ const Profile = () => {
                     </div>
                   </div>
                   
-                  {/* Section 4: Nutrition and Supplements */}
                   <div className="space-y-4">
                     <h2 className="text-xl font-semibold">۴. تغذیه و مکمل</h2>
                     <div>

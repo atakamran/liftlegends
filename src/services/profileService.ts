@@ -1,6 +1,7 @@
 
 import { supabase } from "@/integrations/supabase/client";
 import { UserProfile } from "@/types";
+import { Database } from "@/integrations/supabase/types";
 
 export interface ProfileFormData {
   name?: string;
@@ -17,6 +18,8 @@ export interface ProfileFormData {
   takes_supplements?: boolean | string;
   steroids_interest?: string;
 }
+
+export type DatabaseUserProfile = Database['public']['Tables']['user_profiles']['Row'];
 
 export async function saveProfile(profileData: ProfileFormData) {
   const { data: session } = await supabase.auth.getSession();
@@ -66,7 +69,7 @@ export async function saveProfile(profileData: ProfileFormData) {
   }
 }
 
-export async function getProfile() {
+export async function getProfile(): Promise<DatabaseUserProfile | null> {
   const { data: session } = await supabase.auth.getSession();
   const user_id = session?.session?.user?.id;
 

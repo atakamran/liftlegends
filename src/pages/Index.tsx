@@ -1,92 +1,99 @@
 
 import React from "react";
 import { Link } from "react-router-dom";
-import { Dumbbell, ClipboardList, Library, BarChart, Brain } from "lucide-react";
+import { Dumbbell, ClipboardList, Library, BarChart, Brain, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 
 const Index = () => {
+  const todayWorkout = {
+    name: "تمرین سینه و سه سر",
+    exercises: [
+      { name: "پرس سینه", sets: 4, reps: 12 },
+      { name: "شنا با دمبل", sets: 3, reps: 10 }
+    ]
+  };
+
+  const userStats = {
+    currentWeight: 85, // kg
+    goalWeight: 88, // kg
+  };
+
   return (
     <AppLayout className="flex flex-col items-center">
-      <section className="py-12 text-center max-w-4xl mx-auto">
-        <h1 className="text-4xl font-bold mb-6">لیفت لجندز</h1>
-        <p className="text-xl mb-8">
-          برنامه تمرینی هوشمند برای بدنسازان و ورزشکاران حرفه‌ای
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button asChild size="lg" className="gap-2">
-            <Link to="/ai-planner">
-              <Brain className="h-5 w-5" />
-              مشاور هوش مصنوعی
-            </Link>
-          </Button>
-          <Button asChild variant="outline" size="lg" className="gap-2">
-            <Link to="/exercises">
-              <Library className="h-5 w-5" />
-              مشاهده تمرین‌ها
-            </Link>
-          </Button>
-        </div>
+      {/* Today's Workout Section */}
+      <section className="w-full py-4">
+        <Card className="bg-slate-900 text-white border-slate-800">
+          <CardHeader>
+            <CardTitle className="text-2xl">تمرین امروز</CardTitle>
+            <CardDescription className="text-slate-400">{todayWorkout.name}</CardDescription>
+          </CardHeader>
+          <CardContent className="space-y-4">
+            {todayWorkout.exercises.map((exercise, index) => (
+              <div key={index} className="flex items-center justify-between border-b border-slate-800 pb-4 last:border-0 last:pb-0">
+                <div>
+                  <h3 className="font-semibold">{exercise.name}</h3>
+                  <p className="text-sm text-slate-400">{exercise.sets} ست × {exercise.reps} تکرار</p>
+                </div>
+                <ChevronRight className="h-5 w-5 text-slate-400" />
+              </div>
+            ))}
+            <Button className="w-full mt-4">شروع تمرین</Button>
+          </CardContent>
+        </Card>
       </section>
 
-      <section className="w-full py-8">
-        <h2 className="text-2xl font-bold mb-6 text-center">ویژگی‌های برنامه</h2>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          <Card>
-            <CardHeader>
-              <Brain className="h-8 w-8 mb-2" />
-              <CardTitle>مشاور هوش مصنوعی</CardTitle>
-              <CardDescription>
-                دریافت برنامه‌های تمرینی و غذایی شخصی با استفاده از هوش مصنوعی
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <Dumbbell className="h-8 w-8 mb-2" />
-              <CardTitle>برنامه‌های تمرینی شخصی</CardTitle>
-              <CardDescription>
-                برنامه‌های تمرینی اختصاصی مطابق با اهداف و سطح آمادگی شما
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <ClipboardList className="h-8 w-8 mb-2" />
-              <CardTitle>ثبت و پیگیری تمرینات</CardTitle>
-              <CardDescription>
-                امکان ثبت جزئیات تمرینات و پیگیری پیشرفت
-              </CardDescription>
-            </CardHeader>
-          </Card>
-
-          <Card>
-            <CardHeader>
-              <BarChart className="h-8 w-8 mb-2" />
-              <CardTitle>آمار و تحلیل پیشرفت</CardTitle>
-              <CardDescription>
-                مشاهده روند پیشرفت و تحلیل عملکرد در طول زمان
-              </CardDescription>
-            </CardHeader>
-          </Card>
-        </div>
+      {/* Progress Tracking */}
+      <section className="w-full py-4">
+        <h2 className="text-2xl font-bold mb-4">پیشرفت</h2>
+        <Card className="bg-slate-900 text-white border-slate-800">
+          <CardContent className="p-6">
+            <div className="flex justify-between">
+              <div>
+                <p className="text-slate-400">وزن فعلی</p>
+                <p className="text-3xl font-bold">{userStats.currentWeight} کیلوگرم</p>
+              </div>
+              <div>
+                <p className="text-slate-400">وزن هدف</p>
+                <p className="text-3xl font-bold">{userStats.goalWeight} کیلوگرم</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
       </section>
 
-      <section className="w-full py-8 text-center">
-        <h2 className="text-2xl font-bold mb-6">شروع کنید</h2>
-        <p className="mb-8">
-          برای استفاده از تمام امکانات برنامه، همین حالا پروفایل خود را تکمیل کنید
-        </p>
-        <div className="flex flex-wrap justify-center gap-4">
-          <Button asChild>
-            <Link to="/profile">تکمیل پروفایل</Link>
-          </Button>
-          <Button asChild variant="outline">
-            <Link to="/workout-tracker">ثبت تمرین</Link>
-          </Button>
+      {/* Features Section - Simplified */}
+      <section className="w-full py-4">
+        <h2 className="text-2xl font-bold mb-4">خدمات</h2>
+        <div className="grid grid-cols-2 gap-4">
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardHeader className="p-4">
+              <Brain className="h-6 w-6 mb-1" />
+              <CardTitle className="text-base">مشاور هوش مصنوعی</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardHeader className="p-4">
+              <Dumbbell className="h-6 w-6 mb-1" />
+              <CardTitle className="text-base">برنامه‌های تمرینی</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardHeader className="p-4">
+              <ClipboardList className="h-6 w-6 mb-1" />
+              <CardTitle className="text-base">ثبت تمرین</CardTitle>
+            </CardHeader>
+          </Card>
+
+          <Card className="hover:bg-accent/50 transition-colors">
+            <CardHeader className="p-4">
+              <BarChart className="h-6 w-6 mb-1" />
+              <CardTitle className="text-base">آمار پیشرفت</CardTitle>
+            </CardHeader>
+          </Card>
         </div>
       </section>
     </AppLayout>

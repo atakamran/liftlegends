@@ -15,6 +15,7 @@ const Login = () => {
   const [password, setPassword] = useState("");
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [gLoading, setGLoading] = useState(false);
 
   const handleLogin = (e: React.FormEvent) => {
     e.preventDefault();
@@ -63,18 +64,34 @@ const Login = () => {
   };
 
   const handleGoogleLogin = () => {
-    setIsLoading(true);
+    setGLoading(true);
     
-    // Simulate Google login process
-    setTimeout(() => {
-      setIsLoading(false);
+    // Show a helpful toast with improved error handling
+    toast({
+      title: "در حال اتصال به گوگل",
+      description: "لطفا صبر کنید...",
+    });
+    
+    // Simulate Google OAuth process with better error handling
+    try {
+      // In a real app, this would use Google's OAuth API
+      setTimeout(() => {
+        setGLoading(false);
+        toast({
+          title: "ورود با گوگل موفقیت‌آمیز",
+          description: "به لیفت لجندز خوش آمدید!",
+        });
+        // Assuming this is a new user that needs to complete their profile
+        navigate("/profile-form");
+      }, 1500);
+    } catch (error) {
+      setGLoading(false);
       toast({
-        title: "ورود با گوگل موفقیت‌آمیز",
-        description: "به لیفت لجندز خوش آمدید!",
+        title: "خطا در ورود با گوگل",
+        description: "لطفاً دوباره تلاش کنید",
+        variant: "destructive",
       });
-      // Assuming this is a new user that needs to complete their profile
-      navigate("/profile-form");
-    }, 1000);
+    }
   };
 
   return (
@@ -185,14 +202,26 @@ const Login = () => {
             variant="outline" 
             className="w-full" 
             onClick={handleGoogleLogin} 
-            disabled={isLoading}
+            disabled={gLoading || isLoading}
           >
-            <img 
-              src="https://www.svgrepo.com/show/475656/google-color.svg" 
-              alt="Google logo" 
-              className="mr-2 h-4 w-4" 
-            />
-            ورود با گوگل
+            {gLoading ? (
+              <span className="flex items-center">
+                <svg className="animate-spin -ml-1 mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                </svg>
+                در حال اتصال به گوگل...
+              </span>
+            ) : (
+              <>
+                <img 
+                  src="https://www.svgrepo.com/show/475656/google-color.svg" 
+                  alt="Google logo" 
+                  className="mr-2 h-4 w-4" 
+                />
+                ورود با گوگل
+              </>
+            )}
           </Button>
         </CardFooter>
       </Card>

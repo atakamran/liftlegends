@@ -20,26 +20,26 @@ body {
 
 /* Add glass morphism effect */
 .glass-container {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   transition: all 0.3s ease;
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
 .glass-container:hover {
-  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
+  box-shadow: 0 12px 40px rgba(0, 0, 0, 0.2);
 }
 
-/* Modern black and white inspired gradient backgrounds */
+/* Black and white gradient backgrounds */
 .gradient-primary {
   background: linear-gradient(135deg, #000000 0%, #333333 100%);
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, #2D2D2D 0%, #4A4A4A 100%);
+  background: linear-gradient(135deg, #FFFFFF 0%, #F5F5F5 100%);
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, #777777 0%, #999999 100%);
+  background: linear-gradient(135deg, #E0E0E0 0%, #CCCCCC 100%);
 }
 
 /* Animation classes for smooth transitions */
@@ -63,13 +63,13 @@ body {
 
 /* Modern neo-glassmorphism effect for cards */
 .neo-glass {
-  background: rgba(0, 0, 0, 0.05);
+  background: rgba(255, 255, 255, 0.05);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 10px;
   border: 1px solid rgba(255, 255, 255, 0.08);
   box-shadow: 
-    0 4px 12px rgba(0, 0, 0, 0.1),
+    0 4px 12px rgba(0, 0, 0, 0.05),
     inset 0 1px 0 rgba(255, 255, 255, 0.06);
 }
 
@@ -79,17 +79,17 @@ body {
 }
 
 ::-webkit-scrollbar-track {
-  background: rgba(0, 0, 0, 0.1);
+  background: rgba(0, 0, 0, 0.05);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb {
-  background: rgba(255, 255, 255, 0.15);
+  background: rgba(0, 0, 0, 0.2);
   border-radius: 10px;
 }
 
 ::-webkit-scrollbar-thumb:hover {
-  background: rgba(255, 255, 255, 0.25);
+  background: rgba(0, 0, 0, 0.3);
 }
 
 /* Subscription plan badges */
@@ -103,16 +103,16 @@ body {
 }
 
 .plan-badge-basic {
-  background-color: rgba(128, 128, 128, 0.2);
-  color: #9c9c9c;
+  background-color: rgba(0, 0, 0, 0.1);
+  color: #333333;
 }
 
 .plan-badge-pro {
-  background-color: rgba(64, 64, 64, 0.2);
-  color: #b0b0b0;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #222222;
 }
 
 .plan-badge-ultimate {
-  background-color: rgba(0, 0, 0, 0.2);
-  color: #e0e0e0;
+  background-color: rgba(0, 0, 0, 0.3);
+  color: #111111;
 }

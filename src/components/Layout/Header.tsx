@@ -1,25 +1,37 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
-import { Dumbbell, User, Menu, Bell, BarChart, Flame } from "lucide-react";
+import { Dumbbell, User, Menu, Bell } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { auth } from "@/integrations/firebase/firebaseConfig";
-import { onAuthStateChanged } from "firebase/auth";
+import { onAuthStateChanged, signOut } from "firebase/auth";
+import { getProfile } from "@/services/profileService"; // Import the getProfile function
 
 const Header: React.FC = () => {
-  const [weekNumber, setWeekNumber] = useState(8);
-  const [goalPercentage, setGoalPercentage] = useState(85);
   const [username, setUsername] = useState("کاربر");
   const location = useLocation();
   const isHomePage = location.pathname === "/home";
   
+  const handleSignOut = () => {
+    signOut(auth).then(() => {
+      window.location.href = "/login"; // Redirect to login page after sign out
+    }).catch((error) => {
+      console.error("Error signing out: ", error);
+    });
+  };
+
   // Get user data
   useEffect(() => {
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
+    const unsubscribe = onAuthStateChanged(auth, async (user) => {
       if (user) {
-        const name = user.displayName || user.email?.split('@')[0] || "کاربر";
-        setUsername(name);
+        try {
+          const profile = await getProfile();
+          const name = profile?.name ? profile.name.split(' ')[0] : user.email?.split('@')[0] || "کاربر";
+          setUsername(name);
+        } catch (error) {
+          console.error("Error fetching profile: ", error);
+        }
       }
     });
 
@@ -31,7 +43,7 @@ const Header: React.FC = () => {
       <div className="container mx-auto px-4 py-3">
         {/* Main Header with Logo and Navigation */}
         <div className="flex items-center justify-between">
-          <Link to="/" className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Link to="/home" className="flex items-center space-x-2 rtl:space-x-reverse">
             <Dumbbell className="h-6 w-6" />
             <span className="font-bold text-xl">لیفت لجندز</span>
           </Link>
@@ -67,11 +79,12 @@ const Header: React.FC = () => {
                       </Avatar>
                       <span className="font-medium text-lg">خوش آمدید، {username}!</span>
                     </div>
-                    <Link to="/" className="px-4 py-2 rounded-md hover:bg-accent">خانه</Link>
+                    <Link to="/home" className="px-4 py-2 rounded-md hover:bg-accent">خانه</Link>
                     <Link to="/ai-planner" className="px-4 py-2 rounded-md hover:bg-accent">مشاور هوش مصنوعی</Link>
                     <Link to="/exercises" className="px-4 py-2 rounded-md hover:bg-accent">تمرین‌ها</Link>
                     <Link to="/workout-tracker" className="px-4 py-2 rounded-md hover:bg-accent">ثبت تمرین</Link>
                     <Link to="/profile" className="px-4 py-2 rounded-md hover:bg-accent">پروفایل</Link>
+                    <button onClick={handleSignOut} className="px-4 py-2 rounded-md hover:bg-accent text-red-500">خروج</button>
                   </nav>
                 </SheetContent>
               </Sheet>
@@ -84,29 +97,6 @@ const Header: React.FC = () => {
           <div className="mt-6 mb-2">
             <h1 className="text-3xl font-bold">خوش آمدید، {username}!</h1>
             <p className="text-muted-foreground mt-1">"محدودیت‌های خود را به چالش بکشید، تلاش کنید."</p>
-            
-            <div className="flex justify-between mt-6 mb-3">
-              <div className="text-center flex flex-col items-center">
-                <div className="bg-accent-foreground/10 p-3 rounded-full mb-2">
-                  <Flame className="h-6 w-6" />
-                </div>
-                <div className="font-bold">هفته {weekNumber}</div>
-              </div>
-              
-              <div className="text-center flex flex-col items-center">
-                <div className="bg-accent-foreground/10 p-3 rounded-full mb-2">
-                  <BarChart className="h-6 w-6" />
-                </div>
-                <div className="font-bold">%{goalPercentage} هدف</div>
-              </div>
-              
-              <div className="text-center flex flex-col items-center">
-                <div className="bg-accent-foreground/10 p-3 rounded-full mb-2">
-                  <Dumbbell className="h-6 w-6" />
-                </div>
-                <div className="font-bold">۴ جلسه</div>
-              </div>
-            </div>
           </div>
         )}
       </div>

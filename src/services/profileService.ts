@@ -1,4 +1,4 @@
-import { db } from "@/integrations/firebase/firebaseConfig";
+import { auth, db } from "@/integrations/firebase/firebaseConfig";
 import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
 import { userProfilesConverter } from "@/integrations/firebase/types";
 
@@ -25,6 +25,14 @@ export async function saveProfile(profileData: ProfileFormData) {
     throw new Error("User not logged in");
   }
 
+  // Validate required fields
+  const requiredFields = ["name", "age", "height", "weight", "fitness_level"];
+  for (const field of requiredFields) {
+    if (!profileData[field]) {
+      throw new Error(`Missing required field: ${field}`);
+    }
+  }
+
   // Convert string values to appropriate types
   const processedData = {
     ...profileData,
@@ -35,6 +43,11 @@ export async function saveProfile(profileData: ProfileFormData) {
     dietary_restrictions: profileData.dietary_restrictions === "yes" || profileData.dietary_restrictions === true,
     takes_supplements: profileData.takes_supplements === "yes" || profileData.takes_supplements === true,
   };
+
+  // Ensure numeric fields are valid
+  if (isNaN(processedData.age) || isNaN(processedData.height) || isNaN(processedData.weight)) {
+    throw new Error("Age, height, and weight must be valid numbers");
+  }
 
   const profileRef = doc(db, "user_profiles", user_id).withConverter(userProfilesConverter);
   await setDoc(profileRef, processedData, { merge: true });
@@ -68,4 +81,20 @@ export async function deleteProfile() {
   const profileRef = doc(db, "user_profiles", user_id);
   await deleteDoc(profileRef);
   return true;
+}
+
+export async function getCurrentUserProfile() {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+
+  const profileRef = doc(db, "user_profiles", user.uid);
+  const profileSnap = await getDoc(profileRef);
+
+  if (!profileSnap.exists()) {
+    throw new Error("User profile not found");
+  }
+
+  return profileSnap.data();
 }

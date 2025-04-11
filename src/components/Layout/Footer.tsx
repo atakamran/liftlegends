@@ -1,100 +1,131 @@
-
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { User, Dumbbell, Apple, Pill } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
-import { hasFeatureAccess } from "@/services/subscriptionService";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/integrations/firebase/firebaseConfig";
 
 const Footer: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
 
   const handleNavigation = async (path: string, feature?: 'food_plans' | 'supplements' | 'steroids' | 'ai_assistant') => {
-    if (feature) {
-      const hasAccess = await hasFeatureAccess(feature);
-      if (!hasAccess) {
+    try {
+      const user = auth.currentUser;
+      if (!user) {
+        throw new Error("User not logged in");
+      }
+
+      const profileRef = doc(db, "user_profiles", user.uid);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        throw new Error("User profile not found");
+      }
+
+      const profileData = profileSnap.data();
+
+      if (feature && profileData.subscription_plan !== "ultimate") {
         toast({
           title: "دسترسی محدود",
-          description: "برای استفاده از این بخش نیاز به اشتراک Pro یا Ultimate دارید.",
+          description: "برای استفاده از این بخش نیاز به اشتراک Ultimate دارید.",
           variant: "destructive",
         });
         navigate("/subscription-plans");
         return;
       }
+
+      navigate(path);
+    } catch (error) {
+      console.error("Error navigating: ", error);
+      toast({
+        title: "خطا",
+        description: "مشکلی در دسترسی به اطلاعات پیش آمد.",
+        variant: "destructive",
+      });
     }
-    navigate(path);
   };
 
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border/50 py-2 z-10">
-      <div className="container mx-auto px-2">
-        <div className="flex items-center justify-between">
-          {/* Profile (now on the left side) */}
+    <footer className="fixed bottom-0 left-0 right-0 bg-black py-3 z-10 rounded-t-lg">
+      <div className="container mx-auto px-4">
+        <div className="flex items-center justify-between rtl">
+          {/* مکمل‌ها */}
           <NavLink
-            to="/profile"
+            to="/supplements"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center p-2 text-xs",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "flex flex-col items-center text-xs text-white",
+                isActive ? "opacity-100" : "opacity-50"
               )
             }
           >
-            <User className="h-6 w-6 mb-1" />
-            <span>پروفایل</span>
+            <Pill className="h-6 w-6" />
+            <span>مکمل‌ها</span>
           </NavLink>
 
-          {/* Training Programs */}
+          {/* تغذیه */}
           <NavLink
-            to="/exercises"
+            to="/food-plans"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center p-2 text-xs",
-                isActive ? "text-primary" : "text-muted-foreground"
+                "flex flex-col items-center text-xs text-white",
+                isActive ? "opacity-100" : "opacity-50"
               )
             }
           >
-            <Dumbbell className="h-6 w-6 mb-1" />
-            <span>تمرینات</span>
+            <Apple className="h-6 w-6" />
+            <span>تغذیه</span>
           </NavLink>
 
-          {/* Home/Dashboard (Middle with Logo) */}
+          {/* لیفت جنرز */}
           <NavLink
             to="/home"
             className={({ isActive }) =>
               cn(
-                "flex flex-col items-center p-2 text-xs relative -top-4",
-                isActive ? "text-primary" : "text-primary"
+                "flex flex-col items-center text-xs text-white",
+                isActive ? "relative bg-white text-black rounded-full p-2" : "opacity-50"
               )
             }
           >
-            <div className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg mb-1 flex items-center justify-center">
+            <div className="flex items-center justify-center">
               <img 
                 src="/lovable-uploads/28fee595-d948-482e-8443-851c3a7b07c3.png"
                 alt="Lift Legends"
                 className="h-6 w-6"
               />
             </div>
-            <span>لیفت لجندز</span>
+            <span>لیفت جنرز</span>
           </NavLink>
 
-          {/* Food Plans */}
-          <div 
-            className="flex flex-col items-center p-2 text-xs cursor-pointer text-muted-foreground"
-            onClick={() => handleNavigation("/food-plans", "food_plans")}
+          {/* تمرینات */}
+          <NavLink
+            to="/exercises"
+            className={({ isActive }) =>
+              cn(
+                "flex flex-col items-center text-xs text-white",
+                isActive ? "opacity-100" : "opacity-50"
+              )
+            }
           >
-            <Apple className="h-6 w-6 mb-1" />
-            <span>تغذیه</span>
-          </div>
+            <Dumbbell className="h-6 w-6" />
+            <span>تمرینات</span>
+          </NavLink>
 
-          {/* Supplements/Steroids (now on the right side) */}
-          <div 
-            className="flex flex-col items-center p-2 text-xs cursor-pointer text-muted-foreground"
-            onClick={() => handleNavigation("/supplements", "steroids")}
+          {/* پروفایل */}
+          <NavLink
+            to="/profile"
+            className={({ isActive }) =>
+              cn(
+                "flex flex-col items-center text-xs text-white",
+                isActive ? "opacity-100" : "opacity-50"
+              )
+            }
           >
-            <Pill className="h-6 w-6 mb-1" />
-            <span>مکمل‌ها</span>
-          </div>
+            <User className="h-6 w-6" />
+            <span>پروفایل</span>
+          </NavLink>
         </div>
       </div>
     </footer>

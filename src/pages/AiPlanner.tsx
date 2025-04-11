@@ -1,6 +1,6 @@
-
 import React, { useState, useRef, useEffect } from "react";
 import { Send, User, Bot } from "lucide-react";
+import { useNavigate } from "react-router-dom"; // Import navigate function
 import AppLayout from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,6 +8,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
+import { getCurrentUserProfile } from "@/services/profileService"; // Import the function to fetch user profile
 
 interface Message {
   id: string;
@@ -18,6 +19,7 @@ interface Message {
 
 const AiPlanner = () => {
   const { toast } = useToast();
+  const navigate = useNavigate(); // Initialize navigate function
   const [prompt, setPrompt] = useState("");
   const [messages, setMessages] = useState<Message[]>([
     {
@@ -37,6 +39,32 @@ const AiPlanner = () => {
   useEffect(() => {
     scrollToBottom();
   }, [messages]);
+
+  useEffect(() => {
+    const checkAccess = async () => {
+      try {
+        const profile = await getCurrentUserProfile();
+        if (profile.subscription_plan !== "ultimate") {
+          toast({
+            title: "دسترسی محدود",
+            description: "برای استفاده از این بخش نیاز به اشتراک Ultimate دارید.",
+            variant: "destructive",
+          });
+          navigate("/subscription-plans");
+        }
+      } catch (error) {
+        console.error("Error fetching user profile: ", error);
+        toast({
+          title: "خطا",
+          description: "مشکلی در دسترسی به اطلاعات پیش آمد.",
+          variant: "destructive",
+        });
+        navigate("/subscription-plans");
+      }
+    };
+
+    checkAccess();
+  }, []);
 
   const generateRandomId = () => {
     return Math.random().toString(36).substring(2, 15);

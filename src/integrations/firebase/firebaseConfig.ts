@@ -12,7 +12,7 @@ const firebaseConfig = {
   storageBucket: "lift-legends-app.firebasestorage.app",
   messagingSenderId: "424171382414",
   appId: "1:424171382414:web:240af6a8856362619a8bdf",
-  measurementId: "G-XFPT47SKLW",
+  measurementId: "G-XFPT47SKLW"
 };
 
 // Initialize Firebase

@@ -7,8 +7,9 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
-import { doc, getDoc } from "firebase/firestore";
+import { doc, getDoc, setDoc } from "firebase/firestore";
 import { auth, db } from "@/integrations/firebase/firebaseConfig";
+import { FirebaseError } from "firebase/app";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -31,16 +32,44 @@ const Login = () => {
       const profileSnap = await getDoc(profileRef);
 
       if (!profileSnap.exists()) {
+        // Create a new profile document if it doesn't exist
+        await setDoc(profileRef, {
+          name: user.displayName || "",
+          email: user.email || "",
+          createdAt: new Date().toISOString(),
+        });
         navigate("/profile-form");
       } else {
         navigate("/home");
       }
     } catch (error: any) {
-      toast({
-        title: "خطا در ورود",
-        description: error.message || "مشکلی در ورود به حساب کاربری رخ داد.",
-        variant: "destructive",
-      });
+      if (error instanceof FirebaseError) {
+        if (error.code === "auth/user-not-found") {
+          toast({
+            title: "ایمیل یافت نشد",
+            description: "این ایمیل در سیستم وجود ندارد. لطفاً ثبت‌نام کنید.",
+            variant: "destructive",
+          });
+        } else if (error.code === "permission-denied") {
+          toast({
+            title: "دسترسی محدود شده",
+            description: "شما مجاز به ورود به این حساب کاربری نیستید.",
+            variant: "destructive",
+          });
+        } else {
+          toast({
+            title: "خطا در ورود",
+            description: error.message || "مشکلی در ورود به حساب کاربری رخ داد.",
+            variant: "destructive",
+          });
+        }
+      } else {
+        toast({
+          title: "خطا در ورود",
+          description: error.message || "مشکلی در ورود به حساب کاربری رخ داد.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }
@@ -84,16 +113,30 @@ const Login = () => {
       const profileSnap = await getDoc(profileRef);
 
       if (!profileSnap.exists()) {
+        // Create a new profile document if it doesn't exist
+        await setDoc(profileRef, {
+          name: user.displayName || "",
+          email: user.email || "",
+          createdAt: new Date().toISOString(),
+        });
         navigate("/profile-form");
       } else {
         navigate("/home");
       }
     } catch (error: any) {
-      toast({
-        title: "خطا در ورود با گوگل",
-        description: error.message || "مشکلی در ورود با گوگل رخ داد.",
-        variant: "destructive",
-      });
+      if (error instanceof FirebaseError && error.code === "permission-denied") {
+        toast({
+          title: "دسترسی محدود شده",
+          description: "شما مجاز به ورود به این حساب کاربری نیستید.",
+          variant: "destructive",
+        });
+      } else {
+        toast({
+          title: "خطا در ورود با گوگل",
+          description: error.message || "مشکلی در ورود با گوگل رخ داد.",
+          variant: "destructive",
+        });
+      }
     } finally {
       setIsLoading(false);
     }

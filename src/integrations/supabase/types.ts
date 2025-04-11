@@ -22,6 +22,9 @@ export type Database = {
           name: string | null
           primary_goal: string | null
           steroids_interest: string | null
+          subscription_end_date: string | null
+          subscription_plan: string | null
+          subscription_start_date: string | null
           takes_supplements: boolean | null
           training_days_per_week: string | null
           training_place: string | null
@@ -41,6 +44,9 @@ export type Database = {
           name?: string | null
           primary_goal?: string | null
           steroids_interest?: string | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           takes_supplements?: boolean | null
           training_days_per_week?: string | null
           training_place?: string | null
@@ -60,6 +66,9 @@ export type Database = {
           name?: string | null
           primary_goal?: string | null
           steroids_interest?: string | null
+          subscription_end_date?: string | null
+          subscription_plan?: string | null
+          subscription_start_date?: string | null
           takes_supplements?: boolean | null
           training_days_per_week?: string | null
           training_place?: string | null

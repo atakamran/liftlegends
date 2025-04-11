@@ -2,7 +2,7 @@
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { CloudArrowDown, CloudArrowUp } from "lucide-react";
+import { Download, Upload } from "lucide-react";
 import { exportSupabaseToFirebase } from "@/services/migrationService";
 import { useToast } from "@/hooks/use-toast";
 
@@ -67,7 +67,7 @@ const DataMigrationTool: React.FC = () => {
             variant="outline" 
             className="w-full"
           >
-            <CloudArrowDown className="ml-2 h-4 w-4" />
+            <Download className="ml-2 h-4 w-4" />
             {isExporting ? "در حال صادرات..." : "صادرات داده‌ها"}
           </Button>
         </div>

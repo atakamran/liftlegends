@@ -25,15 +25,15 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
       .from('user_profiles')
       .select('subscription_plan, subscription_start_date, subscription_end_date')
       .eq('user_id', session.user.id)
-      .single();
+      .maybeSingle();
 
-    if (error || !data) {
+    if (error) {
       console.error("Error fetching subscription:", error);
       return null;
     }
 
-    // If no subscription plan is set, default to basic
-    if (!data.subscription_plan) {
+    // If no data or no subscription plan is set, default to basic
+    if (!data || !data.subscription_plan) {
       return {
         plan: 'basic',
         startDate: new Date().toISOString(),
@@ -44,13 +44,13 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
 
     // Check if subscription is still active
     const now = new Date();
-    const endDate = new Date(data.subscription_end_date);
-    const isActive = now < endDate;
+    const endDate = data.subscription_end_date ? new Date(data.subscription_end_date) : null;
+    const isActive = endDate ? now < endDate : true;
 
     return {
       plan: data.subscription_plan as SubscriptionPlan,
-      startDate: data.subscription_start_date,
-      endDate: data.subscription_end_date,
+      startDate: data.subscription_start_date || new Date().toISOString(),
+      endDate: data.subscription_end_date || new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(),
       isActive
     };
   } catch (error) {

@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -21,8 +20,9 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { saveProfile, ProfileFormData } from "@/services/profileService";
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/integrations/firebase/firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/integrations/firebase/firebaseConfig";
 
 const ProfileForm = () => {
   const navigate = useNavigate();
@@ -30,7 +30,7 @@ const ProfileForm = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   // Form data state
-  const [formData, setFormData] = useState<ProfileFormData>({
+  const [formData, setFormData] = useState({
     gender: "",
     age: "",
     height: "",
@@ -53,6 +53,16 @@ const ProfileForm = () => {
     setFormData((prev) => ({ ...prev, [name]: value }));
   };
 
+  const handleSaveProfile = async (profileData: any) => {
+    const user = auth.currentUser;
+    if (!user) {
+      throw new Error("User not logged in");
+    }
+
+    const profileRef = doc(db, "user_profiles", user.uid);
+    await setDoc(profileRef, profileData, { merge: true });
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -63,26 +73,14 @@ const ProfileForm = () => {
 
     if (isValid) {
       try {
-        // Save profile data to Supabase
-        const { data: session } = await supabase.auth.getSession();
-        
-        if (!session?.session) {
-          // If no session found, attempt to sign up as anonymous user
-          const { error } = await supabase.auth.signInAnonymously();
-          
-          if (error) {
-            throw new Error("خطا در ایجاد حساب: " + error.message);
-          }
-        }
-        
-        // Save profile data to Supabase
-        await saveProfile(formData);
-        
+        // Save profile data to Firebase Firestore
+        await handleSaveProfile(formData);
+
         toast({
           title: "اطلاعات شما ثبت شد",
           description: "در حال هدایت به صفحه پرداخت...",
         });
-        
+
         navigate("/payment");
       } catch (error) {
         console.error("Error submitting form:", error);

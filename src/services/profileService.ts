@@ -1,7 +1,6 @@
-
-import { supabase } from "@/integrations/supabase/client";
-import { UserProfile } from "@/types";
-import { Database } from "@/integrations/supabase/types";
+import { db } from "@/integrations/firebase/firebaseConfig";
+import { doc, getDoc, setDoc, deleteDoc } from "firebase/firestore";
+import { userProfilesConverter } from "@/integrations/firebase/types";
 
 export interface ProfileFormData {
   name?: string;
@@ -19,11 +18,8 @@ export interface ProfileFormData {
   steroids_interest?: string;
 }
 
-export type DatabaseUserProfile = Database['public']['Tables']['user_profiles']['Row'];
-
 export async function saveProfile(profileData: ProfileFormData) {
-  const { data: session } = await supabase.auth.getSession();
-  const user_id = session?.session?.user?.id;
+  const user_id = "currentUserId"; // Replace with actual user ID retrieval logic
 
   if (!user_id) {
     throw new Error("User not logged in");
@@ -40,66 +36,36 @@ export async function saveProfile(profileData: ProfileFormData) {
     takes_supplements: profileData.takes_supplements === "yes" || profileData.takes_supplements === true,
   };
 
-  // Check if profile exists
-  const { data: existingProfile } = await supabase
-    .from("user_profiles")
-    .select()
-    .eq("user_id", user_id)
-    .maybeSingle();
-
-  if (existingProfile) {
-    // Update existing profile
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .update(processedData)
-      .eq("user_id", user_id)
-      .select();
-
-    if (error) throw error;
-    return data;
-  } else {
-    // Insert new profile
-    const { data, error } = await supabase
-      .from("user_profiles")
-      .insert(processedData)
-      .select();
-
-    if (error) throw error;
-    return data;
-  }
+  const profileRef = doc(db, "user_profiles", user_id).withConverter(userProfilesConverter);
+  await setDoc(profileRef, processedData, { merge: true });
+  return processedData;
 }
 
-export async function getProfile(): Promise<DatabaseUserProfile | null> {
-  const { data: session } = await supabase.auth.getSession();
-  const user_id = session?.session?.user?.id;
+export async function getProfile() {
+  const user_id = "currentUserId"; // Replace with actual user ID retrieval logic
 
   if (!user_id) {
     throw new Error("User not logged in");
   }
 
-  const { data, error } = await supabase
-    .from("user_profiles")
-    .select()
-    .eq("user_id", user_id)
-    .maybeSingle();
+  const profileRef = doc(db, "user_profiles", user_id).withConverter(userProfilesConverter);
+  const profileSnap = await getDoc(profileRef);
 
-  if (error) throw error;
-  return data;
+  if (!profileSnap.exists()) {
+    return null;
+  }
+
+  return profileSnap.data();
 }
 
 export async function deleteProfile() {
-  const { data: session } = await supabase.auth.getSession();
-  const user_id = session?.session?.user?.id;
+  const user_id = "currentUserId"; // Replace with actual user ID retrieval logic
 
   if (!user_id) {
     throw new Error("User not logged in");
   }
 
-  const { error } = await supabase
-    .from("user_profiles")
-    .delete()
-    .eq("user_id", user_id);
-
-  if (error) throw error;
+  const profileRef = doc(db, "user_profiles", user_id);
+  await deleteDoc(profileRef);
   return true;
 }

@@ -11,9 +11,25 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Textarea } from "@/components/ui/textarea";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
-import { getProfile, saveProfile, ProfileFormData, DatabaseUserProfile } from "@/services/profileService";
-import { supabase } from "@/integrations/supabase/client";
+import { saveProfile, ProfileFormData } from "@/services/profileService";
 import { Loader2 } from "lucide-react";
+import { auth } from "@/integrations/firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { db } from "@/integrations/firebase/firebaseConfig";
+
+const fetchUserProfile = async () => {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+
+  const profileRef = doc(db, "user_profiles", user.uid);
+  const profileSnap = await getDoc(profileRef);
+  if (!profileSnap.exists()) {
+    return null;
+  }
+  return profileSnap.data();
+};
 
 const Profile = () => {
   const { toast } = useToast();
@@ -51,12 +67,12 @@ const Profile = () => {
 
   useEffect(() => {
     const checkUser = async () => {
-      const { data } = await supabase.auth.getSession();
-      setSession(data.session);
+      const user = auth.currentUser;
+      setSession(user);
       
-      if (data.session) {
+      if (user) {
         try {
-          const profileData = await getProfile();
+          const profileData = await fetchUserProfile();
           if (profileData) {
             setProfile({
               name: profileData.name || "",
@@ -96,12 +112,12 @@ const Profile = () => {
 
     checkUser();
     
-    const { data: authListener } = supabase.auth.onAuthStateChange((_event, session) => {
-      setSession(session);
+    const unsubscribe = auth.onAuthStateChanged((user) => {
+      setSession(user);
     });
 
     return () => {
-      authListener.subscription.unsubscribe();
+      unsubscribe();
     };
   }, [toast]);
 

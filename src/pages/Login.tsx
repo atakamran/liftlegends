@@ -4,14 +4,17 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { supabase } from "@/integrations/supabase/client";
 import { useToast } from "@/hooks/use-toast";
+import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/integrations/firebase/firebaseConfig";
 
 const Login = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async (e: React.FormEvent) => {
@@ -19,21 +22,14 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signInWithPassword({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      const userCredential = await signInWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
       // Check if user has completed profile
-      const { data: profileData } = await supabase
-        .from("user_profiles")
-        .select("*")
-        .eq("user_id", data.user.id)
-        .single();
+      const profileRef = doc(db, "user_profiles", user.uid);
+      const profileSnap = await getDoc(profileRef);
 
-      if (!profileData) {
+      if (!profileSnap.exists()) {
         navigate("/profile-form");
       } else {
         navigate("/home");
@@ -54,12 +50,8 @@ const Login = () => {
     setIsLoading(true);
 
     try {
-      const { data, error } = await supabase.auth.signUp({
-        email,
-        password,
-      });
-
-      if (error) throw error;
+      const userCredential = await createUserWithEmailAndPassword(auth, email, password);
+      const user = userCredential.user;
 
       toast({
         title: "ثبت نام موفقیت‌آمیز",
@@ -71,6 +63,34 @@ const Login = () => {
       toast({
         title: "خطا در ثبت نام",
         description: error.message || "مشکلی در ایجاد حساب کاربری رخ داد.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleSignIn = async () => {
+    setIsLoading(true);
+    const provider = new GoogleAuthProvider();
+
+    try {
+      const result = await signInWithPopup(auth, provider);
+      const user = result.user;
+
+      // Check if user has completed profile
+      const profileRef = doc(db, "user_profiles", user.uid);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        navigate("/profile-form");
+      } else {
+        navigate("/home");
+      }
+    } catch (error: any) {
+      toast({
+        title: "خطا در ورود با گوگل",
+        description: error.message || "مشکلی در ورود با گوگل رخ داد.",
         variant: "destructive",
       });
     } finally {
@@ -96,10 +116,10 @@ const Login = () => {
         <CardContent>
           <form onSubmit={handleLogin} className="space-y-4">
             <div className="space-y-2">
-              <Label htmlFor="email">ایمیل</Label>
+              <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
               <Input
                 id="email"
-                type="email"
+                type="text"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
                 required
@@ -119,16 +139,51 @@ const Login = () => {
               {isLoading ? "در حال پردازش..." : "ورود"}
             </Button>
           </form>
-        </CardContent>
-        <CardFooter className="flex flex-col">
           <Button
             variant="outline"
-            className="w-full"
-            onClick={handleSignUp}
+            className="w-full mt-4"
+            onClick={handleGoogleSignIn}
             disabled={isLoading}
           >
-            ثبت نام
+            ورود با گوگل
           </Button>
+        </CardContent>
+        <CardFooter className="flex flex-col">
+          <form onSubmit={handleSignUp} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">نام</Label>
+              <Input
+                id="name"
+                type="text"
+                value={name}
+                onChange={(e) => setName(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
+              <Input
+                id="email"
+                type="text"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                required
+              />
+            </div>
+            <div className="space-y-2">
+              <Label htmlFor="password">رمز عبور</Label>
+              <Input
+                id="password"
+                type="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+            </div>
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? "در حال پردازش..." : "ثبت نام"}
+            </Button>
+          </form>
         </CardFooter>
       </Card>
     </div>

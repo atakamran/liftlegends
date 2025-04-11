@@ -1,5 +1,6 @@
-
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/integrations/firebase/firebaseConfig";
+import { doc, getDoc, setDoc } from "firebase/firestore";
+import { db } from "@/integrations/firebase/firebaseConfig";
 
 export type SubscriptionPlan = 'basic' | 'pro' | 'ultimate';
 
@@ -10,27 +11,42 @@ export interface UserSubscription {
   isActive: boolean;
 }
 
+// Replace Supabase session retrieval with Firebase Authentication
+export async function getSession() {
+  const user = auth.currentUser;
+  if (!user) {
+    throw new Error("User not logged in");
+  }
+  return user;
+}
+
+// Replace Supabase database operations with Firestore
+export async function saveSubscriptionData(userId: string, subscriptionData: any) {
+  const subscriptionRef = doc(db, "subscriptions", userId);
+  await setDoc(subscriptionRef, subscriptionData, { merge: true });
+}
+
+export async function getSubscriptionData(userId: string) {
+  const subscriptionRef = doc(db, "subscriptions", userId);
+  const subscriptionSnap = await getDoc(subscriptionRef);
+  if (!subscriptionSnap.exists()) {
+    return null;
+  }
+  return subscriptionSnap.data();
+}
+
 // Function to get the current user's subscription
 export async function getUserSubscription(): Promise<UserSubscription | null> {
   try {
     // Get current user
-    const { data: { session } } = await supabase.auth.getSession();
+    const user = await getSession();
     
-    if (!session?.user) {
+    if (!user) {
       return null;
     }
 
-    // Get user profile with subscription info
-    const { data, error } = await supabase
-      .from('user_profiles')
-      .select('subscription_plan, subscription_start_date, subscription_end_date')
-      .eq('user_id', session.user.id)
-      .maybeSingle();
-
-    if (error) {
-      console.error("Error fetching subscription:", error);
-      return null;
-    }
+    // Get user subscription info from Firestore
+    const data = await getSubscriptionData(user.uid);
 
     // If no data or no subscription plan is set, default to basic
     if (!data || !data.subscription_plan) {

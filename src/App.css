@@ -29,17 +29,17 @@ body {
   box-shadow: 0 12px 40px rgba(0, 0, 0, 0.25);
 }
 
-/* Modern fitness-inspired gradient backgrounds */
+/* Modern black and white inspired gradient backgrounds */
 .gradient-primary {
-  background: linear-gradient(135deg, #6B46C1 0%, #9F7AEA 100%);
+  background: linear-gradient(135deg, #000000 0%, #333333 100%);
 }
 
 .gradient-secondary {
-  background: linear-gradient(135deg, #2D3748 0%, #4A5568 100%);
+  background: linear-gradient(135deg, #2D2D2D 0%, #4A4A4A 100%);
 }
 
 .gradient-accent {
-  background: linear-gradient(135deg, #ED64A6 0%, #F687B3 100%);
+  background: linear-gradient(135deg, #777777 0%, #999999 100%);
 }
 
 /* Animation classes for smooth transitions */
@@ -63,7 +63,7 @@ body {
 
 /* Modern neo-glassmorphism effect for cards */
 .neo-glass {
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(0, 0, 0, 0.05);
   backdrop-filter: blur(10px);
   -webkit-backdrop-filter: blur(10px);
   border-radius: 10px;
@@ -103,16 +103,16 @@ body {
 }
 
 .plan-badge-basic {
-  background-color: rgba(75, 85, 99, 0.2);
-  color: #9CA3AF;
+  background-color: rgba(128, 128, 128, 0.2);
+  color: #9c9c9c;
 }
 
 .plan-badge-pro {
-  background-color: rgba(124, 58, 237, 0.2);
-  color: #A78BFA;
+  background-color: rgba(64, 64, 64, 0.2);
+  color: #b0b0b0;
 }
 
 .plan-badge-ultimate {
-  background-color: rgba(217, 70, 239, 0.2);
-  color: #E879F9;
+  background-color: rgba(0, 0, 0, 0.2);
+  color: #e0e0e0;
 }

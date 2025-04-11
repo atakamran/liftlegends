@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -78,77 +79,10 @@ const Login = () => {
     }
   };
 
-  const createTestUser = async () => {
-    try {
-      // For demo purposes - this would register a new user
-      const { data, error } = await supabase.auth.signUp({
-        email: 'test@liftlegends.com',
-        password: 'Ultimate2024!'
-      });
-      
-      if (error) throw error;
-      
-      // Create user profile with Ultimate subscription
-      if (data.user) {
-        const { error: profileError } = await supabase
-          .from('user_profiles')
-          .upsert({
-            user_id: data.user.id,
-            name: 'کاربر آزمایشی',
-            subscription_plan: 'ultimate',
-            subscription_start_date: new Date().toISOString(),
-            subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days
-          });
-        
-        if (profileError) throw profileError;
-        
-        // Now log in with the test account
-        const { error: loginError } = await supabase.auth.signInWithPassword({
-          email: 'test@liftlegends.com',
-          password: 'Ultimate2024!'
-        });
-        
-        if (loginError) throw loginError;
-        
-        return {
-          success: true,
-          message: "حساب آزمایشی با پلن Ultimate ایجاد شد."
-        };
-      }
-      
-      return {
-        success: false,
-        message: "خطا در ایجاد حساب آزمایشی."
-      };
-    } catch (error) {
-      console.error("Error creating test user:", error);
-      return {
-        success: false,
-        message: "خطا در ایجاد حساب آزمایشی."
-      };
-    }
-  };
-
-  const handleCreateTestAccount = async () => {
-    setIsLoading(true);
-    const result = await createTestUser();
-    setIsLoading(false);
-    
-    if (result.success) {
-      navigate('/home');
-    } else {
-      toast({
-        title: "خطا",
-        description: result.message,
-        variant: "destructive"
-      });
-    }
-  };
-
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-slate-900 to-slate-800 p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-indigo-900/20 to-transparent pointer-events-none"></div>
-      <Card className="w-full max-w-md glass-container bg-background/40 backdrop-blur-md border-white/10">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black to-gray-800 p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/20 to-transparent pointer-events-none"></div>
+      <Card className="w-full max-w-md glass-container bg-white/5 backdrop-blur-md border-white/10">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
@@ -190,19 +124,11 @@ const Login = () => {
         <CardFooter className="flex flex-col">
           <Button
             variant="outline"
-            className="w-full mb-2"
+            className="w-full"
             onClick={handleSignUp}
             disabled={isLoading}
           >
             ثبت نام
-          </Button>
-          <Button 
-            onClick={handleCreateTestAccount} 
-            variant="outline" 
-            className="w-full mt-2"
-            disabled={isLoading}
-          >
-            ورود با حساب آزمایشی (Ultimate)
           </Button>
         </CardFooter>
       </Card>

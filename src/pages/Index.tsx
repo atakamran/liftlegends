@@ -67,19 +67,19 @@ const Index = () => {
       
       {/* Today's Workout Section */}
       <section className="w-full py-4">
-        <Card className="bg-slate-900 text-white border-slate-800">
+        <Card className="bg-black text-white border-gray-800">
           <CardHeader>
             <CardTitle className="text-2xl">تمرین امروز</CardTitle>
-            <CardDescription className="text-slate-400">{todayWorkout.name}</CardDescription>
+            <CardDescription className="text-gray-400">{todayWorkout.name}</CardDescription>
           </CardHeader>
           <CardContent className="space-y-4">
             {todayWorkout.exercises.map((exercise, index) => (
-              <div key={index} className="flex items-center justify-between border-b border-slate-800 pb-4 last:border-0 last:pb-0">
+              <div key={index} className="flex items-center justify-between border-b border-gray-800 pb-4 last:border-0 last:pb-0">
                 <div>
                   <h3 className="font-semibold">{exercise.name}</h3>
-                  <p className="text-sm text-slate-400">{exercise.sets} ست × {exercise.reps} تکرار</p>
+                  <p className="text-sm text-gray-400">{exercise.sets} ست × {exercise.reps} تکرار</p>
                 </div>
-                <ChevronRight className="h-5 w-5 text-slate-400" />
+                <ChevronRight className="h-5 w-5 text-gray-400" />
               </div>
             ))}
             <Button className="w-full mt-4">شروع تمرین</Button>
@@ -90,15 +90,15 @@ const Index = () => {
       {/* Progress Tracking */}
       <section className="w-full py-4">
         <h2 className="text-2xl font-bold mb-4">پیشرفت</h2>
-        <Card className="bg-slate-900 text-white border-slate-800">
+        <Card className="bg-black text-white border-gray-800">
           <CardContent className="p-6">
             <div className="flex justify-between">
               <div>
-                <p className="text-slate-400">وزن فعلی</p>
+                <p className="text-gray-400">وزن فعلی</p>
                 <p className="text-3xl font-bold">{userStats.currentWeight} کیلوگرم</p>
               </div>
               <div>
-                <p className="text-slate-400">وزن هدف</p>
+                <p className="text-gray-400">وزن هدف</p>
                 <p className="text-3xl font-bold">{userStats.goalWeight} کیلوگرم</p>
               </div>
             </div>

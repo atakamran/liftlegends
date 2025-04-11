@@ -1,5 +1,5 @@
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -7,6 +7,8 @@ import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle, CardFooter } from "@/components/ui/card";
 import { useToast } from "@/hooks/use-toast";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Loader2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
 
 const Login = () => {
   const navigate = useNavigate();
@@ -16,81 +18,125 @@ const Login = () => {
   const [name, setName] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [gLoading, setGLoading] = useState(false);
+  const [session, setSession] = useState(null);
 
-  const handleLogin = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate login process
-    setTimeout(() => {
-      setIsLoading(false);
-      if (email && password) {
-        toast({
-          title: "ورود موفقیت‌آمیز",
-          description: "به لیفت لجندز خوش آمدید!",
-        });
-        navigate("/home");
-      } else {
-        toast({
-          title: "خطا در ورود",
-          description: "لطفاً تمام فیلدها را پر کنید",
-          variant: "destructive",
-        });
+  useEffect(() => {
+    // Check if user is already logged in
+    supabase.auth.getSession().then(({ data: { session } }) => {
+      if (session) {
+        navigate('/home');
       }
-    }, 1000);
-  };
-
-  const handleRegister = (e: React.FormEvent) => {
-    e.preventDefault();
-    setIsLoading(true);
-    
-    // Simulate registration process
-    setTimeout(() => {
-      setIsLoading(false);
-      if (name && email && password) {
-        toast({
-          title: "ثبت‌نام موفقیت‌آمیز",
-          description: "اطلاعات شما با موفقیت ثبت شد",
-        });
-        navigate("/profile-form");
-      } else {
-        toast({
-          title: "خطا در ثبت‌نام",
-          description: "لطفاً تمام فیلدها را پر کنید",
-          variant: "destructive",
-        });
-      }
-    }, 1000);
-  };
-
-  const handleGoogleLogin = () => {
-    setGLoading(true);
-    
-    // Show a helpful toast with improved error handling
-    toast({
-      title: "در حال اتصال به گوگل",
-      description: "لطفا صبر کنید...",
     });
+
+    // Set up auth state listener
+    const { data: { subscription } } = supabase.auth.onAuthStateChange(
+      (event, session) => {
+        if (session) {
+          navigate('/home');
+        }
+      }
+    );
+
+    return () => subscription.unsubscribe();
+  }, [navigate]);
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
     
-    // Simulate Google OAuth process with better error handling
     try {
-      // In a real app, this would use Google's OAuth API
-      setTimeout(() => {
-        setGLoading(false);
-        toast({
-          title: "ورود با گوگل موفقیت‌آمیز",
-          description: "به لیفت لجندز خوش آمدید!",
-        });
-        // Assuming this is a new user that needs to complete their profile
-        navigate("/profile-form");
-      }, 1500);
-    } catch (error) {
-      setGLoading(false);
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email,
+        password
+      });
+
+      if (error) throw error;
+      
       toast({
-        title: "خطا در ورود با گوگل",
-        description: "لطفاً دوباره تلاش کنید",
+        title: "ورود موفقیت‌آمیز",
+        description: "به لیفت لجندز خوش آمدید!",
+      });
+      
+      navigate("/home");
+    } catch (error: any) {
+      toast({
+        title: "خطا در ورود",
+        description: error.message || "مشکلی در ورود پیش آمده است",
         variant: "destructive",
       });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleRegister = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setIsLoading(true);
+    
+    if (!name || !email || !password) {
+      toast({
+        title: "خطا در ثبت‌نام",
+        description: "لطفاً تمام فیلدها را پر کنید",
+        variant: "destructive",
+      });
+      setIsLoading(false);
+      return;
+    }
+    
+    try {
+      const { data, error } = await supabase.auth.signUp({
+        email,
+        password,
+        options: {
+          data: {
+            full_name: name,
+          }
+        }
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "ثبت‌نام موفقیت‌آمیز",
+        description: "حساب کاربری شما ایجاد شد",
+      });
+      
+      navigate("/profile-form");
+    } catch (error: any) {
+      toast({
+        title: "خطا در ثبت‌نام",
+        description: error.message || "مشکلی در ثبت‌نام پیش آمده است",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleGoogleLogin = async () => {
+    setGLoading(true);
+    
+    try {
+      const { data, error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: `${window.location.origin}/profile-form`
+        }
+      });
+
+      if (error) throw error;
+      
+      toast({
+        title: "در حال اتصال به گوگل",
+        description: "لطفا صبر کنید...",
+      });
+    } catch (error: any) {
+      toast({
+        title: "خطا در ورود با گوگل",
+        description: error.message || "مشکلی در اتصال به گوگل پیش آمده است",
+        variant: "destructive",
+      });
+      setGLoading(false);
     }
   };
 
@@ -105,7 +151,7 @@ const Login = () => {
         <h1 className="text-3xl font-bold">لیفت لجندز</h1>
       </div>
       
-      <Card className="w-full max-w-md">
+      <Card className="w-full max-w-md bg-background/80 backdrop-blur-sm border border-border/50">
         <CardHeader className="text-center">
           <CardTitle>ورود یا ثبت‌نام</CardTitle>
           <CardDescription>برای استفاده از لیفت لجندز حساب کاربری بسازید یا وارد شوید</CardDescription>
@@ -142,7 +188,12 @@ const Login = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "در حال ورود..." : "ورود"}
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      در حال ورود...
+                    </span>
+                  ) : "ورود"}
                 </Button>
               </form>
             </TabsContent>
@@ -181,7 +232,12 @@ const Login = () => {
                   />
                 </div>
                 <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "در حال ثبت‌نام..." : "ثبت‌نام"}
+                  {isLoading ? (
+                    <span className="flex items-center">
+                      <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                      در حال ثبت‌نام...
+                    </span>
+                  ) : "ثبت‌نام"}
                 </Button>
               </form>
             </TabsContent>
@@ -206,10 +262,7 @@ const Login = () => {
           >
             {gLoading ? (
               <span className="flex items-center">
-                <svg className="animate-spin -ml-1 mr-3 h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
-                  <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                  <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                </svg>
+                <Loader2 className="h-4 w-4 mr-2 animate-spin" />
                 در حال اتصال به گوگل...
               </span>
             ) : (

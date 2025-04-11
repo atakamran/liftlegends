@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 
 const Footer: React.FC = () => {
   return (
-    <footer className="fixed bottom-0 left-0 right-0 bg-background border-t border-border py-2 z-10">
+    <footer className="fixed bottom-0 left-0 right-0 bg-background/80 backdrop-blur-md border-t border-border/50 py-2 z-10">
       <div className="container mx-auto px-2">
         <div className="flex items-center justify-between">
           {/* Profile */}
@@ -48,7 +48,11 @@ const Footer: React.FC = () => {
             }
           >
             <div className="bg-primary text-primary-foreground p-3 rounded-full shadow-lg mb-1 flex items-center justify-center">
-              <span className="text-lg font-bold">LL</span>
+              <img 
+                src="/lovable-uploads/28fee595-d948-482e-8443-851c3a7b07c3.png"
+                alt="Lift Legends"
+                className="h-6 w-6"
+              />
             </div>
             <span>لیفت لجندز</span>
           </NavLink>

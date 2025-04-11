@@ -1,28 +1,35 @@
 
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useLocation } from "react-router-dom";
 import { Dumbbell, User, Menu, Bell, BarChart, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { supabase } from "@/integrations/supabase/client";
 
 const Header: React.FC = () => {
   const [weekNumber, setWeekNumber] = useState(8);
   const [goalPercentage, setGoalPercentage] = useState(85);
   const [username, setUsername] = useState("کاربر");
+  const location = useLocation();
+  const isHomePage = location.pathname === "/home";
   
-  // Mock function to get user data
+  // Get user data
   useEffect(() => {
-    // In a real app, this would fetch data from an API or local storage
-    const mockUserData = () => {
-      setUsername("علی");
+    const getUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user) {
+        const { user } = session;
+        const name = user.user_metadata?.full_name || user.email?.split('@')[0] || "کاربر";
+        setUsername(name);
+      }
     };
     
-    mockUserData();
+    getUser();
   }, []);
 
   return (
-    <header className="border-b border-border sticky top-0 bg-background z-10">
+    <header className="border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-10">
       <div className="container mx-auto px-4 py-3">
         {/* Main Header with Logo and Navigation */}
         <div className="flex items-center justify-between">
@@ -53,7 +60,7 @@ const Header: React.FC = () => {
                     <Menu />
                   </Button>
                 </SheetTrigger>
-                <SheetContent side="right">
+                <SheetContent side="right" className="backdrop-blur-md bg-background/80">
                   <nav className="flex flex-col gap-4 mt-8">
                     <div className="flex flex-col items-center mb-6">
                       <Avatar className="h-16 w-16 mb-2">
@@ -75,7 +82,7 @@ const Header: React.FC = () => {
         </div>
         
         {/* Weekly Stats Section - Only shown on homepage */}
-        {window.location.pathname === "/home" && (
+        {isHomePage && (
           <div className="mt-6 mb-2">
             <h1 className="text-3xl font-bold">خوش آمدید، {username}!</h1>
             <p className="text-muted-foreground mt-1">"محدودیت‌های خود را به چالش بکشید، تلاش کنید."</p>

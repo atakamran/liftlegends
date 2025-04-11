@@ -22,7 +22,9 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => {
         isHomePage ? "pt-2" : "pt-6",
         className
       )}>
-        {children}
+        <div className="glass-container bg-background/60 backdrop-blur-sm rounded-xl border border-border/30 p-4">
+          {children}
+        </div>
       </main>
       <Footer />
     </div>

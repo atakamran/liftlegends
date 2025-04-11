@@ -17,3 +17,45 @@ body {
 .rtl {
   direction: rtl;
 }
+
+/* Add glass morphism effect */
+.glass-container {
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.glass-container:hover {
+  box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+}
+
+/* Modern fitness-inspired gradient backgrounds */
+.gradient-primary {
+  background: linear-gradient(135deg, #6B46C1 0%, #9F7AEA 100%);
+}
+
+.gradient-secondary {
+  background: linear-gradient(135deg, #2D3748 0%, #4A5568 100%);
+}
+
+.gradient-accent {
+  background: linear-gradient(135deg, #ED64A6 0%, #F687B3 100%);
+}
+
+/* Animation classes for smooth transitions */
+.fade-in {
+  animation: fadeIn 0.5s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.slide-up {
+  animation: slideUp 0.5s ease forwards;
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}

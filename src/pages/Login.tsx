@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useToast } from "@/hooks/use-toast";
 import { signInWithEmailAndPassword, createUserWithEmailAndPassword, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 import { doc, getDoc } from "firebase/firestore";
@@ -99,9 +100,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400 p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/70 to-transparent pointer-events-none"></div>
-      <Card className="w-full max-w-md glass-container bg-white/80 backdrop-blur-md border-gray-300">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100/50 to-transparent pointer-events-none"></div>
+      <Card className="w-full max-w-md glass-container bg-white/70 backdrop-blur-md border-gray-200 shadow-lg">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 
@@ -114,77 +115,93 @@ const Login = () => {
           <CardDescription>وارد حساب کاربری خود شوید یا ثبت نام کنید</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleLogin} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
-              <Input
-                id="email"
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">رمز عبور</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "در حال پردازش..." : "ورود"}
-            </Button>
-          </form>
-          <Button
-            variant="outline"
-            className="w-full mt-4"
-            onClick={handleGoogleSignIn}
-            disabled={isLoading}
-          >
-            ورود با گوگل
-          </Button>
+          <Tabs defaultValue="login" className="w-full">
+            <TabsList className="grid w-full grid-cols-2">
+              <TabsTrigger value="login">ورود</TabsTrigger>
+              <TabsTrigger value="signup">ثبت نام</TabsTrigger>
+            </TabsList>
+            <TabsContent value="login">
+              <form onSubmit={handleLogin} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
+                  <Input
+                    id="email"
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">رمز عبور</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "در حال پردازش..." : "ورود"}
+                </Button>
+              </form>
+              <Button
+                variant="outline"
+                className="w-full mt-4"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+              >
+                ورود با گوگل
+              </Button>
+            </TabsContent>
+            <TabsContent value="signup">
+              <form onSubmit={handleSignUp} className="space-y-4">
+                <div className="space-y-2">
+                  <Label htmlFor="name">نام</Label>
+                  <Input
+                    id="name"
+                    type="text"
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
+                  <Input
+                    id="email"
+                    type="text"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="password">رمز عبور</Label>
+                  <Input
+                    id="password"
+                    type="password"
+                    value={password}
+                    onChange={(e) => setPassword(e.target.value)}
+                    required
+                  />
+                </div>
+                <Button type="submit" className="w-full" disabled={isLoading}>
+                  {isLoading ? "در حال پردازش..." : "ثبت نام"}
+                </Button>
+              </form>
+              <Button
+                variant="outline"
+                className="w-full mt-4"
+                onClick={handleGoogleSignIn}
+                disabled={isLoading}
+              >
+                ثبت نام با گوگل
+              </Button>
+            </TabsContent>
+          </Tabs>
         </CardContent>
-        <CardFooter className="flex flex-col">
-          <form onSubmit={handleSignUp} className="space-y-4">
-            <div className="space-y-2">
-              <Label htmlFor="name">نام</Label>
-              <Input
-                id="name"
-                type="text"
-                value={name}
-                onChange={(e) => setName(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
-              <Input
-                id="email"
-                type="text"
-                value={email}
-                onChange={(e) => setEmail(e.target.value)}
-                required
-              />
-            </div>
-            <div className="space-y-2">
-              <Label htmlFor="password">رمز عبور</Label>
-              <Input
-                id="password"
-                type="password"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
-            </div>
-            <Button type="submit" className="w-full" disabled={isLoading}>
-              {isLoading ? "در حال پردازش..." : "ثبت نام"}
-            </Button>
-          </form>
-        </CardFooter>
       </Card>
     </div>
   );

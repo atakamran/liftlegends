@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Check, CreditCard } from "lucide-react";
@@ -7,7 +6,8 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { supabase } from "@/integrations/supabase/client";
+import { doc, updateDoc } from "firebase/firestore";
+import { auth, db } from "@/integrations/firebase/firebaseConfig";
 import AppLayout from "@/components/Layout/AppLayout";
 
 type Plan = {
@@ -57,7 +57,7 @@ const Payment = () => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!selectedPlan) {
       toast({
         title: "خطا",
@@ -65,56 +65,49 @@ const Payment = () => {
       });
       return;
     }
-    
+
     setIsProcessing(true);
-    
+
     try {
-      // Get current user
-      const { data: { session } } = await supabase.auth.getSession();
-      
-      if (!session?.user) {
+      const user = auth.currentUser;
+
+      if (!user) {
         throw new Error("کاربر احراز هویت نشده است");
       }
-      
-      // For demo purposes only - in a real app we would process payment through a payment gateway
-      // Simulate successful payment and update user subscription in database
+
+      // Simulate successful payment and update user subscription in Firestore
       setTimeout(async () => {
         try {
-          // Update user_profiles table to include subscription info
-          const { error } = await supabase
-            .from('user_profiles')
-            .update({
-              subscription_plan: selectedPlan.id,
-              subscription_start_date: new Date().toISOString(),
-              subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString() // 30 days from now
-            })
-            .eq('user_id', session.user.id);
-          
-          if (error) throw error;
-          
+          const profileRef = doc(db, "user_profiles", user.uid);
+          await updateDoc(profileRef, {
+            subscription_plan: selectedPlan.id,
+            subscription_start_date: new Date().toISOString(),
+            subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+          });
+
           toast({
             title: "پرداخت موفقیت‌آمیز",
             description: `اشتراک ${selectedPlan.title} با موفقیت فعال شد.`,
           });
-          
+
           navigate("/home");
         } catch (error) {
-          console.error('Error updating subscription:', error);
+          console.error("Error updating subscription:", error);
           toast({
             title: "خطا در ثبت اشتراک",
             description: "مشکلی در ثبت اشتراک رخ داد. لطفاً دوباره تلاش کنید.",
-            variant: "destructive"
+            variant: "destructive",
           });
         } finally {
           setIsProcessing(false);
         }
       }, 1500);
     } catch (error) {
-      console.error('Payment error:', error);
+      console.error("Payment error:", error);
       toast({
         title: "خطا در پرداخت",
         description: "مشکلی در فرآیند پرداخت رخ داد. لطفاً دوباره تلاش کنید.",
-        variant: "destructive"
+        variant: "destructive",
       });
       setIsProcessing(false);
     }

@@ -1,11 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { Dumbbell, User, Menu, Bell, BarChart, Flame } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
-import { supabase } from "@/integrations/supabase/client";
+import { auth } from "@/integrations/firebase/firebaseConfig";
+import { onAuthStateChanged } from "firebase/auth";
 
 const Header: React.FC = () => {
   const [weekNumber, setWeekNumber] = useState(8);
@@ -16,16 +16,14 @@ const Header: React.FC = () => {
   
   // Get user data
   useEffect(() => {
-    const getUser = async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (session?.user) {
-        const { user } = session;
-        const name = user.user_metadata?.full_name || user.email?.split('@')[0] || "کاربر";
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (user) {
+        const name = user.displayName || user.email?.split('@')[0] || "کاربر";
         setUsername(name);
       }
-    };
-    
-    getUser();
+    });
+
+    return () => unsubscribe();
   }, []);
 
   return (

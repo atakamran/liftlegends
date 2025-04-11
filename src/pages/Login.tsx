@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -80,9 +79,9 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-black to-gray-800 p-4">
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900/20 to-transparent pointer-events-none"></div>
-      <Card className="w-full max-w-md glass-container bg-white/5 backdrop-blur-md border-white/10">
+    <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-200 to-gray-400 p-4">
+      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-white/70 to-transparent pointer-events-none"></div>
+      <Card className="w-full max-w-md glass-container bg-white/80 backdrop-blur-md border-gray-300">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
             <img 

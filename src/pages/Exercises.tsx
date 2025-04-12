@@ -8,6 +8,7 @@ import ExerciseCard from "@/components/workout/ExerciseCard";
 import { MuscleGroup, Exercise } from "@/types";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import AdvisorChat from "@/components/workout/AdvisorChat";
 
 const muscleGroups: MuscleGroup[] = [
   'کل بدن',
@@ -86,6 +87,9 @@ const ExercisesPage = () => {
           </DialogContent>
         )}
       </Dialog>
+      
+      {/* Add the AdvisorChat component */}
+      <AdvisorChat />
     </AppLayout>
   );
 };

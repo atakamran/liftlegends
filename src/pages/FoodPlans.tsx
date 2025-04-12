@@ -1,9 +1,10 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Apple, UtensilsCrossed, Lock, Loader2 } from "lucide-react";
-import { getCurrentUserProfile } from "@/services/profileService"; // Import the function to fetch user profile
+import { hasFeatureAccess } from "@/services/subscriptionService";
 import { Button } from "@/components/ui/button";
 
 const FoodPlans = () => {
@@ -14,14 +15,10 @@ const FoodPlans = () => {
   useEffect(() => {
     const checkAccess = async () => {
       try {
-        const profile = await getCurrentUserProfile();
-        if (profile.subscription_plan === "ultimate") {
-          setCanAccessFoodPlans(true);
-        } else {
-          setCanAccessFoodPlans(false);
-        }
+        const hasAccess = await hasFeatureAccess("food_plans");
+        setCanAccessFoodPlans(hasAccess);
       } catch (error) {
-        console.error("Error fetching user profile: ", error);
+        console.error("Error checking access: ", error);
         setCanAccessFoodPlans(false);
       } finally {
         setIsLoading(false);

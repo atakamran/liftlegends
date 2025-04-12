@@ -1,1 +1,0 @@
-// This file is no longer needed as Supabase is replaced with Firebase. You can safely delete it.

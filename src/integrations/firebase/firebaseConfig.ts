@@ -1,3 +1,4 @@
+
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
 import { getAuth } from "firebase/auth";
@@ -9,7 +10,7 @@ const firebaseConfig = {
   apiKey: "AIzaSyDgL8h6R10Xf4xGtSDTVqgoqF_R6MndL7Y",
   authDomain: "lift-legends-app.firebaseapp.com",
   projectId: "lift-legends-app",
-  storageBucket: "lift-legends-app.firebasestorage.app",
+  storageBucket: "lift-legends-app.appspot.com",
   messagingSenderId: "424171382414",
   appId: "1:424171382414:web:240af6a8856362619a8bdf",
   measurementId: "G-XFPT47SKLW"

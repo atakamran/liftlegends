@@ -9,6 +9,7 @@ import NotFound from "./pages/NotFound";
 import ExercisesPage from "./pages/Exercises";
 import WorkoutTracker from "./pages/WorkoutTracker";
 import Profile from "./pages/Profile";
+import PersonalInfo from "./pages/PersonalInfo";
 import AiPlanner from "./pages/AiPlanner";
 import SplashScreen from "./pages/SplashScreen";
 import Login from "./pages/Login";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/exercises" element={<ExercisesPage />} />
             <Route path="/workout-tracker" element={<WorkoutTracker />} />
             <Route path="/profile" element={<Profile />} />
+            <Route path="/personal-info" element={<PersonalInfo />} />
             <Route path="/ai-planner" element={<AiPlanner />} />
             <Route path="/food-plans" element={<FoodPlans />} />
             <Route path="/supplements" element={<Supplements />} />

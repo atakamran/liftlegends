@@ -12,9 +12,21 @@ import { auth } from "@/integrations/firebase/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/firebaseConfig";
 import { 
-  UserIcon, CrownIcon, MoonIcon, BellIcon, 
-  HeadphonesIcon, InfoIcon, LogOutIcon, ChevronRightIcon 
-} from "lucide-react";
+  ProfileIcon, 
+  CrownIcon, 
+  MoonIcon, 
+  BellIcon, 
+  HeadphonesIcon, 
+  InfoIcon, 
+  LogOutIcon,
+  SettingsIcon, 
+  ShieldCheckIcon,
+  CalendarIcon,
+  BadgeCheckIcon,
+  HeartIcon,
+  DumbbellIcon,
+  StarIcon
+} from "@/icons";
 import { useNavigate } from "react-router-dom";
 
 const Profile = () => {
@@ -143,38 +155,45 @@ const Profile = () => {
   const menuItems = [
     {
       title: "مشخصات فردی",
-      icon: <UserIcon className="h-5 w-5" />,
+      icon: <ProfileIcon className="h-5 w-5" />,
       onClick: () => setIsPersonalInfoOpen(!isPersonalInfoOpen),
+      bgColor: "bg-gradient-to-r from-purple-500 to-indigo-600",
     },
     {
       title: "خرید اشتراک",
       icon: <CrownIcon className="h-5 w-5" />,
       onClick: () => navigate("/subscription-plans"),
+      bgColor: "bg-gradient-to-r from-amber-500 to-yellow-400",
     },
     {
-      title: "رنگ برنامه",
+      title: "تنظیمات ظاهری",
       icon: <MoonIcon className="h-5 w-5" />,
       onClick: () => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." }),
+      bgColor: "bg-gradient-to-r from-blue-500 to-cyan-400",
     },
     {
-      title: "یادآوری",
+      title: "یادآوری تمرین",
       icon: <BellIcon className="h-5 w-5" />,
       onClick: () => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." }),
+      bgColor: "bg-gradient-to-r from-orange-500 to-red-400",
     },
     {
       title: "پشتیبانی",
       icon: <HeadphonesIcon className="h-5 w-5" />,
       onClick: () => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." }),
+      bgColor: "bg-gradient-to-r from-emerald-500 to-green-400",
     },
     {
       title: "درباره ما",
       icon: <InfoIcon className="h-5 w-5" />,
-      onClick: () => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." }),
+      onClick: () => navigate("/about-us"),
+      bgColor: "bg-gradient-to-r from-gray-600 to-gray-500",
     },
     {
       title: "خروج از حساب",
       icon: <LogOutIcon className="h-5 w-5" />,
       onClick: handleLogout,
+      bgColor: "bg-gradient-to-r from-rose-600 to-pink-500",
     },
   ];
 
@@ -194,22 +213,25 @@ const Profile = () => {
         <h1 className="text-2xl font-bold mb-6 text-center">پروفایل</h1>
         
         {/* User Profile Card */}
-        <Card className="mb-6">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="flex-1">
+        <Card className="mb-6 overflow-hidden">
+          <div className="h-16 bg-gradient-to-r from-purple-600 to-blue-500"></div>
+          <CardContent className="p-6 flex items-center justify-between relative">
+            <div className="flex-1 z-10">
               <h2 className="text-xl font-bold">{formData.name || userData.displayName || "کاربر"}</h2>
               <p className="text-gray-600 text-sm mt-1 ltr:text-left rtl:text-right">
                 {userData.phoneNumber || userData.email}
               </p>
             </div>
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              <UserIcon className="h-8 w-8 text-gray-400" />
+            <div className="w-20 h-20 rounded-full bg-white border-4 border-white shadow-lg flex items-center justify-center overflow-hidden absolute top-0 right-6 transform -translate-y-1/2">
+              <div className="w-full h-full bg-gradient-to-br from-purple-500 to-blue-500 flex items-center justify-center">
+                <ProfileIcon className="h-10 w-10 text-white" />
+              </div>
             </div>
           </CardContent>
         </Card>
         
         {/* Subscription Status Card */}
-        <Card className="mb-6 bg-slate-700 text-white">
+        <Card className="mb-6 bg-gradient-to-r from-purple-900 to-indigo-800 text-white overflow-hidden">
           <CardContent className="p-6 flex items-center justify-between">
             <div className="flex-1">
               <h2 className="text-lg font-semibold">
@@ -217,27 +239,41 @@ const Profile = () => {
                   ? "اشتراک شما فعال است" 
                   : "در حال حاضر اشتراک فعال ندارید"}
               </h2>
+              {subscriptionStatus === "active" && (
+                <div className="flex items-center mt-2">
+                  <BadgeCheckIcon className="h-5 w-5 mr-1 text-emerald-300" />
+                  <span className="text-sm text-emerald-300">کاربر ویژه</span>
+                </div>
+              )}
             </div>
-            <CrownIcon className="h-6 w-6" />
+            <div className="bg-white/10 p-3 rounded-full">
+              <CrownIcon className="h-8 w-8 text-amber-300" />
+            </div>
           </CardContent>
         </Card>
         
         {/* Menu Options */}
         <Card>
           <CardContent className="p-4">
-            <div className="space-y-0 divide-y">
+            <div className="space-y-2">
               {menuItems.map((item, index) => (
                 <button
                   key={index}
-                  className="w-full py-4 px-2 flex items-center justify-between hover:bg-gray-50 transition-colors rounded-md"
+                  className="w-full py-4 px-4 flex items-center justify-between hover:bg-gray-50 transition-colors rounded-lg"
                   onClick={item.onClick}
                 >
                   <div className="flex items-center">
-                    <ChevronRightIcon className="h-5 w-5 ml-2 rtl:rotate-180" />
+                    <div className={`${item.bgColor} p-3 rounded-full mr-3`}>
+                      <div className="text-white">
+                        {item.icon}
+                      </div>
+                    </div>
                     <span className="text-lg">{item.title}</span>
                   </div>
-                  <div className="bg-slate-200 p-3 rounded-full">
-                    {item.icon}
+                  <div className="text-gray-400">
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 rtl:rotate-180" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M7.293 14.707a1 1 0 010-1.414L10.586 10 7.293 6.707a1 1 0 011.414-1.414l4 4a1 1 0 010 1.414l-4 4a1 1 0 01-1.414 0z" clipRule="evenodd" />
+                    </svg>
                   </div>
                 </button>
               ))}
@@ -249,7 +285,10 @@ const Profile = () => {
         {isPersonalInfoOpen && (
           <Card className="mt-6 animate-in slide-in-from-top duration-300">
             <CardContent className="p-6">
-              <h3 className="text-xl font-bold mb-4">ویرایش اطلاعات شخصی</h3>
+              <h3 className="text-xl font-bold mb-4 flex items-center">
+                <DumbbellIcon className="h-5 w-5 mr-2 text-purple-600" />
+                ویرایش اطلاعات شخصی
+              </h3>
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name">نام</Label>
@@ -259,6 +298,7 @@ const Profile = () => {
                     value={formData.name}
                     onChange={handleChange}
                     placeholder="نام خود را وارد کنید"
+                    className="border-purple-200 focus:border-purple-400"
                   />
                 </div>
 
@@ -449,10 +489,10 @@ const Profile = () => {
                 </div>
 
                 <div className="flex gap-2">
-                  <Button type="submit" disabled={saving} className="flex-1">
+                  <Button type="submit" disabled={saving} className="flex-1 bg-purple-600 hover:bg-purple-700">
                     {saving ? "در حال ذخیره..." : "ذخیره تغییرات"}
                   </Button>
-                  <Button type="button" variant="outline" onClick={() => setIsPersonalInfoOpen(false)} className="flex-1">
+                  <Button type="button" variant="outline" onClick={() => setIsPersonalInfoOpen(false)} className="flex-1 border-purple-200">
                     انصراف
                   </Button>
                 </div>

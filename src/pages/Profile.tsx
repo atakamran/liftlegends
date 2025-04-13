@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
@@ -27,7 +28,7 @@ const Profile = () => {
     training_place: "",
     dietary_restrictions: "no",
     takes_supplements: "no",
-    steroids_interest: "",
+    steroids_interest: "no",
   });
 
   useEffect(() => {
@@ -106,7 +107,7 @@ const Profile = () => {
           </CardHeader>
           <CardContent>
             <form onSubmit={handleSubmit} className="space-y-6">
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="name">نام</Label>
                 <Input
                   id="name"
@@ -117,21 +118,25 @@ const Profile = () => {
                 />
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label>جنسیت</Label>
                 <RadioGroup
                   value={formData.gender}
                   onValueChange={(value) => handleSelectChange("gender", value)}
-                  className="flex space-x-4"
+                  className="flex flex-row space-x-4 space-x-reverse mt-2"
                 >
-                  <RadioGroupItem value="male" id="male" />
-                  <Label htmlFor="male">مرد</Label>
-                  <RadioGroupItem value="female" id="female" />
-                  <Label htmlFor="female">زن</Label>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="male" id="gender-male" />
+                    <Label htmlFor="gender-male" className="mr-2">مرد</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="female" id="gender-female" />
+                    <Label htmlFor="gender-female" className="mr-2">زن</Label>
+                  </div>
                 </RadioGroup>
               </div>
 
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="age">سن</Label>
                 <Input
                   id="age"
@@ -143,31 +148,32 @@ const Profile = () => {
                 />
               </div>
 
-              <div>
-                <Label htmlFor="height">قد (سانتی‌متر)</Label>
-                <Input
-                  id="height"
-                  name="height"
-                  type="number"
-                  value={formData.height}
-                  onChange={handleChange}
-                  placeholder="قد خود را وارد کنید"
-                />
+              <div className="grid grid-cols-2 gap-4">
+                <div className="space-y-2">
+                  <Label htmlFor="height">قد (سانتی‌متر)</Label>
+                  <Input
+                    id="height"
+                    name="height"
+                    type="number"
+                    value={formData.height}
+                    onChange={handleChange}
+                    placeholder="قد به سانتی‌متر"
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label htmlFor="weight">وزن (کیلوگرم)</Label>
+                  <Input
+                    id="weight"
+                    name="weight"
+                    type="number"
+                    value={formData.weight}
+                    onChange={handleChange}
+                    placeholder="وزن به کیلوگرم"
+                  />
+                </div>
               </div>
 
-              <div>
-                <Label htmlFor="weight">وزن (کیلوگرم)</Label>
-                <Input
-                  id="weight"
-                  name="weight"
-                  type="number"
-                  value={formData.weight}
-                  onChange={handleChange}
-                  placeholder="وزن خود را وارد کنید"
-                />
-              </div>
-
-              <div>
+              <div className="space-y-2">
                 <Label htmlFor="primary_goal">هدف اصلی</Label>
                 <Select
                   value={formData.primary_goal}
@@ -179,12 +185,126 @@ const Profile = () => {
                   <SelectContent>
                     <SelectItem value="weight-loss">کاهش وزن</SelectItem>
                     <SelectItem value="muscle-gain">افزایش عضله</SelectItem>
+                    <SelectItem value="competition">مسابقه فیزیک / بدنسازی</SelectItem>
                     <SelectItem value="fitness">تناسب اندام</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
 
-              <Button type="submit" disabled={saving}>
+              <div className="space-y-2">
+                <Label htmlFor="fitness_level">سطح آمادگی</Label>
+                <Select
+                  value={formData.fitness_level}
+                  onValueChange={(value) => handleSelectChange("fitness_level", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="سطح آمادگی خود را انتخاب کنید" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="beginner">مبتدی</SelectItem>
+                    <SelectItem value="intermediate">متوسط</SelectItem>
+                    <SelectItem value="advanced">پیشرفته</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="training_days_per_week">تعداد روزهای تمرین در هفته</Label>
+                <Select
+                  value={formData.training_days_per_week}
+                  onValueChange={(value) => handleSelectChange("training_days_per_week", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="انتخاب کنید" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">۱ روز</SelectItem>
+                    <SelectItem value="2">۲ روز</SelectItem>
+                    <SelectItem value="3">۳ روز</SelectItem>
+                    <SelectItem value="4">۴ روز</SelectItem>
+                    <SelectItem value="5">۵ روز</SelectItem>
+                    <SelectItem value="6">۶ روز</SelectItem>
+                    <SelectItem value="7">۷ روز</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="training_place">مکان تمرین</Label>
+                <Select
+                  value={formData.training_place}
+                  onValueChange={(value) => handleSelectChange("training_place", value)}
+                >
+                  <SelectTrigger>
+                    <SelectValue placeholder="انتخاب کنید" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="gym">باشگاه</SelectItem>
+                    <SelectItem value="home">خانه</SelectItem>
+                    <SelectItem value="no-equipment">بدون تجهیزات</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+
+              <div className="space-y-2">
+                <Label>محدودیت غذایی</Label>
+                <RadioGroup
+                  value={formData.dietary_restrictions?.toString()}
+                  onValueChange={(value) => handleSelectChange("dietary_restrictions", value)}
+                  className="flex flex-row space-x-4 space-x-reverse mt-2"
+                >
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="yes" id="diet-yes" />
+                    <Label htmlFor="diet-yes" className="mr-2">دارم</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="no" id="diet-no" />
+                    <Label htmlFor="diet-no" className="mr-2">ندارم</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-2">
+                <Label>مکمل مصرف می‌کنی؟</Label>
+                <RadioGroup
+                  value={formData.takes_supplements?.toString()}
+                  onValueChange={(value) => handleSelectChange("takes_supplements", value)}
+                  className="flex flex-row space-x-4 space-x-reverse mt-2"
+                >
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="yes" id="supplements-yes" />
+                    <Label htmlFor="supplements-yes" className="mr-2">بله</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="no" id="supplements-no" />
+                    <Label htmlFor="supplements-no" className="mr-2">نه</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <div className="space-y-2">
+                <Label>مایل به استفاده از استروئید هستی؟</Label>
+                <RadioGroup
+                  value={formData.steroids_interest}
+                  onValueChange={(value) => handleSelectChange("steroids_interest", value)}
+                  className="flex flex-row space-x-4 space-x-reverse mt-2"
+                >
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="yes" id="steroids-yes" />
+                    <Label htmlFor="steroids-yes" className="mr-2">بله</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="no" id="steroids-no" />
+                    <Label htmlFor="steroids-no" className="mr-2">نه</Label>
+                  </div>
+                  <div className="flex items-center space-x-2 space-x-reverse">
+                    <RadioGroupItem value="need-more-info" id="steroids-dont-know" />
+                    <Label htmlFor="steroids-dont-know" className="mr-2">نمی‌دونم</Label>
+                  </div>
+                </RadioGroup>
+              </div>
+
+              <Button type="submit" disabled={saving} className="w-full">
                 {saving ? "در حال ذخیره..." : "ذخیره پروفایل"}
               </Button>
             </form>

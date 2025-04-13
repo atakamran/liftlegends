@@ -16,18 +16,7 @@ import {
   Headphones,
   Info,
   LogOut,
-  Crown,
-  Users,
-  Star,
-  Trophy,
-  Dumbbell,
-  LayoutDashboard,
-  Heart,
-  BadgeCheck,
-  Settings,
-  MessageCircle,
-  Calendar,
-  ShieldCheck
+  Crown
 } from "lucide-react";
 
 export const HomeIcon = Home;
@@ -47,14 +36,3 @@ export const HeadphonesIcon = Headphones;
 export const InfoIcon = Info;
 export const LogOutIcon = LogOut;
 export const CrownIcon = Crown;
-export const UsersIcon = Users;
-export const StarIcon = Star;
-export const TrophyIcon = Trophy;
-export const DumbbellIcon = Dumbbell;
-export const DashboardIcon = LayoutDashboard;
-export const HeartIcon = Heart;
-export const BadgeCheckIcon = BadgeCheck;
-export const SettingsIcon = Settings;
-export const MessageCircleIcon = MessageCircle;
-export const CalendarIcon = Calendar;
-export const ShieldCheckIcon = ShieldCheck;

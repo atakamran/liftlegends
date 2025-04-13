@@ -1,8 +1,10 @@
+
 import React from "react";
 import Header from "./Header";
 import Footer from "./Footer";
 import { cn } from "@/lib/utils";
 import { useLocation } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -12,11 +14,12 @@ interface AppLayoutProps {
 const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => {
   const location = useLocation();
   const isHomePage = location.pathname === "/home";
+  const { theme } = useTheme();
 
   return (
-    <div className="flex flex-col min-h-screen bg-white">
+    <div className={`flex flex-col min-h-screen bg-background`}>
       {/* Background gradient */}
-      <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100 to-transparent pointer-events-none"></div>
+      <div className={`absolute inset-0 ${theme === 'light' ? 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100 to-transparent' : 'bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-900 to-transparent'} pointer-events-none`}></div>
 
       {/* Header */}
       <Header />
@@ -29,7 +32,7 @@ const AppLayout: React.FC<AppLayoutProps> = ({ children, className }) => {
           className
         )}
       >
-        <div className="glass-container bg-white/90 backdrop-blur-md rounded-xl border border-gray-100 shadow-lg p-4 sm:p-6 md:p-8">
+        <div className={`glass-container ${theme === 'light' ? 'bg-white/90' : 'bg-black/90'} backdrop-blur-md rounded-xl border border-gray-100 dark:border-gray-800 shadow-lg p-4 sm:p-6 md:p-8`}>
           {children}
         </div>
       </main>

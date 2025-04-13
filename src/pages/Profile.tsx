@@ -7,19 +7,23 @@ import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Switch } from "@/components/ui/switch";
 import { useToast } from "@/hooks/use-toast";
 import { auth } from "@/integrations/firebase/firebaseConfig";
 import { doc, getDoc, setDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/firebaseConfig";
 import { 
   UserIcon, CrownIcon, MoonIcon, BellIcon, 
-  HeadphonesIcon, InfoIcon, LogOutIcon, ChevronRightIcon 
+  HeadphonesIcon, InfoIcon, LogOutIcon, ChevronRightIcon, 
+  SunIcon
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 
 const Profile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
+  const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [isPersonalInfoOpen, setIsPersonalInfoOpen] = useState(false);
@@ -153,8 +157,24 @@ const Profile = () => {
     },
     {
       title: "رنگ برنامه",
-      icon: <MoonIcon className="h-5 w-5" />,
-      onClick: () => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." }),
+      icon: theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />,
+      onClick: () => {
+        toggleTheme();
+        toast({ 
+          title: theme === 'light' ? "حالت تاریک فعال شد" : "حالت روشن فعال شد", 
+          description: theme === 'light' ? "تم برنامه به حالت تاریک تغییر کرد." : "تم برنامه به حالت روشن تغییر کرد." 
+        });
+      },
+      component: (
+        <div className="flex items-center space-x-2 rtl:space-x-reverse">
+          <Label htmlFor="theme-mode">{theme === 'light' ? 'تاریک' : 'روشن'}</Label>
+          <Switch
+            id="theme-mode"
+            checked={theme === 'dark'}
+            onCheckedChange={toggleTheme}
+          />
+        </div>
+      ),
     },
     {
       title: "یادآوری",
@@ -169,7 +189,7 @@ const Profile = () => {
     {
       title: "درباره ما",
       icon: <InfoIcon className="h-5 w-5" />,
-      onClick: () => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." }),
+      onClick: () => navigate("/about-us"),
     },
     {
       title: "خروج از حساب",
@@ -198,18 +218,18 @@ const Profile = () => {
           <CardContent className="p-6 flex items-center justify-between">
             <div className="flex-1">
               <h2 className="text-xl font-bold">{formData.name || userData.displayName || "کاربر"}</h2>
-              <p className="text-gray-600 text-sm mt-1 ltr:text-left rtl:text-right">
+              <p className="text-muted-foreground text-sm mt-1 ltr:text-left rtl:text-right">
                 {userData.phoneNumber || userData.email}
               </p>
             </div>
-            <div className="w-16 h-16 rounded-full bg-gray-200 flex items-center justify-center overflow-hidden">
-              <UserIcon className="h-8 w-8 text-gray-400" />
+            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
+              <UserIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
         
         {/* Subscription Status Card */}
-        <Card className="mb-6 bg-slate-700 text-white">
+        <Card className={`mb-6 ${theme === 'light' ? 'bg-slate-700' : 'bg-slate-900'} text-white`}>
           <CardContent className="p-6 flex items-center justify-between">
             <div className="flex-1">
               <h2 className="text-lg font-semibold">
@@ -225,19 +245,22 @@ const Profile = () => {
         {/* Menu Options */}
         <Card>
           <CardContent className="p-4">
-            <div className="space-y-0 divide-y">
+            <div className="space-y-0 divide-y dark:divide-gray-800">
               {menuItems.map((item, index) => (
                 <button
                   key={index}
-                  className="w-full py-4 px-2 flex items-center justify-between hover:bg-gray-50 transition-colors rounded-md"
+                  className="w-full py-4 px-2 flex items-center justify-between hover:bg-secondary transition-colors rounded-md"
                   onClick={item.onClick}
                 >
                   <div className="flex items-center">
                     <ChevronRightIcon className="h-5 w-5 ml-2 rtl:rotate-180" />
                     <span className="text-lg">{item.title}</span>
                   </div>
-                  <div className="bg-slate-200 p-3 rounded-full">
-                    {item.icon}
+                  <div className="flex items-center">
+                    {item.component && <div className="ml-4">{item.component}</div>}
+                    <div className="bg-secondary p-3 rounded-full">
+                      {item.icon}
+                    </div>
                   </div>
                 </button>
               ))}

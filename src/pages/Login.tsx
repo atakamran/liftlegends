@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -142,6 +143,10 @@ const Login = () => {
     }
   };
 
+  const goToNewRegistrationFlow = () => {
+    navigate("/register");
+  };
+
   return (
     <div className="flex min-h-screen items-center justify-center bg-gradient-to-br from-gray-50 to-gray-200 p-4">
       <div className="absolute inset-0 bg-[radial-gradient(ellipse_at_top,_var(--tw-gradient-stops))] from-gray-100/50 to-transparent pointer-events-none"></div>
@@ -199,49 +204,64 @@ const Login = () => {
               </Button>
             </TabsContent>
             <TabsContent value="signup">
-              <form onSubmit={handleSignUp} className="space-y-4">
-                <div className="space-y-2">
-                  <Label htmlFor="name">نام</Label>
-                  <Input
-                    id="name"
-                    type="text"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
-                  <Input
-                    id="email"
-                    type="text"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label htmlFor="password">رمز عبور</Label>
-                  <Input
-                    id="password"
-                    type="password"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                  />
-                </div>
-                <Button type="submit" className="w-full" disabled={isLoading}>
-                  {isLoading ? "در حال پردازش..." : "ثبت نام"}
+              <div className="space-y-4">
+                <Button 
+                  className="w-full bg-blue-500 hover:bg-blue-600 transition-colors"
+                  onClick={goToNewRegistrationFlow}
+                >
+                  شروع ثبت‌نام با شماره موبایل
                 </Button>
-              </form>
-              <Button
-                variant="outline"
-                className="w-full mt-4"
-                onClick={handleGoogleSignIn}
-                disabled={isLoading}
-              >
-                ثبت نام با گوگل
-              </Button>
+                
+                <div className="relative flex py-5 items-center">
+                  <div className="flex-grow border-t border-gray-300"></div>
+                  <span className="flex-shrink mx-4 text-gray-400">یا</span>
+                  <div className="flex-grow border-t border-gray-300"></div>
+                </div>
+                
+                <form onSubmit={handleSignUp} className="space-y-4">
+                  <div className="space-y-2">
+                    <Label htmlFor="name">نام</Label>
+                    <Input
+                      id="name"
+                      type="text"
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="email">ایمیل یا شماره تلفن</Label>
+                    <Input
+                      id="email"
+                      type="text"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <div className="space-y-2">
+                    <Label htmlFor="password">رمز عبور</Label>
+                    <Input
+                      id="password"
+                      type="password"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                    />
+                  </div>
+                  <Button type="submit" className="w-full" disabled={isLoading}>
+                    {isLoading ? "در حال پردازش..." : "ثبت نام"}
+                  </Button>
+                </form>
+                <Button
+                  variant="outline"
+                  className="w-full mt-4"
+                  onClick={handleGoogleSignIn}
+                  disabled={isLoading}
+                >
+                  ثبت نام با گوگل
+                </Button>
+              </div>
             </TabsContent>
           </Tabs>
         </CardContent>

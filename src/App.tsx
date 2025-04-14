@@ -13,6 +13,7 @@ import PersonalInfo from "./pages/PersonalInfo";
 import AiPlanner from "./pages/AiPlanner";
 import SplashScreen from "./pages/SplashScreen";
 import Login from "./pages/Login";
+import Registration from "./pages/Registration";
 import ProfileForm from "./pages/ProfileForm";
 import Payment from "./pages/Payment";
 import FoodPlans from "./pages/FoodPlans";
@@ -33,6 +34,7 @@ const App = () => (
           <Routes>
             <Route path="/" element={<SplashScreen />} />
             <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Registration />} />
             <Route path="/profile-form" element={<ProfileForm />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/subscription-plans" element={<SubscriptionPlans />} />

@@ -1,3 +1,4 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -28,7 +29,7 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
           value={phoneNumber}
           onChange={(e) => updatePhoneNumber(e.target.value)}
           placeholder="09123456789"
-          className="bg-gray-800 border-gray-700 text-right text-lg ltr h-14 mb-2"
+          className={`bg-transparent border-gray-700 text-right text-lg ltr h-14 mb-2 ${isDarkTheme ? '' : ''}`}
           dir="ltr"
           required
         />

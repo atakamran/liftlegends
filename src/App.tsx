@@ -1,3 +1,4 @@
+
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -13,7 +14,6 @@ import AiPlanner from "./pages/AiPlanner";
 import SplashScreen from "./pages/SplashScreen";
 import Login from "./pages/Login";
 import Registration from "./pages/Registration";
-import ProfileForm from "./pages/ProfileForm";
 import Payment from "./pages/Payment";
 import FoodPlans from "./pages/FoodPlans";
 import Supplements from "./pages/Supplements";
@@ -36,7 +36,6 @@ const App = () => (
             <Route path="/" element={<SplashScreen />} />
             <Route path="/login" element={<Login />} />
             <Route path="/register" element={<Registration />} />
-            <Route path="/profile-form" element={<ProfileForm />} />
             <Route path="/payment" element={<Payment />} />
             <Route path="/subscription-plans" element={<SubscriptionPlans />} />
             <Route path="/home" element={<Index />} />

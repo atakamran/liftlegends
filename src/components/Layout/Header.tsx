@@ -1,22 +1,27 @@
+
 import React, { useState, useEffect } from "react";
-import { Link, useLocation } from "react-router-dom";
+import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Dumbbell } from "lucide-react";
-import { auth } from "@/integrations/firebase/firebaseConfig";
-import { onAuthStateChanged, signOut } from "firebase/auth";
-import { getProfile } from "@/services/profileService"; // Import the getProfile function
+import { db } from "@/integrations/firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 import { useTheme } from "@/context/ThemeContext";
+import { useToast } from "@/hooks/use-toast";
 
 const Header: React.FC = () => {
   const [username, setUsername] = useState("کاربر");
   const location = useLocation();
+  const navigate = useNavigate();
   const isHomePage = location.pathname === "/home";
-  const { theme } = useTheme(); // Access theme from ThemeContext
+  const { theme } = useTheme();
+  const { toast } = useToast();
 
   const handleSignOut = () => {
-    signOut(auth).then(() => {
-      window.location.href = "/login"; // Redirect to login page after sign out
-    }).catch((error) => {
-      console.error("Error signing out: ", error);
+    localStorage.removeItem("userPhoneNumber");
+    localStorage.removeItem("isLoggedIn");
+    navigate("/login");
+    toast({
+      title: "خروج موفق",
+      description: "شما با موفقیت از حساب کاربری خود خارج شدید.",
     });
   };
 
@@ -24,29 +29,38 @@ const Header: React.FC = () => {
   useEffect(() => {
     const fetchUserName = async () => {
       try {
-        const profile = await getProfile();
-        const name = profile?.name || "کاربر";
-        setUsername(name);
+        const phoneNumber = localStorage.getItem("userPhoneNumber");
+        if (!phoneNumber) return;
+        
+        const userRef = doc(db, "user_profiles", phoneNumber);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
+          const name = userData.name || "کاربر";
+          setUsername(name);
+        }
       } catch (error) {
         console.error("Error fetching user profile: ", error);
       }
     };
 
     fetchUserName();
-  }, []);
+  }, [location.pathname]); // Re-fetch when path changes
 
   return (
     <header className="border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-10">
       <div className="container mx-auto px-4 py-3">
         {/* Main Header with Logo */}
-        <div className="flex items-center">
-          <img
-            // src={theme === 'dark' ? '/lovable-uploads/white-logo.png' : '/lovable-uploads/black-logo.png'}
-            src='/lovable-uploads/white-logo.png'
-            alt="Lift Legends Logo"
-            className="h-8 mr-2"
-          />
-          <span className="text-xl font-bold">Lift Legends</span>
+        <div className="flex items-center justify-between">
+          <div className="flex items-center">
+            <img
+              src={theme === 'dark' ? '/lovable-uploads/white-logo.png' : '/lovable-uploads/black-logo.png'}
+              alt="Lift Legends Logo"
+              className="h-8 mr-2"
+            />
+            <span className="text-xl font-bold">Lift Legends</span>
+          </div>
         </div>
         
         {/* Weekly Stats Section - Only shown on homepage */}

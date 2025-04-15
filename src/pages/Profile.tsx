@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -5,13 +6,12 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { auth } from "@/integrations/firebase/firebaseConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "@/integrations/firebase/firebaseConfig";
 import { 
   UserIcon, CrownIcon, MoonIcon, BellIcon, 
   HeadphonesIcon, InfoIcon, LogOutIcon, ChevronRightIcon, 
-  SunIcon
+  SunIcon, Loader2
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
@@ -22,57 +22,74 @@ const Profile = () => {
   const { theme, toggleTheme } = useTheme();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({
-    displayName: "",
-    email: "",
-    phoneNumber: "",
-  });
-  const [formData, setFormData] = useState({
     name: "",
+    phoneNumber: "",
+    age: "",
+    gender: "",
+    height: "",
+    weight: "",
+    fitnessLevel: "",
   });
   const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        setLoading(false);
+      const phoneNumber = localStorage.getItem("userPhoneNumber");
+      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+      
+      if (!phoneNumber || !isLoggedIn) {
+        navigate("/login");
         return;
       }
+      
+      try {
+        // Get profile data from Firestore
+        const profileRef = doc(db, "user_profiles", phoneNumber);
+        const profileSnap = await getDoc(profileRef);
+        
+        if (profileSnap.exists()) {
+          const data = profileSnap.data();
+          setUserData({
+            name: data.name || "کاربر",
+            phoneNumber: phoneNumber,
+            age: data.age || "",
+            gender: data.gender || "",
+            height: data.height || "",
+            weight: data.weight || "",
+            fitnessLevel: data.fitnessLevel || "",
+          });
 
-      // Set user data from auth
-      setUserData({
-        displayName: user.displayName || "",
-        email: user.email || "",
-        phoneNumber: user.phoneNumber || "",
-      });
-
-      // Get profile data from Firestore
-      const profileRef = doc(db, "user_profiles", user.uid);
-      const profileSnap = await getDoc(profileRef);
-      if (profileSnap.exists()) {
-        const data = profileSnap.data();
-        setFormData((prev) => ({
-          ...prev,
-          ...data,
-        }));
-
-        // Check subscription status
-        if (data.subscription_end_date) {
-          const endDate = new Date(data.subscription_end_date);
-          if (endDate > new Date()) {
-            setSubscriptionStatus("active");
+          // Check subscription status
+          if (data.subscription_end_date) {
+            const endDate = new Date(data.subscription_end_date);
+            if (endDate > new Date()) {
+              setSubscriptionStatus("active");
+            }
           }
+        } else {
+          navigate("/phone-login");
         }
+      } catch (error) {
+        console.error("Error fetching profile:", error);
+        toast({
+          title: "خطا در بارگذاری",
+          description: "مشکلی در بارگذاری اطلاعات پروفایل پیش آمد.",
+          variant: "destructive",
+        });
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
 
     fetchUserProfile();
-  }, []);
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
     try {
-      await auth.signOut();
+      // Remove login info from storage
+      localStorage.removeItem("userPhoneNumber");
+      localStorage.removeItem("isLoggedIn");
+      
       navigate("/login");
       toast({
         title: "خروج موفق",
@@ -148,6 +165,7 @@ const Profile = () => {
     return (
       <AppLayout>
         <div className="flex justify-center items-center h-[70vh]">
+          <Loader2 className="h-8 w-8 animate-spin mr-2" />
           <p className="text-lg">در حال بارگذاری...</p>
         </div>
       </AppLayout>
@@ -163,9 +181,9 @@ const Profile = () => {
         <Card className="mb-6">
           <CardContent className="p-6 flex items-center justify-between">
             <div className="flex-1">
-              <h2 className="text-xl font-bold">{formData.name || userData.displayName || "کاربر"}</h2>
+              <h2 className="text-xl font-bold">{userData.name}</h2>
               <p className="text-muted-foreground text-sm mt-1 ltr:text-left rtl:text-right">
-                {userData.phoneNumber || userData.email}
+                {userData.phoneNumber}
               </p>
             </div>
             <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden">

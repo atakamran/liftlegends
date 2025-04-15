@@ -1,26 +1,52 @@
+
 import React, { useState, useEffect } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { Dumbbell, ClipboardList, Library, BarChart, Brain, ChevronRight, Sparkles, Lock } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { getUserPlanInfo, hasFeatureAccess } from "@/services/subscriptionService";
+import { hasFeatureAccess } from "@/services/subscriptionService";
 import { doc, getDoc } from "firebase/firestore";
-import { db, auth } from "@/integrations/firebase/firebaseConfig";
+import { db } from "@/integrations/firebase/firebaseConfig";
 
 const Index = () => {
   const [userPlan, setUserPlan] = useState({ plan: 'basic', label: 'پلن رایگان', isActive: true, remainingTime: "" });
   const [canAccessAI, setCanAccessAI] = useState(false);
   const [canAccessFoodPlans, setCanAccessFoodPlans] = useState(false);
+  const [userData, setUserData] = useState({ name: "", currentWeight: 0, goalWeight: 0 });
+  const navigate = useNavigate();
   
   useEffect(() => {
-    const fetchUserPlan = async () => {
+    const checkAuth = () => {
+      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+      if (!isLoggedIn) {
+        navigate("/login");
+      }
+    };
+    
+    checkAuth();
+  }, [navigate]);
+  
+  useEffect(() => {
+    const fetchUserData = async () => {
       try {
-        const profileRef = doc(db, "user_profiles", auth.currentUser?.uid);
+        const phoneNumber = localStorage.getItem("userPhoneNumber");
+        if (!phoneNumber) return;
+        
+        const profileRef = doc(db, "user_profiles", phoneNumber);
         const profileSnap = await getDoc(profileRef);
 
         if (profileSnap.exists()) {
           const profileData = profileSnap.data();
+          
+          // Set user data
+          setUserData({
+            name: profileData.name || "کاربر",
+            currentWeight: parseFloat(profileData.weight) || 0,
+            goalWeight: parseFloat(profileData.targetWeight) || 0
+          });
+          
+          // Set subscription info
           const { subscription_plan, subscription_start_date, subscription_end_date } = profileData;
 
           if (subscription_plan && subscription_plan !== "basic" && subscription_start_date && subscription_end_date) {
@@ -57,11 +83,11 @@ const Index = () => {
         setCanAccessAI(aiAccess);
         setCanAccessFoodPlans(foodAccess);
       } catch (error) {
-        console.error("Error fetching user plan: ", error);
+        console.error("Error fetching user data: ", error);
       }
     };
 
-    fetchUserPlan();
+    fetchUserData();
   }, []);
 
   const todayWorkout = {
@@ -70,11 +96,6 @@ const Index = () => {
       { name: "پرس سینه", sets: 4, reps: 12 },
       { name: "شنا با دمبل", sets: 3, reps: 10 }
     ]
-  };
-
-  const userStats = {
-    currentWeight: 85, // kg
-    goalWeight: 88, // kg
   };
 
   const planBadgeStyle = `
@@ -137,11 +158,11 @@ const Index = () => {
             <div className="flex justify-between">
               <div>
                 <p className="text-gray-400">وزن فعلی</p>
-                <p className="text-3xl font-bold">{userStats.currentWeight} کیلوگرم</p>
+                <p className="text-3xl font-bold">{userData.currentWeight} کیلوگرم</p>
               </div>
               <div>
                 <p className="text-gray-400">وزن هدف</p>
-                <p className="text-3xl font-bold">{userStats.goalWeight} کیلوگرم</p>
+                <p className="text-3xl font-bold">{userData.goalWeight} کیلوگرم</p>
               </div>
             </div>
           </CardContent>

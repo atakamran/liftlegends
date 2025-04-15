@@ -1,10 +1,11 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import PhoneStep from "@/components/registration/PhoneStep";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
+import { doc, getDoc } from "firebase/firestore";
+import { auth, db } from "@/integrations/firebase/firebaseConfig";
 import "./Login.css";
 
 const PhoneLogin = () => {
@@ -48,8 +49,25 @@ const PhoneLogin = () => {
 
     setTimeout(() => {
       setIsLoading(false);
-      navigate(`/phone-login/verify`);
+      checkAndLoginWithPassword(phoneNumber);
     }, 1000);
+  };
+
+  const checkAndLoginWithPassword = async (phoneNumber: string) => {
+    try {
+      const docRef = doc(db, "user_profiles", phoneNumber);
+      const docSnap = await getDoc(docRef);
+
+      if (docSnap.exists()) {
+        console.log("User found, logging in with password...");
+        navigate("/home"); // Directly navigate to the home page
+      } else {
+        console.log("User not found, please register.");
+        // Optionally handle the case where the user does not exist
+      }
+    } catch (error) {
+      console.error("Error logging in with password:", error);
+    }
   };
 
   return (

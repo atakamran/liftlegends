@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -20,7 +19,6 @@ import Supplements from "./pages/Supplements";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
 import AboutUs from "./pages/AboutUs";
 import PhoneLogin from "./pages/PhoneLogin";
-import VerifyCode from "./pages/VerifyCode";
 import { ThemeProvider } from "./context/ThemeContext";
 
 const queryClient = new QueryClient();
@@ -48,7 +46,6 @@ const App = () => (
             <Route path="/supplements" element={<Supplements />} />
             <Route path="/about-us" element={<AboutUs />} />
             <Route path="/phone-login" element={<PhoneLogin />} />
-            <Route path="/phone-login/verify" element={<VerifyCode />} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

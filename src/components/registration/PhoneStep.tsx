@@ -10,6 +10,8 @@ import { useNavigate } from "react-router-dom";
 interface PhoneStepProps {
   phoneNumber: string;
   updatePhoneNumber: (value: string) => void;
+  password: string;
+  updatePassword: (value: string) => void;
   onSendCode: () => void;
   isLoading: boolean;
   isDarkTheme: boolean;
@@ -18,28 +20,14 @@ interface PhoneStepProps {
 const PhoneStep: React.FC<PhoneStepProps> = ({
   phoneNumber,
   updatePhoneNumber,
+  password,
+  updatePassword,
   onSendCode,
   isLoading,
 }) => {
   const { getButtonGradient, getTextColor, theme } = useTheme();
   const navigate = useNavigate();
 
-  const handleSendCode = async () => {
-    try {
-      const profileRef = doc(db, "user_profiles", phoneNumber);
-      const profileSnap = await getDoc(profileRef);
-
-      if (profileSnap.exists()) {
-        // If the phone number is already registered, navigate to VerifyCode page
-        navigate("/phone-login/verify");
-      } else {
-        // Otherwise, proceed with sending the code
-        onSendCode();
-      }
-    } catch (error) {
-      console.error("Error checking phone number: ", error);
-    }
-  };
 
   return (
     <div className="w-full max-w-md flex flex-col items-center">
@@ -55,13 +43,22 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
           dir="ltr"
           required
         />
+        <Input
+          type="password"
+          value={password}
+          onChange={(e) => updatePassword(e.target.value)}
+          placeholder="رمز عبور"
+          className={`bg-transparent border-gray-700 text-right text-lg ltr h-14 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+          dir="ltr"
+          required
+        />
       </div>
       
       <div className="w-full mb-8">
         <Button 
-          onClick={handleSendCode} 
+          onClick={onSendCode} 
           className={`w-full h-14 text-lg rounded-full ${getButtonGradient()} text-white shadow-lg hover:shadow-xl transition-all duration-300`}
-          disabled={isLoading || !phoneNumber || phoneNumber.length < 11}
+          disabled={isLoading || !phoneNumber || phoneNumber.length < 11 || !password || password.length < 6}
         >
           {isLoading ? (
             <>

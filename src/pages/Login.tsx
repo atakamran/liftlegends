@@ -22,6 +22,12 @@ const Login = () => {
     navigate("/phone-login");
   };
 
+  
+  const goToNewRegistrationFlow = () => {
+    navigate("/register");
+  };
+
+
   return (
     <div className="flex min-h-screen items-center justify-center galaxy-background relative">
       <div className="stars"></div>
@@ -43,10 +49,17 @@ const Login = () => {
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            className={`w-full rounded-full text-lg font-semibold py-3 ${getButtonGradient()} text-white transition-all duration-300 shadow-lg hover:shadow-xl`}
-            onClick={goToPhoneLogin}
+            className="w-full bg-white text-black rounded-full text-lg font-semibold py-3 transition-colors hover:bg-gray-100"
+            onClick={goToNewRegistrationFlow}
           >
-            شروع با شماره موبایل
+            بزن بریم
+          </Button>
+          <Button 
+            variant="outline" 
+            className="w-full rounded-full text-lg font-semibold py-3 border-white text-white hover:bg-gray-800"
+            onClick={() => navigate('/phone-login')}
+          >
+            من اکانت دارم
           </Button>
         </CardContent>
       </Card>

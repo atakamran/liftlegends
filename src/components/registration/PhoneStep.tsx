@@ -1,9 +1,11 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
+import { auth, db } from "@/integrations/firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { useNavigate } from "react-router-dom";
 
 interface PhoneStepProps {
   phoneNumber: string;
@@ -20,6 +22,24 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
   isLoading,
 }) => {
   const { getButtonGradient, getTextColor, theme } = useTheme();
+  const navigate = useNavigate();
+
+  const handleSendCode = async () => {
+    try {
+      const profileRef = doc(db, "user_profiles", phoneNumber);
+      const profileSnap = await getDoc(profileRef);
+
+      if (profileSnap.exists()) {
+        // If the phone number is already registered, navigate to VerifyCode page
+        navigate("/phone-login/verify");
+      } else {
+        // Otherwise, proceed with sending the code
+        onSendCode();
+      }
+    } catch (error) {
+      console.error("Error checking phone number: ", error);
+    }
+  };
 
   return (
     <div className="w-full max-w-md flex flex-col items-center">
@@ -39,7 +59,7 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
       
       <div className="w-full mb-8">
         <Button 
-          onClick={onSendCode} 
+          onClick={handleSendCode} 
           className={`w-full h-14 text-lg rounded-full ${getButtonGradient()} text-white shadow-lg hover:shadow-xl transition-all duration-300`}
           disabled={isLoading || !phoneNumber || phoneNumber.length < 11}
         >

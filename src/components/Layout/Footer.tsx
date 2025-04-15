@@ -113,10 +113,13 @@ const Footer: React.FC = () => {
           </NavLink>
 
           {/* Food Plans */}
-          <div className="flex flex-col items-center text-xs text-white">
+          <button
+            onClick={() => handleNavigation("/food-plans", "food_plans")}
+            className="flex flex-col items-center text-xs text-white"
+          >
             <Apple className="h-6 w-6" />
             <span>تغذیه</span>
-          </div>
+          </button>
         </div>
       </div>
     </footer>

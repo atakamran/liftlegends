@@ -1,4 +1,3 @@
-
 import React from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import { User, Dumbbell, Apple, Pill, Brain } from "lucide-react";
@@ -77,7 +76,7 @@ const Footer: React.FC = () => {
             className="flex flex-col items-center text-xs text-white"
           >
             <Brain className="h-6 w-6" />
-            <span>مربی هوش مصنوعی</span>
+            <span>مربی من</span>
           </button>
 
           {/* Home - Logo in center */}
@@ -114,13 +113,10 @@ const Footer: React.FC = () => {
           </NavLink>
 
           {/* Food Plans */}
-          <button
-            onClick={() => handleNavigation("/food-plans", "food_plans")}
-            className="flex flex-col items-center text-xs text-white"
-          >
+          <div className="flex flex-col items-center text-xs text-white">
             <Apple className="h-6 w-6" />
             <span>تغذیه</span>
-          </button>
+          </div>
         </div>
       </div>
     </footer>

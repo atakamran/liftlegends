@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -244,7 +243,7 @@ const Registration = () => {
       <div className="stars2"></div>
       <div className="stars3"></div>
       <Card className={`w-full max-w-md backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'} mx-4 my-8`}>
-        <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 space-x-4 mb-4">
+        <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 space-x-4 mb-4" style={{ marginBottom: '2rem', paddingBottom: '1rem' }}>
           <Button 
             onClick={handlePreviousStep} 
             className="h-10 w-10 rounded-full bg-transparent hover:bg-white/10 text-white"
@@ -253,6 +252,9 @@ const Registration = () => {
             <ChevronRight className="h-6 w-6 font-bold" />
           </Button>
           <Progress value={progress} className={`flex-1 h-2 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
+        </div>
+        <div 
+        className="h-6">
         </div>
         <CardContent className="space-y-4 pt-12 p-6">
           {renderStep()}

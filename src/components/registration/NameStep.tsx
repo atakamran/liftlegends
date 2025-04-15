@@ -41,10 +41,10 @@ const NameStep: React.FC<NameStepProps> = ({
         <label className="block text-lg mb-2 text-right">تاریخ تولد</label>
         <div className="relative">
           <Input
-            type="text"
+            type="date"
             value={birthDate}
             onChange={(e) => updateBirthDate(e.target.value)}
-            placeholder="1380/01/01"
+            placeholder="yyyy-MM-dd"
             required
             className="bg-gray-800 border-gray-700 text-right h-14 mb-2 pl-10"
           />

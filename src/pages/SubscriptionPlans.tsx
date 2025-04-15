@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -85,6 +84,7 @@ const SubscriptionPlans = () => {
     
     localStorage.setItem("selectedPlan", plan);
     localStorage.setItem("selectedBillingCycle", selectedPlan);
+
     navigate("/payment");
   };
 

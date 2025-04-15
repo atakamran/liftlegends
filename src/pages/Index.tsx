@@ -100,12 +100,7 @@ const Index = () => {
       {/* Welcome Section with Motivational Message */}
       <section className="w-full py-6">
         <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-3xl font-bold">سلام {userData.name}!</h1>
-            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} mt-1`}>
-              "محدودیت‌های خود را به چالش بکشید، تلاش کنید."
-            </p>
-          </div>
+         
           <div>
             <span className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium ${
               userPlan.plan === 'basic' 

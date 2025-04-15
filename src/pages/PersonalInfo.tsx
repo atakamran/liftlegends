@@ -23,31 +23,29 @@ const PersonalInfo = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [isSaving, setIsSaving] = useState(false);
   
-  const [formData, setFormData] = useState({
+  const [userData, setUserData] = useState({
     name: "",
-    age: "",
-    gender: "",
+    goal: "",
     height: "",
-    weight: "",
+    currentWeight: "",
     targetWeight: "",
-    fitnessLevel: "",
+    birthDate: "",
+    gender:"",
   });
+  
 
   useEffect(() => {
     const fetchUserProfile = () => {
       setIsLoading(true);
       try {
-        const phoneNumber = localStorage.getItem("userPhoneNumber");
-        
-        if (!phoneNumber) {
+        const currentUser = localStorage.getItem("currentUser");
+
+        if (!currentUser) {
           navigate("/phone-login");
           return;
         }
-        
-        const userData = localStorage.getItem(`userProfile_${phoneNumber}`);
-        if (userData) {
-          setFormData(JSON.parse(userData));
-        }
+
+        setUserData(JSON.parse(currentUser));
       } catch (error) {
         console.error("Error fetching user profile:", error);
         toast({
@@ -59,12 +57,12 @@ const PersonalInfo = () => {
         setIsLoading(false);
       }
     };
-    
+
     fetchUserProfile();
   }, [navigate, toast]);
   
   const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({
+    setUserData(prev => ({
       ...prev,
       [field]: value
     }));
@@ -75,15 +73,8 @@ const PersonalInfo = () => {
     setIsSaving(true);
     
     try {
-      const phoneNumber = localStorage.getItem("userPhoneNumber");
-      
-      if (!phoneNumber) {
-        navigate("/phone-login");
-        return;
-      }
-      
       // Validate required fields
-      if (!formData.name) {
+      if (!userData.name) {
         toast({
           title: "خطا در ثبت اطلاعات",
           description: "لطفاً نام خود را وارد کنید.",
@@ -93,9 +84,9 @@ const PersonalInfo = () => {
       }
       
       // Save to localStorage
-      localStorage.setItem(`userProfile_${phoneNumber}`, JSON.stringify({
-        ...formData,
-        updatedAt: new Date().toISOString()
+      localStorage.setItem("currentUser", JSON.stringify({
+        ...userData,
+        updatedAt: new Date().toISOString(),
       }));
       
       toast({
@@ -151,40 +142,25 @@ const PersonalInfo = () => {
                 <Label htmlFor="name">نام و نام خانوادگی</Label>
                 <Input
                   id="name"
-                  value={formData.name}
+                  value={userData.name}
                   onChange={(e) => handleChange("name", e.target.value)}
                   placeholder="نام و نام خانوادگی"
                 />
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="age">سن</Label>
-                <Input
-                  id="age"
-                  type="number"
-                  value={formData.age}
-                  onChange={(e) => handleChange("age", e.target.value)}
-                  placeholder="سن"
-                  min="10"
-                  max="100"
-                />
-              </div>
-              
-              <div className="space-y-2">
-                <Label htmlFor="gender">جنسیت</Label>
+                <Label htmlFor="goal">هدف</Label>
                 <Select
-                  value={formData.gender}
-                  onValueChange={(value) => handleChange("gender", value)}
+                  value={userData.goal}
+                  onValueChange={(value) => handleChange('goal', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="انتخاب جنسیت" />
+                    <SelectValue placeholder="انتخاب هدف" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="male">مرد</SelectItem>
-                      <SelectItem value="female">زن</SelectItem>
-                      <SelectItem value="other">سایر</SelectItem>
-                    </SelectGroup>
+                    <SelectItem value="weight_loss">کاهش وزن</SelectItem>
+                    <SelectItem value="muscle_gain">افزایش عضله</SelectItem>
+                    <SelectItem value="maintenance">حفظ وضعیت</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
@@ -194,7 +170,7 @@ const PersonalInfo = () => {
                 <Input
                   id="height"
                   type="number"
-                  value={formData.height}
+                  value={userData.height}
                   onChange={(e) => handleChange("height", e.target.value)}
                   placeholder="قد به سانتی‌متر"
                   min="100"
@@ -203,13 +179,13 @@ const PersonalInfo = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="weight">وزن فعلی (کیلوگرم)</Label>
+                <Label htmlFor="currentWeight">وزن فعلی (کیلوگرم)</Label>
                 <Input
-                  id="weight"
+                  id="currentWeight"
                   type="number"
-                  value={formData.weight}
-                  onChange={(e) => handleChange("weight", e.target.value)}
-                  placeholder="وزن به کیلوگرم"
+                  value={userData.currentWeight}
+                  onChange={(e) => handleChange("currentWeight", e.target.value)}
+                  placeholder="وزن فعلی به کیلوگرم"
                   min="30"
                   max="250"
                   step="0.1"
@@ -221,7 +197,7 @@ const PersonalInfo = () => {
                 <Input
                   id="targetWeight"
                   type="number"
-                  value={formData.targetWeight}
+                  value={userData.targetWeight}
                   onChange={(e) => handleChange("targetWeight", e.target.value)}
                   placeholder="وزن هدف به کیلوگرم"
                   min="30"
@@ -231,21 +207,28 @@ const PersonalInfo = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="fitnessLevel">سطح آمادگی جسمانی</Label>
+                <Label htmlFor="birthDate">تاریخ تولد</Label>
+                <Input
+                  id="birthDate"
+                  type="date"
+                  value={userData.birthDate}
+                  onChange={(e) => handleChange("birthDate", e.target.value)}
+                  placeholder="تاریخ تولد"
+                />
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="gender">جنسیت</Label>
                 <Select
-                  value={formData.fitnessLevel}
-                  onValueChange={(value) => handleChange("fitnessLevel", value)}
+                  value={userData.gender}
+                  onValueChange={(value) => handleChange('gender', value)}
                 >
                   <SelectTrigger>
-                    <SelectValue placeholder="انتخاب سطح" />
+                    <SelectValue placeholder="انتخاب جنسیت" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectGroup>
-                      <SelectItem value="beginner">مبتدی</SelectItem>
-                      <SelectItem value="intermediate">متوسط</SelectItem>
-                      <SelectItem value="advanced">پیشرفته</SelectItem>
-                      <SelectItem value="athlete">حرفه‌ای</SelectItem>
-                    </SelectGroup>
+                    <SelectItem value="male">مرد</SelectItem>
+                    <SelectItem value="female">زن</SelectItem>
                   </SelectContent>
                 </Select>
               </div>

@@ -1,0 +1,13 @@
+{
+  "expo": {
+    "extra": {
+      "eas": {
+        "projectId": "b9019b24-9206-4e9c-904c-8f81eac71a7b"
+      }
+    },
+    "android": {
+      "package": "com.imwolfi.liftlegends"
+    },
+    "entryPoint": "src/App.tsx"
+  }
+}

@@ -11,7 +11,6 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capacitor/android": "^7.2.0",
     "@capacitor/core": "^7.2.0",
     "@capacitor/ios": "^7.2.0",
     "@hookform/resolvers": "^3.9.0",
@@ -50,6 +49,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^4.1.0",
     "embla-carousel-react": "^8.3.0",
+    "expo": "^52.0.46",
     "firebase": "^11.6.0",
     "framer-motion": "^12.6.3",
     "input-otp": "^1.2.4",
@@ -70,6 +70,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@capacitor/android": "^7.2.0",
     "@eslint/js": "^9.9.0",
     "@tailwindcss/typography": "^0.5.15",
     "@types/node": "^22.5.5",

@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -8,18 +7,20 @@ interface ActivityLevelStepProps {
   updateActivityLevel: (value: string) => void;
   onNext: () => void;
   isLoading: boolean;
+  isDarkTheme: boolean;
 }
 
 const ActivityLevelStep: React.FC<ActivityLevelStepProps> = ({
   activityLevel,
   updateActivityLevel,
   onNext,
-  isLoading
+  isLoading,
+  isDarkTheme
 }) => {
   const activityOptions = [
-    { id: "sedentary", label: "خیلی کم", description: "بدون تحرک (ناتوان حرکتی)", emoji: "🧑‍💻" },
-    { id: "light", label: "کم", description: "فعالیت کم روزانه (کارمند یا خانه دار)", emoji: "👨‍💼" },
-    { id: "moderate", label: "متوسط", description: "ورزش سبک روزانه (مثل پیاده روی)", emoji: "🚶" },
+    { id: "sedentary", label: "خیلی کم", description: "بدون تحرک", emoji: "🚶" },
+    { id: "light", label: "کم", description: "فعالیت کم روزانه ", emoji: "👨‍💼" },
+    { id: "moderate", label: "متوسط", description: "ورزش سبک روزانه", emoji: "🚶" },
     { id: "active", label: "زیاد", description: "روزانه دو ساعت ورزش", emoji: "👷" }
   ];
 
@@ -38,7 +39,7 @@ const ActivityLevelStep: React.FC<ActivityLevelStepProps> = ({
             <div className="flex items-center">
               <span className="text-2xl ml-2">{option.emoji}</span>
             </div>
-            <div className="text-right">
+            <div className="text-center flex flex-col items-center">
               <div className="text-lg font-medium">{option.label}</div>
               <div className="text-sm text-gray-300">{option.description}</div>
             </div>
@@ -53,7 +54,7 @@ const ActivityLevelStep: React.FC<ActivityLevelStepProps> = ({
       <div className="w-full">
         <Button 
           onClick={onNext} 
-          className="w-full h-14 text-lg rounded-full bg-blue-500 hover:bg-blue-600"
+          className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
           disabled={isLoading || !activityLevel}
         >
           {isLoading ? (

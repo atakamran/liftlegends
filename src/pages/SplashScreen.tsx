@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
@@ -8,14 +7,27 @@ const SplashScreen = () => {
   const [isAnimationComplete, setIsAnimationComplete] = useState(false);
 
   useEffect(() => {
-    // Navigate to login after animation completes
-    if (isAnimationComplete) {
-      const timer = setTimeout(() => {
+    const timer = setTimeout(() => {
+      // Check if the user is logged in
+      const userToken = localStorage.getItem("userToken");
+      console.log("Retrieved userToken:", userToken); // Debugging log
+      const isLoggedIn = Boolean(userToken);
+      console.log("User logged in status:", isLoggedIn); // Debugging log
+
+      if (isLoggedIn) {
+        console.log("Navigating to /home");
+        navigate("/home");
+      } else {
+        console.log("Navigating to /login");
         navigate("/login");
-      }, 500);
-      return () => clearTimeout(timer);
-    }
-  }, [isAnimationComplete, navigate]);
+      }
+    }, 1000); // 1 second delay
+
+    return () => clearTimeout(timer);
+  }, [navigate]);
+
+  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const logoSrc = isDarkMode ? "/lovable-uploads/black-logo.png" : "/lovable-uploads/white-logo.png";
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background">
@@ -27,11 +39,12 @@ const SplashScreen = () => {
         className="flex flex-col items-center"
       >
         <motion.div
-          animate={{ rotate: 360 }}
-          transition={{ duration: 1, ease: "easeInOut" }}
+          initial={{ scale: 0.8, rotate: 0 }}
+          animate={{ scale: 1, rotate: [0, 10, -10, 0] }}
+          transition={{ duration: 1.5, ease: "easeInOut" }}
         >
           <img 
-            src="/lovable-uploads/28fee595-d948-482e-8443-851c3a7b07c3.png" 
+            src={logoSrc} 
             alt="Lift Legends Logo" 
             className="h-32 w-32 mb-4" 
           />

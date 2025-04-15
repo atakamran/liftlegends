@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Card, CardContent } from "@/components/ui/card";
@@ -101,7 +100,7 @@ const Profile = () => {
       onClick: () => navigate("/subscription-plans"),
     },
     {
-      title: "رنگ برنامه",
+      title: theme === 'light' ? 'تاریک' : 'روشن',
       icon: theme === 'light' ? <MoonIcon className="h-5 w-5" /> : <SunIcon className="h-5 w-5" />,
       onClick: () => {
         toggleTheme();
@@ -111,8 +110,10 @@ const Profile = () => {
         });
       },
       component: (
-        <div className="flex items-center space-x-2 rtl:space-x-reverse">
-          <Label htmlFor="theme-mode">{theme === 'light' ? 'تاریک' : 'روشن'}</Label>
+        <div className="flex items-center justify-start rtl:flex-row-reverse">
+          <Label htmlFor="theme-mode" className="mr-2">
+            
+          </Label>
           <Switch
             id="theme-mode"
             checked={theme === 'dark'}

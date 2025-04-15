@@ -1,11 +1,12 @@
-
 import React from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
+import { useTheme } from "@/context/ThemeContext";
 
 const AboutUs = () => {
   const navigate = useNavigate();
+  const { theme } = useTheme(); // Access theme from ThemeContext
 
   return (
     <AppLayout>
@@ -13,7 +14,7 @@ const AboutUs = () => {
         <div className="flex flex-col items-center mb-10">
           <div className="w-24 h-24 mb-6 flex items-center justify-center">
             <img 
-              src="/lovable-uploads/222bb23c-23f7-4444-95d7-bccc2944cbe5.png" 
+              src={theme === 'dark' ? '/lovable-uploads/white-logo.png' : '/lovable-uploads/black-logo.png'} 
               alt="Lift Legends Logo" 
               className="w-full h-auto"
             />

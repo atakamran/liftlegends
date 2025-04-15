@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -9,13 +8,15 @@ interface PhoneStepProps {
   updatePhoneNumber: (value: string) => void;
   onSendCode: () => void;
   isLoading: boolean;
+  isDarkTheme: boolean;
 }
 
 const PhoneStep: React.FC<PhoneStepProps> = ({
   phoneNumber,
   updatePhoneNumber,
   onSendCode,
-  isLoading
+  isLoading,
+  isDarkTheme
 }) => {
   return (
     <div className="w-full max-w-md flex flex-col items-center">
@@ -29,14 +30,15 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
           placeholder="09123456789"
           className="bg-gray-800 border-gray-700 text-right text-lg ltr h-14 mb-2"
           dir="ltr"
+          required
         />
       </div>
       
       <div className="w-full mb-8">
         <Button 
           onClick={onSendCode} 
-          className="w-full h-14 text-lg rounded-full bg-blue-500 hover:bg-blue-600"
-          disabled={isLoading}
+          className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
+          disabled={isLoading || !phoneNumber}
         >
           {isLoading ? (
             <>
@@ -50,7 +52,7 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
       </div>
       
       <p className="text-sm text-gray-400 text-center">
-        <a href="#" className="text-blue-400">قوانین و مقررات</a>
+        <a href="#" className={`${isDarkTheme ? 'text-white' : 'text-black'} hover:opacity-90`}>قوانین و مقررات</a>
       </p>
     </div>
   );

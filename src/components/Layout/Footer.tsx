@@ -5,10 +5,12 @@ import { cn } from "@/lib/utils";
 import { useToast } from "@/hooks/use-toast";
 import { doc, getDoc } from "firebase/firestore";
 import { auth, db } from "@/integrations/firebase/firebaseConfig";
+import { useTheme } from "@/context/ThemeContext";
 
 const Footer: React.FC = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme } = useTheme(); // Access theme from ThemeContext
 
   const handleNavigation = async (path: string, feature?: 'food_plans' | 'supplements' | 'steroids' | 'ai_assistant') => {
     try {
@@ -85,15 +87,15 @@ const Footer: React.FC = () => {
             className={({ isActive }) =>
               cn(
                 "flex flex-col items-center text-xs text-white",
-                isActive ? "relative bg-white text-black rounded-full p-2" : "opacity-50"
+                isActive ? "opacity-100" : "opacity-50"
               )
             }
           >
             <div className="flex items-center justify-center">
               <img 
-                src="/lovable-uploads/28fee595-d948-482e-8443-851c3a7b07c3.png"
-                alt="Lift Legends"
-                className="h-6 w-6"
+                src='/lovable-uploads/white-logo.png' 
+                alt="Lift Legends Logo" 
+                className="h-8"
               />
             </div>
             <span>لیفت جنرز</span>

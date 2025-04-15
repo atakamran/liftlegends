@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -13,6 +12,7 @@ interface PhysicalInfoStepProps {
   updateTargetWeight: (value: string) => void;
   onNext: () => void;
   isLoading: boolean;
+  isDarkTheme: boolean;
 }
 
 const PhysicalInfoStep: React.FC<PhysicalInfoStepProps> = ({
@@ -23,7 +23,8 @@ const PhysicalInfoStep: React.FC<PhysicalInfoStepProps> = ({
   targetWeight,
   updateTargetWeight,
   onNext,
-  isLoading
+  isLoading,
+  isDarkTheme
 }) => {
   return (
     <div className="w-full max-w-md flex flex-col items-center">
@@ -37,6 +38,7 @@ const PhysicalInfoStep: React.FC<PhysicalInfoStepProps> = ({
             value={currentWeight}
             onChange={(e) => updateCurrentWeight(e.target.value)}
             className="bg-gray-800 border-gray-700 text-right h-14 pr-4 pl-24"
+            required
           />
           <span className="absolute left-4 top-0 h-14 flex items-center text-gray-400">
             کیلوگرم
@@ -54,6 +56,7 @@ const PhysicalInfoStep: React.FC<PhysicalInfoStepProps> = ({
             value={height}
             onChange={(e) => updateHeight(e.target.value)}
             className="bg-gray-800 border-gray-700 text-right h-14 pr-4 pl-24"
+            required
           />
           <span className="absolute left-4 top-0 h-14 flex items-center text-gray-400">
             سانتی‌متر
@@ -71,6 +74,7 @@ const PhysicalInfoStep: React.FC<PhysicalInfoStepProps> = ({
             value={targetWeight}
             onChange={(e) => updateTargetWeight(e.target.value)}
             className="bg-gray-800 border-gray-700 text-right h-14 pr-4 pl-24"
+            required
           />
           <span className="absolute left-4 top-0 h-14 flex items-center text-gray-400">
             کیلوگرم
@@ -81,8 +85,8 @@ const PhysicalInfoStep: React.FC<PhysicalInfoStepProps> = ({
       <div className="w-full">
         <Button 
           onClick={onNext} 
-          className="w-full h-14 text-lg rounded-full bg-blue-500 hover:bg-blue-600"
-          disabled={isLoading}
+          className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
+          disabled={isLoading || !currentWeight || !height || !targetWeight}
         >
           {isLoading ? (
             <>

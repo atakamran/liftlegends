@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -8,13 +7,15 @@ interface GenderStepProps {
   updateGender: (value: string) => void;
   onNext: () => void;
   isLoading: boolean;
+  isDarkTheme: boolean;
 }
 
 const GenderStep: React.FC<GenderStepProps> = ({
   gender,
   updateGender,
   onNext,
-  isLoading
+  isLoading,
+  isDarkTheme
 }) => {
   return (
     <div className="w-full max-w-md flex flex-col items-center">
@@ -23,7 +24,7 @@ const GenderStep: React.FC<GenderStepProps> = ({
       <div className="w-full space-y-4 mb-8">
         <button
           className={`w-full p-4 rounded-lg flex items-center justify-between transition-colors
-            ${gender === "female" ? "bg-blue-500 border-2 border-blue-400" : "bg-gray-800 border-2 border-gray-700"}`}
+            ${gender === "female" ? `${isDarkTheme ? 'bg-white text-black border-gray-300' : 'bg-black text-white border-gray-700'}` : `${isDarkTheme ? 'bg-gray-300 text-black border-gray-400' : 'bg-gray-800 text-white border-gray-600'}`}`}
           onClick={() => updateGender("female")}
         >
           <div className="flex items-center">
@@ -38,7 +39,7 @@ const GenderStep: React.FC<GenderStepProps> = ({
         
         <button
           className={`w-full p-4 rounded-lg flex items-center justify-between transition-colors
-            ${gender === "male" ? "bg-blue-500 border-2 border-blue-400" : "bg-gray-800 border-2 border-gray-700"}`}
+            ${gender === "male" ? `${isDarkTheme ? 'bg-white text-black border-gray-300' : 'bg-black text-white border-gray-700'}` : `${isDarkTheme ? 'bg-gray-300 text-black border-gray-400' : 'bg-gray-800 text-white border-gray-600'}`}`}
           onClick={() => updateGender("male")}
         >
           <div className="flex items-center">
@@ -55,7 +56,7 @@ const GenderStep: React.FC<GenderStepProps> = ({
       <div className="w-full">
         <Button 
           onClick={onNext} 
-          className="w-full h-14 text-lg rounded-full bg-blue-500 hover:bg-blue-600"
+          className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
           disabled={isLoading || !gender}
         >
           {isLoading ? (

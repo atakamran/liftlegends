@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -11,6 +10,7 @@ interface NameStepProps {
   updateBirthDate: (value: string) => void;
   onNext: () => void;
   isLoading: boolean;
+  isDarkTheme: boolean;
 }
 
 const NameStep: React.FC<NameStepProps> = ({
@@ -19,7 +19,8 @@ const NameStep: React.FC<NameStepProps> = ({
   birthDate,
   updateBirthDate,
   onNext,
-  isLoading
+  isLoading,
+  isDarkTheme
 }) => {
   return (
     <div className="w-full max-w-md flex flex-col items-center">
@@ -31,6 +32,7 @@ const NameStep: React.FC<NameStepProps> = ({
           value={name}
           onChange={(e) => updateName(e.target.value)}
           placeholder="نام شما"
+          required
           className="bg-gray-800 border-gray-700 text-right h-14 mb-2"
         />
       </div>
@@ -43,6 +45,7 @@ const NameStep: React.FC<NameStepProps> = ({
             value={birthDate}
             onChange={(e) => updateBirthDate(e.target.value)}
             placeholder="1380/01/01"
+            required
             className="bg-gray-800 border-gray-700 text-right h-14 mb-2 pl-10"
           />
           <Calendar className="absolute left-3 top-4 h-5 w-5 text-gray-400" />
@@ -52,8 +55,8 @@ const NameStep: React.FC<NameStepProps> = ({
       <div className="w-full">
         <Button 
           onClick={onNext} 
-          className="w-full h-14 text-lg rounded-full bg-blue-500 hover:bg-blue-600"
-          disabled={isLoading}
+          className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
+          disabled={isLoading || !name || !birthDate}
         >
           {isLoading ? (
             <>

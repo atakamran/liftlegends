@@ -9,6 +9,8 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getCurrentUserProfile } from "@/services/profileService"; // Import the function to fetch user profile
+import { auth, db } from "@/integrations/firebase/firebaseConfig"; // Corrected import path for Firebase auth and db
+import { doc, getDoc } from "firebase/firestore"; // Import Firestore functions
 
 interface Message {
   id: string;
@@ -41,30 +43,28 @@ const AiPlanner = () => {
   }, [messages]);
 
   useEffect(() => {
-    const checkAccess = async () => {
-      try {
-        const profile = await getCurrentUserProfile();
-        if (profile.subscription_plan !== "ultimate") {
-          toast({
-            title: "دسترسی محدود",
-            description: "برای استفاده از این بخش نیاز به اشتراک Ultimate دارید.",
-            variant: "destructive",
-          });
-          navigate("/subscription-plans");
+    const checkSubscription = async () => {
+      const user = auth.currentUser;
+      if (!user) {
+        navigate('/login');
+        return;
+      }
+
+      const profileRef = doc(db, 'user_profiles', user.uid);
+      const profileSnap = await getDoc(profileRef);
+
+      if (profileSnap.exists()) {
+        const profileData = profileSnap.data();
+        if (profileData.subscription_plan !== 'ultimate') {
+          navigate('/subscription-plans');
         }
-      } catch (error) {
-        console.error("Error fetching user profile: ", error);
-        toast({
-          title: "خطا",
-          description: "مشکلی در دسترسی به اطلاعات پیش آمد.",
-          variant: "destructive",
-        });
-        navigate("/subscription-plans");
+      } else {
+        navigate('/subscription-plans');
       }
     };
 
-    checkAccess();
-  }, []);
+    checkSubscription();
+  }, [navigate]);
 
   const generateRandomId = () => {
     return Math.random().toString(36).substring(2, 15);

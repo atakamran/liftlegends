@@ -1,4 +1,3 @@
-
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -11,6 +10,10 @@ import PhysicalInfoStep from "@/components/registration/PhysicalInfoStep";
 import NameStep from "@/components/registration/NameStep";
 import GenderStep from "@/components/registration/GenderStep";
 import GoalStep from "@/components/registration/GoalStep";
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { ChevronRight } from "lucide-react";
+import { db } from "@/integrations/firebase/firebaseConfig";
+import { doc, setDoc } from "firebase/firestore";
 
 const Registration = () => {
   const navigate = useNavigate();
@@ -53,6 +56,13 @@ const Registration = () => {
       setIsLoading(false);
     }, 700); // Simulate network request
   };
+
+  const handlePreviousStep = () => {
+    if (currentStep > 1) {
+      setCurrentStep(prevStep => prevStep - 1);
+      setProgress(((currentStep - 2) / totalSteps) * 100);
+    }
+  };
   
   const sendVerificationCode = () => {
     if (!formData.phoneNumber || formData.phoneNumber.length < 10) {
@@ -72,6 +82,7 @@ const Registration = () => {
         title: "کد تأیید ارسال شد",
         description: `کد تأیید به شماره ${formData.phoneNumber} ارسال شد.`,
       });
+      setFormData((prev) => ({ ...prev, verificationCode: "1234" })); // Set the code to 1234 for now
       setCurrentStep(2);
       setProgress((1 / totalSteps) * 100);
       setIsLoading(false);
@@ -87,30 +98,61 @@ const Registration = () => {
       });
       return;
     }
-    
+
     setIsLoading(true);
-    
+
     // Simulate verification
     setTimeout(() => {
-      handleNextStep();
+      if (formData.verificationCode === "1234") { // Check if the code is correct
+        toast({
+          title: "کد تأیید شد",
+          description: "کد تأیید با موفقیت تأیید شد.",
+        });
+        handleNextStep(); // Automatically go to the next step
+      } else {
+        toast({
+          title: "کد تأیید اشتباه است",
+          description: "لطفاً کد صحیح را وارد کنید.",
+          variant: "destructive",
+        });
+      }
+      setIsLoading(false);
     }, 1500);
   };
   
-  const handleCompleteRegistration = () => {
+  const handleCompleteRegistration = async () => {
     setIsLoading(true);
-    
-    // Simulate API call to register user
-    setTimeout(() => {
-      // Here you would normally call your API to register the user
+
+    const profileData = {
+      phoneNumber: formData.phoneNumber,
+      name: formData.name,
+      birthDate: formData.birthDate,
+      gender: formData.gender,
+      currentWeight: formData.currentWeight,
+      height: formData.height,
+      targetWeight: formData.targetWeight,
+      activityLevel: formData.activityLevel,
+      goal: formData.goal,
+    };
+
+    try {
+      const userDoc = doc(db, "user_profiles", formData.phoneNumber);
+      await setDoc(userDoc, profileData);
       toast({
         title: "ثبت نام موفقیت‌آمیز",
         description: "حساب کاربری شما با موفقیت ایجاد شد.",
       });
-      
-      // Navigate to the profile form or home page
-      navigate("/profile-form");
+      navigate("/home");
+    } catch (error) {
+      console.error("Error saving user profile: ", error);
+      toast({
+        title: "خطا در ثبت نام",
+        description: "مشکلی در ذخیره اطلاعات پیش آمد. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 2000);
+    }
   };
 
   const renderStep = () => {
@@ -122,6 +164,7 @@ const Registration = () => {
             updatePhoneNumber={(value) => updateFormData("phoneNumber", value)}
             onSendCode={sendVerificationCode}
             isLoading={isLoading}
+            isDarkTheme={true} // Pass the theme prop
           />
         );
       case 2:
@@ -132,6 +175,7 @@ const Registration = () => {
             onVerifyCode={verifyCode}
             isLoading={isLoading}
             phoneNumber={formData.phoneNumber}
+            isDarkTheme={isDarkMode} // Pass the theme prop
           />
         );
       case 3:
@@ -143,6 +187,7 @@ const Registration = () => {
             updateBirthDate={(value) => updateFormData("birthDate", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
+            isDarkTheme={isDarkMode} // Pass the theme prop
           />
         );
       case 4:
@@ -152,6 +197,7 @@ const Registration = () => {
             updateGender={(value) => updateFormData("gender", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
+            isDarkTheme={isDarkMode} // Pass the theme prop
           />
         );
       case 5:
@@ -165,6 +211,7 @@ const Registration = () => {
             updateTargetWeight={(value) => updateFormData("targetWeight", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
+            isDarkTheme={isDarkMode} // Pass the theme prop
           />
         );
       case 6:
@@ -174,12 +221,14 @@ const Registration = () => {
             updateActivityLevel={(value) => updateFormData("activityLevel", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
+            isDarkTheme={isDarkMode} // Pass the theme prop
           />
         );
       case 7:
         return (
           <GoalStep
             goal={formData.goal}
+            isDarkTheme={isDarkMode} // Pass the theme prop
             updateGoal={(value) => updateFormData("goal", value)}
             onComplete={handleCompleteRegistration}
             isLoading={isLoading}
@@ -190,15 +239,32 @@ const Registration = () => {
     }
   };
 
+  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const textColor = isDarkMode ? "text-white" : "text-black";
+
   return (
-    <div className="flex min-h-screen flex-col bg-black text-white">
-      <div className="px-4 py-2 fixed top-0 left-0 right-0 z-10 bg-black">
-        <Progress value={progress} className="h-2 mb-2" />
-      </div>
-      
-      <div className="flex-1 flex flex-col items-center justify-center px-4 pt-14 pb-8">
-        {renderStep()}
-      </div>
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="absolute inset-0 pointer-events-none"></div>
+      <Card className="w-full max-w-md bg-white/70 backdrop-blur-md border-gray-200 shadow-lg mx-4 my-8">
+        <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 space-x-4">
+          {currentStep > 1 && (
+            <Button 
+              onClick={handlePreviousStep} 
+              className={`h-10 w-10 rounded-full bg-0 hover:opacity-90`}
+            >
+              <ChevronRight className="h-6 w-6 font-bold" />
+            </Button>
+          )}
+          <Progress value={progress} className={`flex-1 h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+        </div>
+        <CardHeader className="text-center mt-10">
+          {/* <CardTitle className={`text-2xl font-extrabold ${textColor}`}>ثبت نام</CardTitle>
+          <CardDescription className={`text-lg text-muted-foreground ${textColor}`}>لطفاً اطلاعات خود را وارد کنید</CardDescription> */}
+        </CardHeader>
+        <CardContent className="space-y-4">
+          {renderStep()}
+        </CardContent>
+      </Card>
     </div>
   );
 };

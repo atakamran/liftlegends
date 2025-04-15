@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
@@ -8,13 +7,15 @@ interface GoalStepProps {
   updateGoal: (value: string) => void;
   onComplete: () => void;
   isLoading: boolean;
+  isDarkTheme: boolean;
 }
 
 const GoalStep: React.FC<GoalStepProps> = ({
   goal,
   updateGoal,
   onComplete,
-  isLoading
+  isLoading,
+  isDarkTheme
 }) => {
   const goalOptions = [
     { id: "lose", label: "کاهش وزن", emoji: "🍃" },
@@ -49,7 +50,7 @@ const GoalStep: React.FC<GoalStepProps> = ({
       <div className="w-full">
         <Button 
           onClick={onComplete} 
-          className="w-full h-14 text-lg rounded-full bg-blue-500 hover:bg-blue-600"
+          className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
           disabled={isLoading || !goal}
         >
           {isLoading ? (

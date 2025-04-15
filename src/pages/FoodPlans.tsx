@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/Layout/AppLayout";
@@ -23,14 +22,21 @@ const FoodPlans = () => {
         setIsLoading(true);
         const loggedIn = localStorage.getItem("isLoggedIn") === "true";
         setIsLoggedIn(loggedIn);
-        
+
         if (!loggedIn) {
           setIsLoading(false);
           return;
         }
-        
+
         const hasAccess = await hasFeatureAccess("food_plans");
-        setCanAccessFoodPlans(hasAccess);
+        const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+        const subscriptionPlan = currentUser.subscription_plan;
+
+        if (subscriptionPlan === "ultimate") {
+          setCanAccessFoodPlans(true);
+        } else {
+          setCanAccessFoodPlans(hasAccess);
+        }
       } catch (error) {
         console.error("Error checking access: ", error);
         setCanAccessFoodPlans(false);
@@ -80,6 +86,39 @@ const FoodPlans = () => {
   }
   
   if (!canAccessFoodPlans) {
+    const currentUser = JSON.parse(localStorage.getItem("currentUser") || "{}");
+    const subscriptionPlan = currentUser.subscription_plan;
+
+    if (subscriptionPlan === "pro" || subscriptionPlan === "ultimate") {
+      return (
+        <AppLayout className={`flex flex-col ${getThemeGradient()}`}>
+          <h1 className={`text-3xl font-bold mb-6 text-center ${getTextColor()}`}>برنامه‌های غذایی</h1>
+          
+          <div className="grid gap-4">
+            <Card className={`${getCardGradient()} shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-105`}>
+              <CardHeader className="flex flex-row items-center gap-4">
+                <Apple className={`h-8 w-8 ${getTextColor()}`} />
+                <CardTitle className={getTextColor()}>برنامه غذایی افزایش حجم</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">برنامه غذایی مناسب برای افزایش وزن و حجم عضلانی</p>
+              </CardContent>
+            </Card>
+    
+            <Card className={`${getCardGradient()} shadow-lg hover:shadow-xl transition-transform duration-300 hover:scale-105`}>
+              <CardHeader className="flex flex-row items-center gap-4">
+                <UtensilsCrossed className={`h-8 w-8 ${getTextColor()}`} />
+                <CardTitle className={getTextColor()}>برنامه غذایی کاهش چربی</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <p className="text-muted-foreground">برنامه غذایی مناسب برای کاهش چربی و حفظ توده عضلانی</p>
+              </CardContent>
+            </Card>
+          </div>
+        </AppLayout>
+      );
+    }
+
     return (
       <AppLayout className={`flex flex-col items-center justify-center ${getThemeGradient()}`}>
         <div className="text-center max-w-md py-12">
@@ -88,6 +127,9 @@ const FoodPlans = () => {
           <p className="text-muted-foreground mb-6">
             برای دسترسی به بخش برنامه‌های غذایی، نیاز به اشتراک Pro یا Ultimate دارید.
           </p>
+          {/* <p className={`text-lg font-semibold mb-4 ${getTextColor()}`}>
+            پلن فعلی شما: {subscriptionPlan || "ندارید"}
+          </p> */}
           <Button 
             onClick={handleGetSubscription}
             className={`${getButtonGradient()} text-white shadow-lg`}

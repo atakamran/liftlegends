@@ -30,7 +30,7 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
 
   return (
     <div className="w-full max-w-md flex flex-col items-center">
-      <h1 className={`text-2xl font-bold mb-8 text-center ${getTextColor()}`}>ورود به حساب کاربری</h1>
+      <h1 className={`text-2xl font-bold mb-8 text-center ${getTextColor()}`}>ثبت نام با شماره</h1>
       
       <div className="w-full mb-8">
         <Input
@@ -72,12 +72,12 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
       
       <div className="text-center mb-4">
         <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-          حساب کاربری ندارید؟{" "}
+          حساب کاربری دارید؟{" "}
           <button 
-            onClick={() => navigate("/register")} 
+            onClick={() => navigate("/login")} 
             className={`${theme === 'dark' ? 'text-yellow-400' : 'text-black'} font-semibold hover:underline`}
           >
-            ثبت‌نام
+            ورود
           </button>
         </p>
       </div>

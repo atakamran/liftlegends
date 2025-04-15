@@ -44,21 +44,26 @@ const AiPlanner = () => {
 
   useEffect(() => {
     const checkSubscription = async () => {
-      const user = auth.currentUser;
-      if (!user) {
-        navigate('/login');
-        return;
-      }
+      try {
+        const user = auth.currentUser;
+        if (!user) {
+          navigate('/login');
+          return;
+        }
 
-      const profileRef = doc(db, 'user_profiles', user.uid);
-      const profileSnap = await getDoc(profileRef);
+        const profileRef = doc(db, 'user_profiles', user.uid);
+        const profileSnap = await getDoc(profileRef);
 
-      if (profileSnap.exists()) {
-        const profileData = profileSnap.data();
-        if (profileData.subscription_plan !== 'ultimate') {
+        if (profileSnap.exists()) {
+          const profileData = profileSnap.data();
+          if (profileData.subscription_plan !== 'ultimate') {
+            navigate('/subscription-plans');
+          }
+        } else {
           navigate('/subscription-plans');
         }
-      } else {
+      } catch (error) {
+        console.error("Error checking subscription: ", error);
         navigate('/subscription-plans');
       }
     };

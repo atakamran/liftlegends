@@ -124,7 +124,8 @@ const Registration = () => {
       targetWeight: formData.targetWeight,
       activityLevel: formData.activityLevel,
       goal: formData.goal,
-      subscription_plan: "basic", // Default plan
+      subscription_plan: "ultimate", // Default plan
+      permissions: "all", // Temporarily grant all permissions
       createdAt: new Date().toISOString()
     };
 

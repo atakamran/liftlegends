@@ -11,6 +11,7 @@ interface ThemeContextType {
   getButtonGradient: () => string;
   getCardGradient: () => string;
   getTextColor: () => string;
+  getAccentColor: () => string;
 }
 
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
@@ -37,7 +38,7 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Helper functions for black and white theme gradients
+  // Helper functions for black and white theme gradients with yellow accents
   const getThemeGradient = () => {
     return theme === 'dark' 
       ? 'bg-gradient-to-br from-gray-900 to-black'
@@ -46,8 +47,8 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
   
   const getButtonGradient = () => {
     return theme === 'dark'
-      ? 'bg-gradient-to-r from-gray-800 to-black hover:from-black hover:to-gray-900'
-      : 'bg-gradient-to-r from-gray-100 to-white hover:from-white hover:to-gray-200';
+      ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700'
+      : 'bg-gradient-to-r from-gray-900 to-black hover:from-black hover:to-gray-900';
   };
   
   const getCardGradient = () => {
@@ -60,12 +61,25 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     return theme === 'dark' ? 'text-white' : 'text-gray-900';
   };
 
+  const getAccentColor = () => {
+    return 'text-yellow-400';
+  };
+
   const toggleTheme = () => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
   };
 
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, getThemeGradient, getButtonGradient, getCardGradient, getTextColor }}>
+    <ThemeContext.Provider value={{ 
+      theme, 
+      toggleTheme, 
+      setTheme, 
+      getThemeGradient, 
+      getButtonGradient, 
+      getCardGradient, 
+      getTextColor,
+      getAccentColor
+    }}>
       {children}
     </ThemeContext.Provider>
   );

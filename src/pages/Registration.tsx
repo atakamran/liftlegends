@@ -1,36 +1,35 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
 import PhoneStep from "@/components/registration/PhoneStep";
-import VerifyCodeStep from "@/components/registration/VerifyCodeStep";
-import ActivityLevelStep from "@/components/registration/ActivityLevelStep";
-import PhysicalInfoStep from "@/components/registration/PhysicalInfoStep";
 import NameStep from "@/components/registration/NameStep";
 import GenderStep from "@/components/registration/GenderStep";
+import PhysicalInfoStep from "@/components/registration/PhysicalInfoStep";
+import ActivityLevelStep from "@/components/registration/ActivityLevelStep";
 import GoalStep from "@/components/registration/GoalStep";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
-import { doc, setDoc } from "firebase/firestore";
-import { db } from "@/integrations/firebase/firebaseConfig";
 import { useTheme } from "@/context/ThemeContext";
 import "./Login.css"; // Reuse the galaxy animation
 
 const Registration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { theme, getCardGradient } = useTheme();
+  const { theme } = useTheme();
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
   
-  const totalSteps = 7;
+  // We removed the verification step, so now we have 6 steps instead of 7
+  const totalSteps = 6;
   
   // Form data state
   const [formData, setFormData] = useState({
     phoneNumber: "",
-    verificationCode: "",
+    password: "",
     name: "",
     birthDate: "",
     gender: "",
@@ -39,7 +38,6 @@ const Registration = () => {
     targetWeight: "",
     activityLevel: "",
     goal: "",
-    password: ""
   });
 
   const updateFormData = (field: string, value: string) => {
@@ -71,8 +69,8 @@ const Registration = () => {
     }
   };
   
-  const sendVerificationCode = () => {
-    if (!formData.phoneNumber || formData.phoneNumber.length < 10) {
+  const handlePhoneStep = () => {
+    if (!formData.phoneNumber || formData.phoneNumber.length < 11 || !formData.phoneNumber.startsWith("09")) {
       toast({
         title: "شماره تلفن نامعتبر",
         description: "لطفاً یک شماره تلفن معتبر وارد کنید.",
@@ -81,57 +79,44 @@ const Registration = () => {
       return;
     }
     
-    setIsLoading(true);
-    
-    // Simulate sending a verification code
-    setTimeout(() => {
+    if (!formData.password || formData.password.length < 4) {
       toast({
-        title: "کد تأیید ارسال شد",
-        description: `کد تأیید به شماره ${formData.phoneNumber} ارسال شد.`,
-      });
-      setFormData((prev) => ({ ...prev, verificationCode: "1234" })); // Set the code to 1234 for now
-      setCurrentStep(2);
-      setProgress((1 / totalSteps) * 100);
-      setIsLoading(false);
-    }, 1500);
-  };
-  
-  const verifyCode = () => {
-    if (!formData.verificationCode || formData.verificationCode.length < 4) {
-      toast({
-        title: "کد تأیید نامعتبر",
-        description: "لطفاً کد تأیید معتبر را وارد کنید.",
+        title: "رمز عبور نامعتبر",
+        description: "لطفاً یک رمز عبور با حداقل ۴ کاراکتر وارد کنید.",
         variant: "destructive",
       });
       return;
     }
-
+    
     setIsLoading(true);
-
-    // Simulate verification
+    
+    // Check if user already exists in localStorage
+    const storedUsers = localStorage.getItem("users") ? 
+      JSON.parse(localStorage.getItem("users") || "[]") : [];
+    
+    const userExists = storedUsers.some((user: any) => user.phoneNumber === formData.phoneNumber);
+    
     setTimeout(() => {
-      if (formData.verificationCode === "1234") { // Check if the code is correct
+      if (userExists) {
         toast({
-          title: "کد تأیید شد",
-          description: "کد تأیید با موفقیت تأیید شد.",
-        });
-        handleNextStep(); // Automatically go to the next step
-      } else {
-        toast({
-          title: "کد تأیید اشتباه است",
-          description: "لطفاً کد صحیح را وارد کنید.",
+          title: "خطا در ثبت نام",
+          description: "این شماره تلفن قبلا ثبت شده است.",
           variant: "destructive",
         });
+      } else {
+        handleNextStep(); // Go to the next step if phone number is valid and not registered
       }
       setIsLoading(false);
-    }, 1500);
+    }, 1000);
   };
   
   const handleCompleteRegistration = async () => {
     setIsLoading(true);
 
+    // Create user profile object
     const profileData = {
       phoneNumber: formData.phoneNumber,
+      password: formData.password,
       name: formData.name,
       birthDate: formData.birthDate,
       gender: formData.gender,
@@ -140,15 +125,25 @@ const Registration = () => {
       targetWeight: formData.targetWeight,
       activityLevel: formData.activityLevel,
       goal: formData.goal,
+      subscription_plan: "basic", // Default plan
+      createdAt: new Date().toISOString()
     };
 
     try {
-      const userDoc = doc(db, "user_profiles", formData.phoneNumber);
-      await setDoc(userDoc, profileData);
+      // Get existing users from localStorage
+      const storedUsers = localStorage.getItem("users") ? 
+        JSON.parse(localStorage.getItem("users") || "[]") : [];
+      
+      // Add new user
+      storedUsers.push(profileData);
+      
+      // Save updated users list
+      localStorage.setItem("users", JSON.stringify(storedUsers));
       
       // Set login status
       localStorage.setItem("isLoggedIn", "true");
       localStorage.setItem("userPhoneNumber", formData.phoneNumber);
+      localStorage.setItem("currentUser", JSON.stringify(profileData));
       
       toast({
         title: "ثبت نام موفقیت‌آمیز",
@@ -175,25 +170,14 @@ const Registration = () => {
           <PhoneStep 
             phoneNumber={formData.phoneNumber}
             updatePhoneNumber={(value) => updateFormData("phoneNumber", value)}
-            onSendCode={sendVerificationCode}
+            onSendCode={handlePhoneStep}
             isLoading={isLoading}
             password={formData.password}
             updatePassword={(value) => updateFormData("password", value)}
-          />
+            isDarkTheme={theme === 'dark'}
           />
         );
       case 2:
-        return (
-          <VerifyCodeStep 
-            verificationCode={formData.verificationCode}
-            updateVerificationCode={(value) => updateFormData("verificationCode", value)}
-            onVerifyCode={verifyCode}
-            isLoading={isLoading}
-            phoneNumber={formData.phoneNumber}
-            isDarkTheme={theme === 'dark'} // Use the theme prop
-          />
-        );
-      case 3:
         return (
           <NameStep
             name={formData.name}
@@ -202,20 +186,20 @@ const Registration = () => {
             updateBirthDate={(value) => updateFormData("birthDate", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={theme === 'dark'} // Use the theme prop
+            isDarkTheme={theme === 'dark'}
           />
         );
-      case 4:
+      case 3:
         return (
           <GenderStep
             gender={formData.gender}
             updateGender={(value) => updateFormData("gender", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={theme === 'dark'} // Use the theme prop
+            isDarkTheme={theme === 'dark'}
           />
         );
-      case 5:
+      case 4:
         return (
           <PhysicalInfoStep
             currentWeight={formData.currentWeight}
@@ -226,24 +210,24 @@ const Registration = () => {
             updateTargetWeight={(value) => updateFormData("targetWeight", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={theme === 'dark'} // Use the theme prop
+            isDarkTheme={theme === 'dark'}
           />
         );
-      case 6:
+      case 5:
         return (
           <ActivityLevelStep
             activityLevel={formData.activityLevel}
             updateActivityLevel={(value) => updateFormData("activityLevel", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={theme === 'dark'} // Use the theme prop
+            isDarkTheme={theme === 'dark'}
           />
         );
-      case 7:
+      case 6:
         return (
           <GoalStep
             goal={formData.goal}
-            isDarkTheme={theme === 'dark'} // Use the theme prop
+            isDarkTheme={theme === 'dark'}
             updateGoal={(value) => updateFormData("goal", value)}
             onComplete={handleCompleteRegistration}
             isLoading={isLoading}
@@ -259,7 +243,7 @@ const Registration = () => {
       <div className="stars"></div>
       <div className="stars2"></div>
       <div className="stars3"></div>
-      <Card className={`w-full max-w-md backdrop-blur-md border-0 shadow-2xl ${getCardGradient()} ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'} mx-4 my-8`}>
+      <Card className={`w-full max-w-md backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'} mx-4 my-8`}>
         <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 space-x-4 mb-4">
           <Button 
             onClick={handlePreviousStep} 

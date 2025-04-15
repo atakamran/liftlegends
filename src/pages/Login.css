@@ -1,7 +1,8 @@
 
 .galaxy-background {
-  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+  background: linear-gradient(to bottom, #000000, #121212, #000000);
   overflow: hidden;
+  position: relative;
 }
 
 .stars, .stars2, .stars3 {
@@ -20,18 +21,21 @@
   background: transparent url(/star-field-1.png) repeat top center;
   z-index: 0;
   animation: move-stars 100s linear infinite;
+  opacity: 0.6;
 }
 
 .stars2 {
   background: transparent url(/star-field-2.png) repeat top center;
   z-index: 1;
   animation: move-stars 150s linear infinite;
+  opacity: 0.4;
 }
 
 .stars3 {
   background: transparent url(/star-field-3.png) repeat top center;
   z-index: 2;
   animation: move-stars 200s linear infinite;
+  opacity: 0.2;
 }
 
 @keyframes move-stars {
@@ -48,4 +52,62 @@
   .stars, .stars2, .stars3 {
     animation-duration: 200s;
   }
+}
+
+/* Yellow glow effect for buttons and premium elements */
+.yellow-glow {
+  box-shadow: 0 0 15px rgba(255, 204, 0, 0.5);
+  transition: box-shadow 0.3s ease;
+}
+
+.yellow-glow:hover {
+  box-shadow: 0 0 25px rgba(255, 204, 0, 0.8);
+}
+
+/* Clean card styles */
+.clean-card {
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.2);
+}
+
+/* Modern input styles */
+.modern-input {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(5px);
+  -webkit-backdrop-filter: blur(5px);
+  transition: all 0.3s ease;
+}
+
+.modern-input:focus {
+  border-color: rgba(255, 204, 0, 0.5);
+  box-shadow: 0 0 0 2px rgba(255, 204, 0, 0.2);
+}
+
+/* Premium badge styles */
+.premium-badge {
+  background: linear-gradient(135deg, #f5dd62 0%, #ffc107 100%);
+  color: #000;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.1);
+}
+
+/* Custom scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+
+::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 204, 0, 0.3);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 204, 0, 0.5);
 }

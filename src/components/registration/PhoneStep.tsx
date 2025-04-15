@@ -1,10 +1,9 @@
+
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Loader2 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
-import { auth, db } from "@/integrations/firebase/firebaseConfig";
-import { doc, getDoc } from "firebase/firestore";
 import { useNavigate } from "react-router-dom";
 
 interface PhoneStepProps {
@@ -24,22 +23,22 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
   updatePassword,
   onSendCode,
   isLoading,
+  isDarkTheme
 }) => {
   const { getButtonGradient, getTextColor, theme } = useTheme();
   const navigate = useNavigate();
 
-
   return (
     <div className="w-full max-w-md flex flex-col items-center">
-      <h1 className={`text-2xl font-bold mb-8 text-center ${getTextColor()}`}>شماره موبایلتون رو وارد کنید</h1>
+      <h1 className={`text-2xl font-bold mb-8 text-center ${getTextColor()}`}>ورود به حساب کاربری</h1>
       
       <div className="w-full mb-8">
         <Input
           type="tel"
           value={phoneNumber}
           onChange={(e) => updatePhoneNumber(e.target.value)}
-          placeholder="09123456789"
-          className={`bg-transparent border-gray-700 text-right text-lg ltr h-14 mb-2 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
+          placeholder="شماره موبایل"
+          className={`bg-transparent border-gray-700 text-right text-lg ltr h-14 mb-4 ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}
           dir="ltr"
           required
         />
@@ -54,11 +53,11 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
         />
       </div>
       
-      <div className="w-full mb-8">
+      <div className="w-full mb-6">
         <Button 
           onClick={onSendCode} 
-          className={`w-full h-14 text-lg rounded-full ${getButtonGradient()} text-white shadow-lg hover:shadow-xl transition-all duration-300`}
-          disabled={isLoading || !phoneNumber || phoneNumber.length < 11 || !password || password.length < 6}
+          className={`w-full h-14 text-lg rounded-full ${theme === 'dark' ? 'bg-yellow-500 hover:bg-yellow-600' : 'bg-black hover:bg-gray-800'} text-white shadow-lg hover:shadow-xl transition-all duration-300`}
+          disabled={isLoading || !phoneNumber || phoneNumber.length < 11 || !password || password.length < 4}
         >
           {isLoading ? (
             <>
@@ -66,13 +65,25 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
               در حال پردازش...
             </>
           ) : (
-            "بعدی"
+            "ورود"
           )}
         </Button>
       </div>
       
+      <div className="text-center mb-4">
+        <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+          حساب کاربری ندارید؟{" "}
+          <button 
+            onClick={() => navigate("/register")} 
+            className={`${theme === 'dark' ? 'text-yellow-400' : 'text-black'} font-semibold hover:underline`}
+          >
+            ثبت‌نام
+          </button>
+        </p>
+      </div>
+
       <p className="text-sm text-gray-400 text-center">
-        <a href="#" className={`${theme === 'dark' ? 'text-white' : 'text-black'} hover:opacity-90`}>قوانین و مقررات</a>
+        <a href="#" className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} hover:underline`}>قوانین و مقررات</a>
       </p>
     </div>
   );

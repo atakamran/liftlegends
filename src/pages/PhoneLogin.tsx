@@ -1,15 +1,15 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
 import PhoneStep from "@/components/registration/PhoneStep";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
-import { doc, getDoc } from "firebase/firestore";
-import { auth, db } from "@/integrations/firebase/firebaseConfig";
 import "./Login.css";
 
 const PhoneLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
+  const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const { theme } = useTheme();
@@ -33,7 +33,11 @@ const PhoneLogin = () => {
     setPhoneNumber(numbersOnly);
   };
 
-  const sendVerificationCode = () => {
+  const handlePasswordChange = (value: string) => {
+    setPassword(value);
+  };
+
+  const handleLogin = () => {
     if (!phoneNumber || phoneNumber.length < 11 || !phoneNumber.startsWith("09")) {
       toast({
         title: "شماره موبایل نامعتبر",
@@ -43,31 +47,47 @@ const PhoneLogin = () => {
       return;
     }
 
-    setIsLoading(true);
-    localStorage.setItem("phoneNumberForVerification", phoneNumber);
-    localStorage.setItem("redirectAfterLogin", getRedirectUrl());
-
-    setTimeout(() => {
-      setIsLoading(false);
-      checkAndLoginWithPassword(phoneNumber);
-    }, 1000);
-  };
-
-  const checkAndLoginWithPassword = async (phoneNumber: string) => {
-    try {
-      const docRef = doc(db, "user_profiles", phoneNumber);
-      const docSnap = await getDoc(docRef);
-
-      if (docSnap.exists()) {
-        console.log("User found, logging in with password...");
-        navigate("/home"); // Directly navigate to the home page
-      } else {
-        console.log("User not found, please register.");
-        // Optionally handle the case where the user does not exist
-      }
-    } catch (error) {
-      console.error("Error logging in with password:", error);
+    if (!password || password.length < 4) {
+      toast({
+        title: "رمز عبور نامعتبر",
+        description: "لطفاً رمز عبور معتبر وارد کنید.",
+        variant: "destructive",
+      });
+      return;
     }
+
+    setIsLoading(true);
+    
+    // Get user data from localStorage
+    const storedUsers = localStorage.getItem("users") ? 
+      JSON.parse(localStorage.getItem("users") || "[]") : [];
+    
+    // Find user by phone number
+    const user = storedUsers.find((u: any) => u.phoneNumber === phoneNumber);
+    
+    setTimeout(() => {
+      if (user && user.password === password) {
+        // Login successful
+        localStorage.setItem("isLoggedIn", "true");
+        localStorage.setItem("userPhoneNumber", phoneNumber);
+        localStorage.setItem("currentUser", JSON.stringify(user));
+        
+        toast({
+          title: "ورود موفق",
+          description: "به لیفت لجندز خوش آمدید!",
+        });
+        
+        navigate(getRedirectUrl());
+      } else {
+        // Login failed
+        toast({
+          title: "خطای ورود",
+          description: "شماره موبایل یا رمز عبور اشتباه است.",
+          variant: "destructive",
+        });
+      }
+      setIsLoading(false);
+    }, 1000);
   };
 
   return (
@@ -88,7 +108,9 @@ const PhoneLogin = () => {
           <PhoneStep
             phoneNumber={phoneNumber}
             updatePhoneNumber={handlePhoneNumberChange}
-            onSendCode={sendVerificationCode}
+            password={password}
+            updatePassword={handlePasswordChange}
+            onSendCode={handleLogin}
             isLoading={isLoading}
             isDarkTheme={theme === 'dark'}
           />

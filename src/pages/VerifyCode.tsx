@@ -47,6 +47,17 @@ const VerifyCode = () => {
     setIsLoading(true);
 
     try {
+      // For development purposes, we're accepting "1234" as a valid code
+      if (verificationCode !== "1234") {
+        toast({
+          title: "کد تأیید اشتباه",
+          description: "کد وارد شده صحیح نیست.",
+          variant: "destructive",
+        });
+        setIsLoading(false);
+        return;
+      }
+
       // Check if the user already exists in Firestore
       const userRef = doc(db, "user_profiles", phoneNumber);
       const userDoc = await getDoc(userRef);
@@ -115,7 +126,7 @@ const VerifyCode = () => {
           <VerifyCodeStep
             verificationCode={verificationCode}
             updateVerificationCode={setVerificationCode}
-            onVerify={handleVerifyCode}
+            onVerifyCode={handleVerifyCode}
             phoneNumber={phoneNumber}
             isLoading={isLoading}
             isDarkTheme={theme === 'dark'}

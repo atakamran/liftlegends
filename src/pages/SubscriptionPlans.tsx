@@ -15,7 +15,7 @@ import { useToast } from "@/hooks/use-toast";
 const SubscriptionPlans = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
-  const { theme, getButtonGradient, getCardGradient, getTextColor } = useTheme();
+  const { theme, getButtonGradient, getCardGradient, getTextColor, getThemeGradient } = useTheme();
   const [subscriptionInfo, setSubscriptionInfo] = useState<{ plan: string; remainingTime: string } | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [isLoggedIn, setIsLoggedIn] = useState(false);

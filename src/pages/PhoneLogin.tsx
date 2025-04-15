@@ -65,10 +65,10 @@ const PhoneLogin = () => {
       <div className="stars3"></div>
       <div className="absolute top-0 left-0 w-full py-6 px-4 flex justify-between items-center z-10">
         <button 
-          onClick={() => navigate(-1)} 
+          onClick={() => navigate("/")} 
           className="text-white hover:text-gray-200 transition-colors"
         >
-          برگشت
+          برگشت به صفحه اصلی
         </button>
       </div>
       <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${getCardGradient()} ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>

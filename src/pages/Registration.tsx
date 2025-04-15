@@ -1,3 +1,4 @@
+
 import React, { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
@@ -10,14 +11,17 @@ import PhysicalInfoStep from "@/components/registration/PhysicalInfoStep";
 import NameStep from "@/components/registration/NameStep";
 import GenderStep from "@/components/registration/GenderStep";
 import GoalStep from "@/components/registration/GoalStep";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
-import { db } from "@/integrations/firebase/firebaseConfig";
 import { doc, setDoc } from "firebase/firestore";
+import { db } from "@/integrations/firebase/firebaseConfig";
+import { useTheme } from "@/context/ThemeContext";
+import "./Login.css"; // Reuse the galaxy animation
 
 const Registration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
+  const { theme, getCardGradient } = useTheme();
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +65,9 @@ const Registration = () => {
     if (currentStep > 1) {
       setCurrentStep(prevStep => prevStep - 1);
       setProgress(((currentStep - 2) / totalSteps) * 100);
+    } else {
+      // If we're at the first step, navigate back to the home page
+      navigate("/");
     }
   };
   
@@ -138,10 +145,16 @@ const Registration = () => {
     try {
       const userDoc = doc(db, "user_profiles", formData.phoneNumber);
       await setDoc(userDoc, profileData);
+      
+      // Set login status
+      localStorage.setItem("isLoggedIn", "true");
+      localStorage.setItem("userPhoneNumber", formData.phoneNumber);
+      
       toast({
         title: "ثبت نام موفقیت‌آمیز",
         description: "حساب کاربری شما با موفقیت ایجاد شد.",
       });
+      
       navigate("/home");
     } catch (error) {
       console.error("Error saving user profile: ", error);
@@ -164,7 +177,7 @@ const Registration = () => {
             updatePhoneNumber={(value) => updateFormData("phoneNumber", value)}
             onSendCode={sendVerificationCode}
             isLoading={isLoading}
-            isDarkTheme={true} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
           />
         );
       case 2:
@@ -175,7 +188,7 @@ const Registration = () => {
             onVerifyCode={verifyCode}
             isLoading={isLoading}
             phoneNumber={formData.phoneNumber}
-            isDarkTheme={isDarkMode} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
           />
         );
       case 3:
@@ -187,7 +200,7 @@ const Registration = () => {
             updateBirthDate={(value) => updateFormData("birthDate", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={isDarkMode} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
           />
         );
       case 4:
@@ -197,7 +210,7 @@ const Registration = () => {
             updateGender={(value) => updateFormData("gender", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={isDarkMode} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
           />
         );
       case 5:
@@ -211,7 +224,7 @@ const Registration = () => {
             updateTargetWeight={(value) => updateFormData("targetWeight", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={isDarkMode} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
           />
         );
       case 6:
@@ -221,14 +234,14 @@ const Registration = () => {
             updateActivityLevel={(value) => updateFormData("activityLevel", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
-            isDarkTheme={isDarkMode} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
           />
         );
       case 7:
         return (
           <GoalStep
             goal={formData.goal}
-            isDarkTheme={isDarkMode} // Pass the theme prop
+            isDarkTheme={theme === 'dark'} // Use the theme prop
             updateGoal={(value) => updateFormData("goal", value)}
             onComplete={handleCompleteRegistration}
             isLoading={isLoading}
@@ -239,29 +252,23 @@ const Registration = () => {
     }
   };
 
-  const isDarkMode = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
-  const textColor = isDarkMode ? "text-white" : "text-black";
-
   return (
-    <div className="flex min-h-screen items-center justify-center">
-      <div className="absolute inset-0 pointer-events-none"></div>
-      <Card className="w-full max-w-md bg-white/70 backdrop-blur-md border-gray-200 shadow-lg mx-4 my-8">
+    <div className="flex min-h-screen items-center justify-center galaxy-background">
+      <div className="stars"></div>
+      <div className="stars2"></div>
+      <div className="stars3"></div>
+      <Card className={`w-full max-w-md backdrop-blur-md border-0 shadow-2xl ${getCardGradient()} ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'} mx-4 my-8`}>
         <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 space-x-4">
-          {currentStep > 1 && (
-            <Button 
-              onClick={handlePreviousStep} 
-              className={`h-10 w-10 rounded-full bg-0 hover:opacity-90`}
-            >
-              <ChevronRight className="h-6 w-6 font-bold" />
-            </Button>
-          )}
-          <Progress value={progress} className={`flex-1 h-2 rounded-full ${isDarkMode ? 'bg-gray-700' : 'bg-gray-300'}`} />
+          <Button 
+            onClick={handlePreviousStep} 
+            className="h-10 w-10 rounded-full bg-transparent hover:bg-white/10 text-white"
+            variant="ghost"
+          >
+            <ChevronRight className="h-6 w-6 font-bold" />
+          </Button>
+          <Progress value={progress} className={`flex-1 h-2 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
         </div>
-        <CardHeader className="text-center mt-10">
-          {/* <CardTitle className={`text-2xl font-extrabold ${textColor}`}>ثبت نام</CardTitle>
-          <CardDescription className={`text-lg text-muted-foreground ${textColor}`}>لطفاً اطلاعات خود را وارد کنید</CardDescription> */}
-        </CardHeader>
-        <CardContent className="space-y-4">
+        <CardContent className="space-y-4 pt-12 p-6">
           {renderStep()}
         </CardContent>
       </Card>

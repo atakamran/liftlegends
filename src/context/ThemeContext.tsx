@@ -37,27 +37,27 @@ export const ThemeProvider = ({ children }: { children: React.ReactNode }) => {
     localStorage.setItem('theme', theme);
   }, [theme]);
 
-  // Helper functions for gradients and colors based on theme
+  // Helper functions for black and white theme gradients
   const getThemeGradient = () => {
     return theme === 'dark' 
-      ? 'bg-gradient-to-br from-gray-900 via-black to-gray-800'
-      : 'bg-gradient-to-br from-gray-100 via-white to-gray-200';
+      ? 'bg-gradient-to-br from-gray-900 to-black'
+      : 'bg-gradient-to-br from-white to-gray-100';
   };
   
   const getButtonGradient = () => {
     return theme === 'dark'
-      ? 'bg-gradient-to-r from-indigo-600 to-blue-600 hover:from-indigo-700 hover:to-blue-700'
-      : 'bg-gradient-to-r from-blue-500 to-indigo-500 hover:from-blue-600 hover:to-indigo-600';
+      ? 'bg-gradient-to-r from-gray-800 to-black hover:from-black hover:to-gray-900'
+      : 'bg-gradient-to-r from-gray-100 to-white hover:from-white hover:to-gray-200';
   };
   
   const getCardGradient = () => {
     return theme === 'dark'
-      ? 'bg-gradient-to-br from-gray-800 via-gray-900 to-black'
-      : 'bg-gradient-to-br from-white via-gray-50 to-gray-100';
+      ? 'bg-gradient-to-br from-gray-900 to-black border-gray-800'
+      : 'bg-gradient-to-br from-white to-gray-50 border-gray-200';
   };
 
   const getTextColor = () => {
-    return theme === 'dark' ? 'text-white' : 'text-gray-800';
+    return theme === 'dark' ? 'text-white' : 'text-gray-900';
   };
 
   const toggleTheme = () => {

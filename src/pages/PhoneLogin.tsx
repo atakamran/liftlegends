@@ -5,17 +5,16 @@ import { Card, CardContent } from "@/components/ui/card";
 import PhoneStep from "@/components/registration/PhoneStep";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
-import "./Login.css"; // Re-use the galaxy animation
+import "./Login.css";
 
 const PhoneLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
-  const { theme, getCardGradient } = useTheme();
+  const { theme } = useTheme();
   const navigate = useNavigate();
   const location = useLocation();
   
-  // Get redirect URL from query params if it exists
   const getRedirectUrl = () => {
     const params = new URLSearchParams(location.search);
     return params.get('redirect') || "/home";
@@ -29,7 +28,6 @@ const PhoneLogin = () => {
   }, [navigate]);
 
   const handlePhoneNumberChange = (value: string) => {
-    // Only allow numbers
     const numbersOnly = value.replace(/[^0-9]/g, "");
     setPhoneNumber(numbersOnly);
   };
@@ -45,17 +43,13 @@ const PhoneLogin = () => {
     }
 
     setIsLoading(true);
-
-    // Store the phone number in localStorage for later use
     localStorage.setItem("phoneNumberForVerification", phoneNumber);
-    
-    // Store redirect URL for after verification
     localStorage.setItem("redirectAfterLogin", getRedirectUrl());
 
     setTimeout(() => {
       setIsLoading(false);
       navigate(`/phone-login/verify`);
-    }, 1500);
+    }, 1000);
   };
 
   return (
@@ -71,7 +65,7 @@ const PhoneLogin = () => {
           برگشت به صفحه اصلی
         </button>
       </div>
-      <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${getCardGradient()} ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
+      <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
         <CardContent className="p-6">
           <PhoneStep
             phoneNumber={phoneNumber}

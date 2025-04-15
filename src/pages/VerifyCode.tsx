@@ -5,9 +5,18 @@ import { Card, CardContent } from "@/components/ui/card";
 import VerifyCodeStep from "@/components/registration/VerifyCodeStep";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
-import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db } from "@/integrations/firebase/firebaseConfig";
-import "./Login.css"; // Re-use the galaxy animation
+import "./Login.css";
+
+const mockUserProfile = {
+  name: "کاربر جدید",
+  age: "",
+  gender: "",
+  height: "",
+  weight: "",
+  targetWeight: "",
+  fitnessLevel: "",
+  registeredAt: new Date().toISOString()
+};
 
 const VerifyCode = () => {
   const [verificationCode, setVerificationCode] = useState("");
@@ -15,10 +24,9 @@ const VerifyCode = () => {
   const [isLoading, setIsLoading] = useState(false);
   const { toast } = useToast();
   const navigate = useNavigate();
-  const { theme, getCardGradient } = useTheme();
+  const { theme } = useTheme();
 
   useEffect(() => {
-    // Get the phone number from localStorage
     const storedPhoneNumber = localStorage.getItem("phoneNumberForVerification");
     
     if (!storedPhoneNumber) {
@@ -47,7 +55,7 @@ const VerifyCode = () => {
     setIsLoading(true);
 
     try {
-      // For development purposes, we're accepting "1234" as a valid code
+      // Accept only "1234" as valid code
       if (verificationCode !== "1234") {
         toast({
           title: "کد تأیید اشتباه",
@@ -58,17 +66,11 @@ const VerifyCode = () => {
         return;
       }
 
-      // Check if the user already exists in Firestore
-      const userRef = doc(db, "user_profiles", phoneNumber);
-      const userDoc = await getDoc(userRef);
+      // Store user data in localStorage
+      const existingUserData = localStorage.getItem(`userProfile_${phoneNumber}`);
       
-      if (!userDoc.exists()) {
-        // If user doesn't exist, create a new profile
-        await setDoc(userRef, {
-          phoneNumber,
-          registeredAt: new Date().toISOString(),
-          name: "",
-        });
+      if (!existingUserData) {
+        localStorage.setItem(`userProfile_${phoneNumber}`, JSON.stringify(mockUserProfile));
       }
 
       // Set login status
@@ -82,14 +84,6 @@ const VerifyCode = () => {
         title: "ورود موفقیت‌آمیز",
         description: "به لیفت لجندز خوش آمدید!",
       });
-      
-      // Check if there's a pending subscription
-      const pendingSubscription = localStorage.getItem("pendingSubscription");
-      if (pendingSubscription) {
-        localStorage.removeItem("pendingSubscription");
-        navigate("/subscription-plans");
-        return;
-      }
       
       // Get redirect URL from localStorage or default to home
       const redirectUrl = localStorage.getItem("redirectAfterLogin") || "/home";
@@ -121,7 +115,7 @@ const VerifyCode = () => {
           برگشت
         </button>
       </div>
-      <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${getCardGradient()} ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
+      <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
         <CardContent className="p-6">
           <VerifyCodeStep
             verificationCode={verificationCode}

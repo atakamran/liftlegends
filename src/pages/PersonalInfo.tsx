@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
@@ -6,8 +5,6 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { doc, getDoc, updateDoc } from "firebase/firestore";
-import { db } from "@/integrations/firebase/firebaseConfig";
 import { useTheme } from "@/context/ThemeContext";
 import { Loader2, Save, ArrowLeft } from "lucide-react";
 import {
@@ -37,7 +34,7 @@ const PersonalInfo = () => {
   });
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
+    const fetchUserProfile = () => {
       setIsLoading(true);
       try {
         const phoneNumber = localStorage.getItem("userPhoneNumber");
@@ -47,20 +44,9 @@ const PersonalInfo = () => {
           return;
         }
         
-        const userRef = doc(db, "user_profiles", phoneNumber);
-        const userSnap = await getDoc(userRef);
-        
-        if (userSnap.exists()) {
-          const userData = userSnap.data();
-          setFormData({
-            name: userData.name || "",
-            age: userData.age || "",
-            gender: userData.gender || "",
-            height: userData.height || "",
-            weight: userData.weight || "",
-            targetWeight: userData.targetWeight || "",
-            fitnessLevel: userData.fitnessLevel || "",
-          });
+        const userData = localStorage.getItem(`userProfile_${phoneNumber}`);
+        if (userData) {
+          setFormData(JSON.parse(userData));
         }
       } catch (error) {
         console.error("Error fetching user profile:", error);
@@ -106,11 +92,11 @@ const PersonalInfo = () => {
         return;
       }
       
-      const userRef = doc(db, "user_profiles", phoneNumber);
-      await updateDoc(userRef, {
+      // Save to localStorage
+      localStorage.setItem(`userProfile_${phoneNumber}`, JSON.stringify({
         ...formData,
         updatedAt: new Date().toISOString()
-      });
+      }));
       
       toast({
         title: "اطلاعات ذخیره شد",

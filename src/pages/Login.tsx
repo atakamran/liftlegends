@@ -4,10 +4,11 @@ import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { useTheme } from "@/context/ThemeContext";
+import './Login.css'; // We'll create this file for the galaxy animation
 
 const Login = () => {
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const { theme, getThemeGradient, getButtonGradient, getTextColor } = useTheme();
   
   useEffect(() => {
     // Check if user is already logged in
@@ -22,8 +23,10 @@ const Login = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cover bg-center">
-      <div className="absolute inset-0 pointer-events-none"></div>
+    <div className="flex min-h-screen items-center justify-center galaxy-background relative">
+      <div className="stars"></div>
+      <div className="stars2"></div>
+      <div className="stars3"></div>
       <Card className={`w-full max-w-md backdrop-blur-md border-gray-200 shadow-lg mx-4 my-8 ${theme === 'dark' ? 'bg-black/70 text-white' : 'bg-white/70 text-black'}`}>
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
@@ -33,12 +36,14 @@ const Login = () => {
               className="h-16 w-16" 
             />
           </div>
-          <CardTitle className={`text-2xl font-extrabold`}>لیفت لجندز</CardTitle>
-          <CardDescription className={`text-lg`}>هدف خود را انتخاب کنید: کاهش، حفظ یا افزایش وزن</CardDescription>
+          <CardTitle className={`text-2xl font-extrabold ${getTextColor()}`}>لیفت لجندز</CardTitle>
+          <CardDescription className={`text-lg ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+            هدف خود را انتخاب کنید: کاهش، حفظ یا افزایش وزن
+          </CardDescription>
         </CardHeader>
         <CardContent className="space-y-4">
           <Button 
-            className={`w-full rounded-full text-lg font-semibold py-3 ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'}`}
+            className={`w-full rounded-full text-lg font-semibold py-3 ${getButtonGradient()} text-white transition-all duration-300 shadow-lg hover:shadow-xl`}
             onClick={goToPhoneLogin}
           >
             شروع با شماره موبایل

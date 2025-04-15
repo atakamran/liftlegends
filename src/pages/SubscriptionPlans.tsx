@@ -1,74 +1,53 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Check, X } from "lucide-react";
+import { Check, X, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import AppLayout from "@/components/Layout/AppLayout";
 import { cn } from "@/lib/utils";
+import { useTheme } from "@/context/ThemeContext";
 import { doc, setDoc, getDoc } from "firebase/firestore";
-import { db, auth } from "@/integrations/firebase/firebaseConfig"; // Ensure auth is imported
+import { db, auth } from "@/integrations/firebase/firebaseConfig";
 import { getCurrentUserProfile } from "@/services/profileService";
-
-const fetchUserProfile = async () => {
-  try {
-    const user = auth.currentUser;
-    if (!user) {
-      throw new Error("User not logged in");
-    }
-
-    const profileRef = doc(db, "user_profiles", user.uid);
-    const profileSnap = await getDoc(profileRef);
-
-    if (!profileSnap.exists()) {
-      throw new Error("User profile not found");
-    }
-
-    return profileSnap.data();
-  } catch (error) {
-    console.error("Error fetching user profile: ", error);
-    throw error;
-  }
-};
+import { useToast } from "@/hooks/use-toast";
 
 const SubscriptionPlans = () => {
   const navigate = useNavigate();
+  const { toast } = useToast();
+  const { theme, getButtonGradient, getCardGradient, getTextColor } = useTheme();
   const [subscriptionInfo, setSubscriptionInfo] = useState<{ plan: string; remainingTime: string } | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isLoggedIn, setIsLoggedIn] = useState(false);
 
   useEffect(() => {
-    const fetchUserProfile = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          navigate("/login"); // Redirect to login if user is not authenticated
-          return;
-        }
-
-        const profileRef = doc(db, "user_profiles", user.uid);
-        const profileSnap = await getDoc(profileRef);
-
-        if (!profileSnap.exists()) {
-          navigate("/subscription-plans"); // Redirect to subscription plans if profile does not exist
-          return;
-        }
-
-        const profileData = profileSnap.data();
-        // Process profileData if needed
-      } catch (error) {
-        console.error("Error fetching user profile: ", error);
-        navigate("/subscription-plans"); // Redirect to subscription plans on error
+    const checkAuthStatus = async () => {
+      setIsLoading(true);
+      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+      setIsLoggedIn(isLoggedIn);
+      
+      if (!isLoggedIn) {
+        setIsLoading(false);
+        return;
       }
-    };
 
-    fetchUserProfile();
-  }, []);
-
-  useEffect(() => {
-    const fetchSubscriptionInfo = async () => {
       try {
-        const profile = await getCurrentUserProfile();
-        if (profile.subscription_plan && profile.subscription_start_date && profile.subscription_end_date) {
-          const startDate = new Date(profile.subscription_start_date);
-          const endDate = new Date(profile.subscription_end_date);
+        const phoneNumber = localStorage.getItem("userPhoneNumber");
+        if (!phoneNumber) {
+          throw new Error("Phone number not found");
+        }
+        
+        const profileRef = doc(db, "user_profiles", phoneNumber);
+        const profileSnap = await getDoc(profileRef);
+        
+        if (!profileSnap.exists()) {
+          throw new Error("Profile not found");
+        }
+        
+        const profileData = profileSnap.data();
+        if (profileData.subscription_plan && profileData.subscription_start_date && profileData.subscription_end_date) {
+          const startDate = new Date(profileData.subscription_start_date);
+          const endDate = new Date(profileData.subscription_end_date);
           const now = new Date();
 
           const timeDiff = endDate.getTime() - now.getTime();
@@ -83,17 +62,86 @@ const SubscriptionPlans = () => {
           }
 
           setSubscriptionInfo({
-            plan: profile.subscription_plan,
+            plan: profileData.subscription_plan,
             remainingTime,
           });
         }
       } catch (error) {
         console.error("Error fetching subscription info: ", error);
+      } finally {
+        setIsLoading(false);
       }
     };
-
-    fetchSubscriptionInfo();
+    
+    checkAuthStatus();
   }, []);
+
+  const handleSelectPlan = async (planId: string, duration: string) => {
+    if (!isLoggedIn) {
+      // Store the chosen plan in localStorage for after login
+      localStorage.setItem("pendingSubscription", JSON.stringify({ plan: planId, duration }));
+      toast({
+        title: "لطفاً وارد شوید",
+        description: "برای خرید اشتراک نیاز است ابتدا وارد سیستم شوید.",
+      });
+      navigate("/phone-login?redirect=/subscription-plans");
+      return;
+    }
+
+    try {
+      const phoneNumber = localStorage.getItem("userPhoneNumber");
+      if (!phoneNumber) {
+        throw new Error("Phone number not found");
+      }
+
+      const profileRef = doc(db, "user_profiles", phoneNumber);
+      const profileSnap = await getDoc(profileRef);
+
+      if (!profileSnap.exists()) {
+        throw new Error("User profile not found");
+      }
+
+      if (planId === "basic") {
+        await setDoc(profileRef, {
+          subscription_plan: planId,
+          subscription_duration: "free",
+          subscription_start_date: new Date().toISOString(),
+          subscription_end_date: null, // No end date for free plan
+        }, { merge: true });
+        
+        toast({
+          title: "اشتراک رایگان",
+          description: "اشتراک رایگان با موفقیت فعال شد.",
+        });
+        
+        navigate(`/home`);
+        return;
+      }
+
+      await setDoc(profileRef, {
+        subscription_plan: planId,
+        subscription_duration: duration,
+        subscription_start_date: new Date().toISOString(),
+        subscription_end_date: new Date(
+          Date.now() +
+            (duration === "1_month"
+              ? 30 * 24 * 60 * 60 * 1000
+              : duration === "3_months"
+              ? 90 * 24 * 60 * 60 * 1000
+              : 365 * 24 * 60 * 60 * 1000)
+        ).toISOString(),
+      }, { merge: true });
+
+      navigate(`/payment?plan=${planId}&duration=${duration}`);
+    } catch (error) {
+      console.error("Error selecting plan: ", error);
+      toast({
+        title: "خطا",
+        description: "مشکلی در انتخاب پلن رخ داد. لطفاً دوباره تلاش کنید.",
+        variant: "destructive",
+      });
+    }
+  };
 
   const plans = [
     {
@@ -142,50 +190,23 @@ const SubscriptionPlans = () => {
       popular: false
     },
   ];
-
-  const handleSelectPlan = async (planId: string, duration: string) => {
-    try {
-      const profileData = await fetchUserProfile();
-      console.log("Fetched profile data: ", profileData);
-
-      const profileRef = doc(db, "user_profiles", auth.currentUser.uid);
-
-      if (planId === "basic") {
-        await setDoc(profileRef, {
-          subscription_plan: planId,
-          subscription_duration: "free",
-          subscription_start_date: new Date().toISOString(),
-          subscription_end_date: null, // No end date for free plan
-        }, { merge: true });
-        navigate(`/home`);
-        return;
-      }
-
-      await setDoc(profileRef, {
-        subscription_plan: planId,
-        subscription_duration: duration,
-        subscription_start_date: new Date().toISOString(),
-        subscription_end_date: new Date(
-          Date.now() +
-            (duration === "1_month"
-              ? 30 * 24 * 60 * 60 * 1000
-              : duration === "3_months"
-              ? 90 * 24 * 60 * 60 * 1000
-              : 365 * 24 * 60 * 60 * 1000)
-        ).toISOString(),
-      }, { merge: true });
-
-      navigate(`/payment?plan=${planId}&duration=${duration}`);
-    } catch (error) {
-      console.error("Error selecting plan: ", error);
-    }
-  };
+  
+  if (isLoading) {
+    return (
+      <AppLayout className="py-8">
+        <div className="flex justify-center items-center h-64">
+          <Loader2 className="w-12 h-12 animate-spin text-primary" />
+          <p className="ml-2 text-lg">در حال بارگذاری...</p>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
-    <AppLayout className="py-8">
+    <AppLayout className={`py-8 ${getThemeGradient()}`}>
       <div className="mx-auto max-w-3xl">
         <div className="text-center mb-8">
-          <h1 className="text-3xl font-bold mb-2">انتخاب اشتراک</h1>
+          <h1 className={`text-3xl font-bold mb-2 ${getTextColor()}`}>انتخاب اشتراک</h1>
           <p className="text-muted-foreground">
             پلن مناسب خودتان را انتخاب کنید و به سطح بعدی تمرین برسید
           </p>
@@ -196,29 +217,30 @@ const SubscriptionPlans = () => {
             <Card 
               key={plan.id}
               className={cn(
-                "flex flex-col relative overflow-hidden", 
-                plan.popular ? "border-primary shadow-md" : ""
+                "flex flex-col relative overflow-hidden shadow-lg transition-transform duration-300 hover:scale-105", 
+                plan.popular ? "border-primary shadow-xl" : "",
+                getCardGradient()
               )}
             >
               {plan.popular && (
-                <div className="absolute top-0 left-0 right-0 bg-primary text-primary-foreground text-center py-1 text-xs font-medium">
+                <div className="absolute top-0 left-0 right-0 bg-gradient-to-r from-indigo-600 to-blue-600 text-primary-foreground text-center py-1 text-xs font-medium">
                   پیشنهاد ویژه
                 </div>
               )}
               <CardHeader className={plan.popular ? "pt-8" : ""}>
-                <CardTitle>{plan.title}</CardTitle>
+                <CardTitle className={getTextColor()}>{plan.title}</CardTitle>
                 <CardDescription>{plan.description}</CardDescription>
                 <div className="mt-2">
-                  <span className="text-3xl font-bold">{plan.price}</span>
+                  <span className={`text-3xl font-bold ${getTextColor()}`}>{plan.price}</span>
                   <span className="text-muted-foreground text-sm"> تومان / {plan.interval}</span>
                 </div>
               </CardHeader>
               <CardContent className="flex-grow">
                 <ul className="space-y-2">
                   {plan.features.map((feature, i) => (
-                    <li key={i} className="flex items-center text-sm">
+                    <li key={i} className={`flex items-center text-sm ${getTextColor()}`}>
                       {feature.included ? (
-                        <Check className="mr-2 h-4 w-4 text-primary" />
+                        <Check className="mr-2 h-4 w-4 text-green-500" />
                       ) : (
                         <X className="mr-2 h-4 w-4 text-muted-foreground" />
                       )}
@@ -229,7 +251,7 @@ const SubscriptionPlans = () => {
               </CardContent>
               <CardFooter>
                 <div className="flex flex-col space-y-2 w-full">
-                  {subscriptionInfo && subscriptionInfo.plan !== "basic" ? (
+                  {isLoggedIn && subscriptionInfo && subscriptionInfo.plan !== "basic" ? (
                     <div className="text-center text-muted-foreground">
                       <p>پلن شما: {subscriptionInfo.plan === "pro" ? "Pro" : "Ultimate"}</p>
                       <p>زمان باقی‌مانده: {subscriptionInfo.remainingTime}</p>
@@ -237,31 +259,31 @@ const SubscriptionPlans = () => {
                   ) : (
                     <Button 
                       onClick={() => handleSelectPlan("basic", "free")}
-                      className="w-full"
+                      className={`w-full ${getButtonGradient()} text-white`}
                       variant="outline"
                     >
                       استفاده از پلن رایگان
                     </Button>
                   )}
-                  {plan.id !== "basic" && !subscriptionInfo && (
+                  {plan.id !== "basic" && (!subscriptionInfo || subscriptionInfo.plan === "basic") && (
                     <>
                       <Button 
                         onClick={() => handleSelectPlan(plan.id, "1_month")}
-                        className="w-full"
+                        className={`w-full ${getButtonGradient()} text-white`}
                         variant="default"
                       >
                         انتخاب این پلن (1 ماهه)
                       </Button>
                       <Button 
                         onClick={() => handleSelectPlan(plan.id, "3_months")}
-                        className="w-full"
+                        className={`w-full ${getButtonGradient()} text-white`}
                         variant="default"
                       >
                         انتخاب این پلن (3 ماهه)
                       </Button>
                       <Button 
                         onClick={() => handleSelectPlan(plan.id, "1_year")}
-                        className="w-full"
+                        className={`w-full ${getButtonGradient()} text-white`}
                         variant="default"
                       >
                         انتخاب این پلن (1 ساله)
@@ -273,6 +295,18 @@ const SubscriptionPlans = () => {
             </Card>
           ))}
         </div>
+
+        {!isLoggedIn && (
+          <div className="mt-12 text-center">
+            <p className={`mb-4 ${getTextColor()}`}>برای خرید اشتراک نیاز است ابتدا وارد سیستم شوید</p>
+            <Button 
+              onClick={() => navigate("/phone-login?redirect=/subscription-plans")}
+              className={`${getButtonGradient()} text-white px-8 py-6 rounded-full text-lg shadow-lg`}
+            >
+              ورود به سیستم
+            </Button>
+          </div>
+        )}
       </div>
     </AppLayout>
   );

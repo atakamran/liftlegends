@@ -1,0 +1,51 @@
+
+.galaxy-background {
+  background: linear-gradient(to bottom, #0f0c29, #302b63, #24243e);
+  overflow: hidden;
+}
+
+.stars, .stars2, .stars3 {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  width: 100%;
+  height: 100%;
+  display: block;
+  pointer-events: none;
+}
+
+.stars {
+  background: transparent url(/star-field-1.png) repeat top center;
+  z-index: 0;
+  animation: move-stars 100s linear infinite;
+}
+
+.stars2 {
+  background: transparent url(/star-field-2.png) repeat top center;
+  z-index: 1;
+  animation: move-stars 150s linear infinite;
+}
+
+.stars3 {
+  background: transparent url(/star-field-3.png) repeat top center;
+  z-index: 2;
+  animation: move-stars 200s linear infinite;
+}
+
+@keyframes move-stars {
+  from {
+    transform: translateY(0);
+  }
+  to {
+    transform: translateY(1000px);
+  }
+}
+
+/* Add responsive adjustments */
+@media (max-width: 640px) {
+  .stars, .stars2, .stars3 {
+    animation-duration: 200s;
+  }
+}

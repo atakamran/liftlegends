@@ -1,14 +1,16 @@
+
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import { Check, CreditCard } from "lucide-react";
+import { Check, CreditCard, ArrowLeft } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
 import { doc, updateDoc } from "firebase/firestore";
-import { auth, db } from "@/integrations/firebase/firebaseConfig";
+import { db } from "@/integrations/firebase/firebaseConfig";
 import AppLayout from "@/components/Layout/AppLayout";
+import { useTheme } from "@/context/ThemeContext";
 
 type Plan = {
   id: string;
@@ -22,6 +24,7 @@ const Payment = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { theme, getButtonGradient, getCardGradient, getTextColor, getThemeGradient } = useTheme();
   const [isProcessing, setIsProcessing] = useState(false);
   const [selectedPlan, setSelectedPlan] = useState<Plan | null>(null);
   
@@ -43,6 +46,18 @@ const Payment = () => {
   };
   
   useEffect(() => {
+    // Check authentication
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (!isLoggedIn) {
+      toast({
+        title: "نیاز به ورود",
+        description: "لطفاً ابتدا وارد سیستم شوید.",
+        variant: "destructive",
+      });
+      navigate("/phone-login?redirect=/subscription-plans");
+      return;
+    }
+    
     // Get plan from URL query parameter
     const params = new URLSearchParams(location.search);
     const planId = params.get('plan');
@@ -69,20 +84,28 @@ const Payment = () => {
     setIsProcessing(true);
 
     try {
-      const user = auth.currentUser;
+      const phoneNumber = localStorage.getItem("userPhoneNumber");
 
-      if (!user) {
+      if (!phoneNumber) {
         throw new Error("کاربر احراز هویت نشده است");
       }
 
       // Simulate successful payment and update user subscription in Firestore
       setTimeout(async () => {
         try {
-          const profileRef = doc(db, "user_profiles", user.uid);
+          const profileRef = doc(db, "user_profiles", phoneNumber);
+          const params = new URLSearchParams(location.search);
+          const duration = params.get('duration') || "1_month";
+          
+          const durationMilliseconds = 
+            duration === "1_month" ? 30 * 24 * 60 * 60 * 1000 :
+            duration === "3_months" ? 90 * 24 * 60 * 60 * 1000 :
+            365 * 24 * 60 * 60 * 1000;
+
           await updateDoc(profileRef, {
             subscription_plan: selectedPlan.id,
             subscription_start_date: new Date().toISOString(),
-            subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(), // 30 days from now
+            subscription_end_date: new Date(Date.now() + durationMilliseconds).toISOString(),
           });
 
           toast({
@@ -116,21 +139,24 @@ const Payment = () => {
   // If selected plan is "basic", it's free and we should show a different UI
   if (new URLSearchParams(location.search).get('plan') === 'basic') {
     return (
-      <AppLayout>
+      <AppLayout className={getThemeGradient()}>
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
-          <Card className="w-full max-w-md text-center">
+          <Card className={`w-full max-w-md text-center ${getCardGradient()} shadow-xl`}>
             <CardHeader>
-              <CardTitle>فعال‌سازی پلن رایگان</CardTitle>
+              <CardTitle className={getTextColor()}>فعال‌سازی پلن رایگان</CardTitle>
               <CardDescription>دسترسی به امکانات پایه برنامه</CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-full bg-primary/10 p-3 w-12 h-12 mx-auto flex items-center justify-center">
-                <Check className="h-6 w-6 text-primary" />
+              <div className="rounded-full bg-green-500/20 p-3 w-12 h-12 mx-auto flex items-center justify-center">
+                <Check className="h-6 w-6 text-green-500" />
               </div>
-              <p>پلن رایگان فعال است. شما می‌توانید در هر زمان به پلن‌های بالاتر ارتقا دهید.</p>
+              <p className={getTextColor()}>پلن رایگان فعال است. شما می‌توانید در هر زمان به پلن‌های بالاتر ارتقا دهید.</p>
             </CardContent>
             <CardFooter className="flex justify-center">
-              <Button onClick={() => navigate('/home')}>
+              <Button 
+                onClick={() => navigate('/home')}
+                className={`${getButtonGradient()} text-white`}
+              >
                 بازگشت به خانه
               </Button>
             </CardFooter>
@@ -142,57 +168,70 @@ const Payment = () => {
 
   // For paid plans
   return (
-    <AppLayout>
-      <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">
+    <AppLayout className={getThemeGradient()}>
+      <div className="flex min-h-screen flex-col items-center justify-center p-4">
         <div className="w-full max-w-md">
+          <Button 
+            variant="ghost" 
+            onClick={() => navigate('/subscription-plans')}
+            className="mb-4 flex items-center text-primary hover:text-primary/80"
+          >
+            <ArrowLeft className="mr-2 h-4 w-4" />
+            بازگشت به صفحه پلن‌ها
+          </Button>
+          
           {selectedPlan ? (
             <>
-              <h1 className="text-2xl font-bold text-center mb-6">تکمیل خرید اشتراک</h1>
+              <h1 className={`text-2xl font-bold text-center mb-6 ${getTextColor()}`}>تکمیل خرید اشتراک</h1>
               
-              <Card className="mb-6">
+              <Card className={`mb-6 ${getCardGradient()} shadow-lg`}>
                 <CardHeader>
-                  <CardTitle>خلاصه سفارش</CardTitle>
+                  <CardTitle className={getTextColor()}>خلاصه سفارش</CardTitle>
                 </CardHeader>
                 <CardContent>
                   <div className="flex justify-between items-center">
                     <div>
-                      <p className="font-medium">{selectedPlan.title}</p>
+                      <p className={`font-medium ${getTextColor()}`}>{selectedPlan.title}</p>
                       <p className="text-sm text-muted-foreground">{selectedPlan.interval}</p>
                     </div>
-                    <div className="text-lg font-bold">{selectedPlan.price} تومان</div>
+                    <div className={`text-lg font-bold ${getTextColor()}`}>{selectedPlan.price} تومان</div>
                   </div>
                 </CardContent>
               </Card>
               
-              <Card>
+              <Card className={`${getCardGradient()} shadow-lg`}>
                 <CardHeader>
-                  <CardTitle>اطلاعات پرداخت</CardTitle>
+                  <CardTitle className={getTextColor()}>اطلاعات پرداخت</CardTitle>
                   <CardDescription>اطلاعات کارت خود را وارد کنید</CardDescription>
                 </CardHeader>
                 <CardContent>
                   <form onSubmit={handleSubmit} className="space-y-4">
                     <div className="space-y-2">
-                      <Label htmlFor="cardNumber">شماره کارت</Label>
-                      <Input id="cardNumber" placeholder="---- ---- ---- ----" required />
+                      <Label htmlFor="cardNumber" className={getTextColor()}>شماره کارت</Label>
+                      <Input id="cardNumber" placeholder="---- ---- ---- ----" required className="bg-transparent" />
                     </div>
                     
                     <div className="grid grid-cols-2 gap-4">
                       <div className="space-y-2">
-                        <Label htmlFor="expiryDate">تاریخ انقضا</Label>
-                        <Input id="expiryDate" placeholder="ماه / سال" required />
+                        <Label htmlFor="expiryDate" className={getTextColor()}>تاریخ انقضا</Label>
+                        <Input id="expiryDate" placeholder="ماه / سال" required className="bg-transparent" />
                       </div>
                       <div className="space-y-2">
-                        <Label htmlFor="cvv">CVV</Label>
-                        <Input id="cvv" placeholder="123" required />
+                        <Label htmlFor="cvv" className={getTextColor()}>CVV</Label>
+                        <Input id="cvv" placeholder="123" required className="bg-transparent" />
                       </div>
                     </div>
                     
                     <div className="space-y-2">
-                      <Label htmlFor="cardHolder">نام صاحب کارت</Label>
-                      <Input id="cardHolder" required />
+                      <Label htmlFor="cardHolder" className={getTextColor()}>نام صاحب کارت</Label>
+                      <Input id="cardHolder" required className="bg-transparent" />
                     </div>
                     
-                    <Button type="submit" className="w-full" disabled={isProcessing}>
+                    <Button 
+                      type="submit" 
+                      className={`w-full ${getButtonGradient()} text-white shadow-lg transition-all duration-300 hover:shadow-xl`} 
+                      disabled={isProcessing}
+                    >
                       <CreditCard className="ml-2 h-4 w-4" />
                       {isProcessing ? "در حال پردازش..." : `پرداخت ${selectedPlan.price} تومان`}
                     </Button>
@@ -201,15 +240,18 @@ const Payment = () => {
               </Card>
             </>
           ) : (
-            <Card className="text-center">
+            <Card className={`text-center ${getCardGradient()} shadow-lg`}>
               <CardHeader>
-                <CardTitle>خطا</CardTitle>
+                <CardTitle className={getTextColor()}>خطا</CardTitle>
               </CardHeader>
               <CardContent>
-                <p>پلن انتخاب شده معتبر نیست.</p>
+                <p className={getTextColor()}>پلن انتخاب شده معتبر نیست.</p>
               </CardContent>
               <CardFooter className="flex justify-center">
-                <Button onClick={() => navigate('/subscription-plans')}>
+                <Button 
+                  onClick={() => navigate('/subscription-plans')}
+                  className={`${getButtonGradient()} text-white`}
+                >
                   بازگشت به صفحه انتخاب پلن
                 </Button>
               </CardFooter>

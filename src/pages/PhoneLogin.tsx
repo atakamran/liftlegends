@@ -1,101 +1,85 @@
 
-import React, { useState } from "react";
-import { useNavigate } from "react-router-dom";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Alert } from "@/components/ui/alert";
-import { auth, db } from "@/integrations/firebase/firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
+import React, { useState, useEffect } from "react";
+import { useNavigate, useLocation } from "react-router-dom";
+import { Card, CardContent } from "@/components/ui/card";
+import PhoneStep from "@/components/registration/PhoneStep";
+import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
-import { Loader2 } from "lucide-react";
+import "./Login.css"; // Re-use the galaxy animation
 
 const PhoneLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
-  const [alert, setAlert] = useState({ type: "", message: "" });
   const [isLoading, setIsLoading] = useState(false);
+  const { toast } = useToast();
+  const { theme, getCardGradient } = useTheme();
   const navigate = useNavigate();
-  const { theme } = useTheme();
+  const location = useLocation();
+  
+  // Get redirect URL from query params if it exists
+  const getRedirectUrl = () => {
+    const params = new URLSearchParams(location.search);
+    return params.get('redirect') || "/home";
+  };
 
-  const handlePhoneLogin = async () => {
-    if (!phoneNumber || phoneNumber.length < 10) {
-      setAlert({ type: "error", message: "لطفاً یک شماره تلفن معتبر وارد کنید." });
+  useEffect(() => {
+    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
+    if (isLoggedIn) {
+      navigate(getRedirectUrl());
+    }
+  }, [navigate]);
+
+  const handlePhoneNumberChange = (value: string) => {
+    // Only allow numbers
+    const numbersOnly = value.replace(/[^0-9]/g, "");
+    setPhoneNumber(numbersOnly);
+  };
+
+  const sendVerificationCode = () => {
+    if (!phoneNumber || phoneNumber.length < 11 || !phoneNumber.startsWith("09")) {
+      toast({
+        title: "شماره موبایل نامعتبر",
+        description: "لطفاً یک شماره موبایل معتبر وارد کنید.",
+        variant: "destructive",
+      });
       return;
     }
 
     setIsLoading(true);
-    
-    try {
-      const userDoc = doc(db, "user_profiles", phoneNumber);
-      const userSnap = await getDoc(userDoc);
 
-      // Check if user exists
-      if (userSnap.exists()) {
-        setAlert({ type: "success", message: "کد تأیید ارسال شد." });
-        navigate("/phone-login/verify", { state: { phoneNumber } });
-      } else {
-        // If user doesn't exist, create a new account
-        await setDoc(userDoc, { 
-          phoneNumber,
-          createdAt: new Date().toISOString(),
-        });
-        setAlert({ type: "success", message: "حساب کاربری جدید ایجاد شد. کد تأیید ارسال شد." });
-        navigate("/phone-login/verify", { state: { phoneNumber } });
-      }
-    } catch (error) {
-      console.error("Error checking user profile: ", error);
-      setAlert({ type: "error", message: "مشکلی در بررسی شماره تلفن پیش آمد." });
-    } finally {
+    // Store the phone number in localStorage for later use
+    localStorage.setItem("phoneNumberForVerification", phoneNumber);
+    
+    // Store redirect URL for after verification
+    localStorage.setItem("redirectAfterLogin", getRedirectUrl());
+
+    setTimeout(() => {
       setIsLoading(false);
-    }
+      navigate(`/phone-login/verify`);
+    }, 1500);
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center bg-cover bg-center">
-      <div className="absolute inset-0 pointer-events-none"></div>
-      <Card className={`w-full max-w-md backdrop-blur-md border-gray-200 shadow-lg mx-4 my-8 ${theme === 'dark' ? 'bg-black/70 text-white' : 'bg-white/70 text-black'}`}>
-        <CardHeader className="text-center">
-          <div className="flex justify-center mb-4">
-            <img 
-              src={theme === 'dark' ? "/lovable-uploads/white-logo.png" : "/lovable-uploads/black-logo.png"}
-              alt="Lift Legends" 
-              className="h-16 w-16" 
-            />
-          </div>
-          <CardTitle className="text-2xl font-extrabold">ورود با شماره تلفن</CardTitle>
-          <CardDescription className="text-lg">شماره تلفن خود را وارد کنید</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
-          {alert.message && (
-            <Alert
-              variant={alert.type === "error" ? "destructive" : "default"}
-              className="mb-4"
-            >
-              {alert.message}
-            </Alert>
-          )}
-          <Input
-            type="tel"
-            value={phoneNumber}
-            onChange={(e) => setPhoneNumber(e.target.value)}
-            placeholder="09123456789"
-            dir="ltr"
-            className="w-full rounded-lg text-lg p-3 bg-transparent"
+    <div className="flex min-h-screen items-center justify-center galaxy-background">
+      <div className="stars"></div>
+      <div className="stars2"></div>
+      <div className="stars3"></div>
+      <div className="absolute top-0 left-0 w-full py-6 px-4 flex justify-between items-center z-10">
+        <button 
+          onClick={() => navigate(-1)} 
+          className="text-white hover:text-gray-200 transition-colors"
+        >
+          برگشت
+        </button>
+      </div>
+      <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${getCardGradient()} ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
+        <CardContent className="p-6">
+          <PhoneStep
+            phoneNumber={phoneNumber}
+            updatePhoneNumber={handlePhoneNumberChange}
+            onSendCode={sendVerificationCode}
+            isLoading={isLoading}
+            isDarkTheme={theme === 'dark'}
           />
-          <Button 
-            className={`w-full rounded-full text-lg font-semibold py-3 ${theme === 'dark' ? 'bg-white text-black hover:bg-gray-200' : 'bg-black text-white hover:bg-gray-800'}`}
-            onClick={handlePhoneLogin}
-            disabled={isLoading}
-          >
-            {isLoading ? (
-              <>
-                <Loader2 className="mr-2 h-4 w-4 animate-spin" />
-                در حال پردازش...
-              </>
-            ) : (
-              "ادامه"
-            )}
-          </Button>
         </CardContent>
       </Card>
     </div>

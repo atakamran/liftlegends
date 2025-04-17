@@ -118,9 +118,9 @@ const Profile = () => {
           name: parsedUserData.name || "کاربر",
           phoneNumber: parsedUserData.phoneNumber || "",
           age: parsedUserData.age || "30",
-          gender: parsedUserData.gender || "male",
-          height: parsedUserData.height || "175",
-          currentWeight: parsedUserData.currentWeight || "75",
+          gender: parsedUserData.gender || "",
+          height: parsedUserData.height || "",
+          currentWeight: parsedUserData.currentWeight || "",
           targetWeight: parsedUserData.targetWeight || "",
           goal: parsedUserData.goal || "",
           fitnessLevel: parsedUserData.fitnessLevel || "متوسط",
@@ -268,7 +268,7 @@ const Profile = () => {
           {/* User Profile Card */}
           <Card className="mt-16 mb-6 shadow-lg border-0 overflow-visible">
             <CardContent className="p-0">
-              <div className="flex flex-col items-center -mt-12">
+              <div className="flex flex-col  items-center -mt-12">
                 <div className={`w-24 h-24 rounded-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} flex items-center justify-center overflow-hidden border-4 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].border : 'border-gray-300'} shadow-xl`}>
                   <UserIcon className={`h-12 w-12 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].icon : 'text-muted-foreground'}`} />
                 </div>

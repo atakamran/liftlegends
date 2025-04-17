@@ -1,13 +1,13 @@
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Loader2, Calendar } from "lucide-react";
+import { Loader2, User } from "lucide-react";
 
 interface NameStepProps {
   name: string;
   updateName: (value: string) => void;
-  birthDate: string;
-  updateBirthDate: (value: string) => void;
+  age: string;
+  updateAge: (value: string) => void;
   onNext: () => void;
   isLoading: boolean;
   isDarkTheme: boolean;
@@ -16,8 +16,8 @@ interface NameStepProps {
 const NameStep: React.FC<NameStepProps> = ({
   name,
   updateName,
-  birthDate,
-  updateBirthDate,
+  age,
+  updateAge,
   onNext,
   isLoading,
   isDarkTheme
@@ -38,17 +38,19 @@ const NameStep: React.FC<NameStepProps> = ({
       </div>
       
       <div className="w-full mb-8">
-        <label className="block text-lg mb-2 text-right">تاریخ تولد</label>
+        <label className="block text-lg mb-2 text-right">سن شما</label>
         <div className="relative">
           <Input
-            type="date"
-            value={birthDate}
-            onChange={(e) => updateBirthDate(e.target.value)}
-            placeholder="yyyy-MM-dd"
+            type="number"
+            value={age}
+            onChange={(e) => updateAge(e.target.value)}
+            placeholder="مثال: 25"
+            min="10"
+            max="100"
             required
             className="bg-gray-800 border-gray-700 text-right h-14 mb-2 pl-10"
           />
-          <Calendar className="absolute left-3 top-4 h-5 w-5 text-gray-400" />
+          <User className="absolute left-3 top-4 h-5 w-5 text-gray-400" />
         </div>
       </div>
       
@@ -56,7 +58,7 @@ const NameStep: React.FC<NameStepProps> = ({
         <Button 
           onClick={onNext} 
           className={`w-full h-14 text-lg rounded-full ${isDarkTheme ? 'bg-white text-black' : 'bg-black text-white'} hover:opacity-90`}
-          disabled={isLoading || !name || !birthDate}
+          disabled={isLoading || !name || !age}
         >
           {isLoading ? (
             <>

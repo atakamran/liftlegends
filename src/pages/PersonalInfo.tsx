@@ -29,7 +29,7 @@ const PersonalInfo = () => {
     height: "",
     currentWeight: "",
     targetWeight: "",
-    birthDate: "",
+    age: "",
     gender:"",
   });
   
@@ -207,13 +207,15 @@ const PersonalInfo = () => {
               </div>
               
               <div className="space-y-2">
-                <Label htmlFor="birthDate">تاریخ تولد</Label>
+                <Label htmlFor="age">سن</Label>
                 <Input
-                  id="birthDate"
-                  type="date"
-                  value={userData.birthDate}
-                  onChange={(e) => handleChange("birthDate", e.target.value)}
-                  placeholder="تاریخ تولد"
+                  id="age"
+                  type="number"
+                  value={userData.age}
+                  onChange={(e) => handleChange("age", e.target.value)}
+                  placeholder="سن شما"
+                  min="10"
+                  max="100"
                 />
               </div>
 

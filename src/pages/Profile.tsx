@@ -211,12 +211,15 @@ const Profile = () => {
           <CardContent className="p-4">
             <div className="space-y-0 divide-y dark:divide-gray-800">
               {menuItems.map((item, index) => (
-                <button
+                <div
                   key={index}
-                  className="w-full py-4 px-2 flex items-center justify-between hover:bg-secondary transition-colors rounded-md"
-                  onClick={item.onClick}
+                  className="w-full py-4 px-2 flex items-center justify-between hover:bg-secondary transition-colors rounded-md cursor-pointer"
+                  onClick={item.component ? undefined : item.onClick}
                 >
-                  <div className="flex items-center">
+                  <div 
+                    className="flex items-center"
+                    onClick={item.component ? item.onClick : undefined}
+                  >
                     <ChevronRightIcon className="h-5 w-5 ml-2 rtl:rotate-180" />
                     <span className="text-lg">{item.title}</span>
                   </div>
@@ -226,7 +229,7 @@ const Profile = () => {
                       {item.icon}
                     </div>
                   </div>
-                </button>
+                </div>
               ))}
             </div>
           </CardContent>

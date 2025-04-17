@@ -1,7 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import AppLayout from "@/components/Layout/AppLayout";
-import { exercises } from "@/data/exercises";
 import { MuscleGroup, Exercise } from "@/types";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Pagination, Navigation, EffectCards, EffectCoverflow } from "swiper/modules";
@@ -11,7 +10,9 @@ import "swiper/css/navigation";
 import "swiper/css/effect-coverflow";
 import "@/styles/swiper-custom.css";
 import { weeklyPlan, daysOfWeek, getTodayDay } from "@/services/exerciseService";
+import { getDayCompletedExercises, calculateDayProgress } from "@/services/workoutProgressService";
 import { useTheme } from "@/context/ThemeContext";
+import { CheckCircle } from "lucide-react";
 
 const muscleGroups: MuscleGroup[] = [
   'کل بدن',
@@ -41,8 +42,17 @@ const ExercisesPage = () => {
   const { theme } = useTheme();
   const navigate = useNavigate();
 
+  // به‌روزرسانی روز انتخاب شده و وضعیت تمرین‌ها
   useEffect(() => {
     setSelectedDay(getTodayDay());
+    
+    // یک تایمر برای به‌روزرسانی مداوم وضعیت تمرین‌ها
+    const interval = setInterval(() => {
+      // این خط باعث می‌شود کامپوننت دوباره رندر شود و وضعیت تمرین‌ها به‌روز شود
+      setSelectedDay(prevDay => prevDay);
+    }, 5000); // هر 5 ثانیه
+    
+    return () => clearInterval(interval);
   }, []);
   
   // Function to handle slide change
@@ -168,20 +178,72 @@ const ExercisesPage = () => {
               </div>
               <div className="mt-2 overflow-y-auto flex-grow scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-1">
                 <ul className="space-y-2">
-                  {dayPlan.exercises.map((exercise, idx) => (
-                    <li 
-                      key={idx} 
-                      className={`flex justify-between items-center ${getHoverBgColor()} p-2.5 rounded-lg ${dayPlan.day === selectedDay ? 'bg-yellow-500/10' : ''} transition-colors duration-200`}
-                    >
-                      <span className={`truncate ${dayPlan.day === selectedDay ? 'text-yellow-500 font-bold' : ''}`}>{exercise.name}</span>
-                      <span className={`text-xs whitespace-nowrap px-2 py-1 rounded-full bg-gray-800/50 ${dayPlan.day === selectedDay ? 'text-yellow-400' : 'text-gray-400'}`}>{exercise.sets} × {exercise.reps}</span>
-                    </li>
-                  ))}
+                  {dayPlan.exercises.map((exercise, idx) => {
+                    // بررسی آیا تمرین انجام شده است
+                    const isCompleted = getDayCompletedExercises(dayPlan.day).includes(exercise.name);
+                    
+                    return (
+                      <li 
+                        key={idx} 
+                        className={`flex justify-between items-center ${getHoverBgColor()} p-2.5 rounded-lg ${
+                          isCompleted 
+                            ? 'bg-green-500/20 border border-green-500/30' 
+                            : dayPlan.day === selectedDay ? 'bg-yellow-500/10' : ''
+                        } transition-colors duration-200`}
+                      >
+                        <div className="flex items-center gap-1.5 truncate">
+                          {isCompleted && (
+                            <CheckCircle className="h-3.5 w-3.5 text-green-500 flex-shrink-0" />
+                          )}
+                          <span className={`truncate ${
+                            isCompleted 
+                              ? 'text-green-500' 
+                              : dayPlan.day === selectedDay ? 'text-yellow-500 font-bold' : ''
+                          }`}>{exercise.name}</span>
+                        </div>
+                        <span className={`text-xs whitespace-nowrap px-2 py-1 rounded-full bg-gray-800/50 ${
+                          isCompleted 
+                            ? 'text-green-400' 
+                            : dayPlan.day === selectedDay ? 'text-yellow-400' : 'text-gray-400'
+                        }`}>{exercise.sets} × {exercise.reps}</span>
+                      </li>
+                    );
+                  })}
                 </ul>
               </div>
-              <div className="mt-3 pt-3 border-t border-gray-800/50 flex justify-between items-center">
-                <span className="text-xs text-gray-500">{dayPlan.exercises.length} تمرین</span>
-                <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded-full">مشاهده جزئیات</span>
+              <div className="mt-3 pt-3 border-t border-gray-800/50 space-y-2">
+                <div className="flex justify-between items-center">
+                  <span className="text-xs text-gray-500">{dayPlan.exercises.length} تمرین</span>
+                  {(() => {
+                    // محاسبه درصد پیشرفت
+                    const progress = calculateDayProgress(dayPlan.day, dayPlan.exercises.length);
+                    return (
+                      <span className={`text-xs px-2 py-1 rounded-full ${
+                        progress > 0 
+                          ? progress === 100 
+                            ? 'bg-green-500/20 text-green-500' 
+                            : 'bg-yellow-500/20 text-yellow-500'
+                          : 'bg-gray-800 text-gray-400'
+                      }`}>
+                        {progress > 0 ? `${progress}% انجام شده` : 'مشاهده جزئیات'}
+                      </span>
+                    );
+                  })()}
+                </div>
+                {(() => {
+                  // محاسبه درصد پیشرفت
+                  const progress = calculateDayProgress(dayPlan.day, dayPlan.exercises.length);
+                  return progress > 0 ? (
+                    <div className="w-full bg-gray-800/50 rounded-full h-1.5 overflow-hidden">
+                      <div 
+                        className={`h-full rounded-full ${
+                          progress === 100 ? 'bg-green-500' : 'bg-yellow-500'
+                        }`}
+                        style={{ width: `${progress}%` }}
+                      ></div>
+                    </div>
+                  ) : null;
+                })()}
               </div>
             </div>
           </SwiperSlide>

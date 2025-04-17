@@ -30,7 +30,7 @@ const Registration = () => {
     phoneNumber: "",
     password: "",
     name: "",
-    birthDate: "",
+    age: "",
     gender: "",
     currentWeight: "",
     height: "",
@@ -117,7 +117,7 @@ const Registration = () => {
       phoneNumber: formData.phoneNumber,
       password: formData.password,
       name: formData.name,
-      birthDate: formData.birthDate,
+      age: parseInt(formData.age) || 0, // تبدیل به عدد
       gender: formData.gender,
       currentWeight: formData.currentWeight,
       height: formData.height,
@@ -182,8 +182,8 @@ const Registration = () => {
           <NameStep
             name={formData.name}
             updateName={(value) => updateFormData("name", value)}
-            birthDate={formData.birthDate}
-            updateBirthDate={(value) => updateFormData("birthDate", value)}
+            age={formData.age}
+            updateAge={(value) => updateFormData("age", value)}
             onNext={handleNextStep}
             isLoading={isLoading}
             isDarkTheme={theme === 'dark'}

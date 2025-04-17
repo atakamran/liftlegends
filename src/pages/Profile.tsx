@@ -6,8 +6,6 @@ import { Button } from "@/components/ui/button";
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
 import { useToast } from "@/hooks/use-toast";
-import { doc, getDoc } from "firebase/firestore";
-import { db } from "@/integrations/firebase/firebaseConfig";
 import { 
   UserIcon, CrownIcon, MoonIcon, BellIcon, 
   HeadphonesIcon, InfoIcon, LogOutIcon, ChevronRightIcon, 
@@ -29,28 +27,32 @@ const planColors = {
     text: "text-white",
     border: "border-slate-500",
     icon: "text-slate-300",
-    gradient: "from-slate-600 to-slate-800"
+    gradient: "from-slate-600 to-slate-800",
+    name: "پایه"
   },
   pro: {
-    bg: "bg-blue-700",
+    bg: "bg-purple-700",
     text: "text-white",
-    border: "border-blue-500",
-    icon: "text-blue-300",
-    gradient: "from-blue-600 to-blue-900"
+    border: "border-purple-500",
+    icon: "text-purple-300",
+    gradient: "from-purple-600 to-purple-900",
+    name: "حرفه‌ای"
   },
   ultimate: {
     bg: "bg-yellow-600",
     text: "text-white",
     border: "border-yellow-400",
     icon: "text-yellow-300",
-    gradient: "from-yellow-500 to-yellow-800"
+    gradient: "from-yellow-500 to-yellow-800",
+    name: "نامحدود"
   },
   inactive: {
     bg: "bg-gray-700",
     text: "text-gray-200",
     border: "border-gray-600",
     icon: "text-gray-400",
-    gradient: "from-gray-700 to-gray-900"
+    gradient: "from-gray-700 to-gray-900",
+    name: "غیرفعال"
   }
 };
 
@@ -65,7 +67,9 @@ const Profile = () => {
     age: "",
     gender: "",
     height: "",
-    weight: "",
+    currentWeight: "",
+    targetWeight: "",
+    goal: "",
     fitnessLevel: "",
     joinDate: "",
     workoutCount: 0,
@@ -77,61 +81,67 @@ const Profile = () => {
 
   useEffect(() => {
     const fetchUserProfile = async () => {
-      const phoneNumber = localStorage.getItem("userPhoneNumber");
-      const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-      
-      if (!phoneNumber || !isLoggedIn) {
-        navigate("/login");
-        return;
-      }
-      
       try {
-        // Get profile data from Firestore
-        const profileRef = doc(db, "user_profiles", phoneNumber);
-        const profileSnap = await getDoc(profileRef);
+        // Get data from localStorage
+        const currentUserData = localStorage.getItem("currentUser");
         
-        if (profileSnap.exists()) {
-          const data = profileSnap.data();
-          
-          // Format join date
-          const joinDate = data.created_at ? new Date(data.created_at.toDate()) : new Date();
-          const formattedJoinDate = new Intl.DateTimeFormat('fa-IR', {
-            year: 'numeric',
-            month: 'long',
-            day: 'numeric'
-          }).format(joinDate);
-          
-          setUserData({
-            name: data.name || "کاربر",
-            phoneNumber: phoneNumber,
-            age: data.age || "",
-            gender: data.gender || "",
-            height: data.height || "",
-            weight: data.weight || "",
-            fitnessLevel: data.fitnessLevel || "",
-            joinDate: formattedJoinDate,
-            workoutCount: data.workout_count || 0,
-            streak: data.streak || 0,
-          });
-
-          // Check subscription status and plan
-          if (data.subscription_end_date) {
-            const endDate = new Date(data.subscription_end_date.toDate ? data.subscription_end_date.toDate() : data.subscription_end_date);
-            
-            if (endDate > new Date()) {
-              setSubscriptionPlan(data.subscription_plan || "basic");
-              setSubscriptionEndDate(endDate);
-              
-              // Calculate days left
-              const today = new Date();
-              const diffTime = Math.abs(endDate.getTime() - today.getTime());
-              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
-              setDaysLeft(diffDays);
-            }
-          }
-        } else {
+        if (!currentUserData) {
           navigate("/phone-login");
+          return;
         }
+        
+        // Parse user data from currentUser
+        const parsedUserData = JSON.parse(currentUserData);
+        
+        // Get subscription plan from currentUser
+        const plan = parsedUserData.subscription_plan || "inactive";
+        console.log("Subscription plan from currentUser:", plan);
+        const validPlans: SubscriptionPlan[] = ["basic", "pro", "ultimate"];
+        const subscriptionPlan = validPlans.includes(plan as SubscriptionPlan) 
+          ? plan as SubscriptionPlan 
+          : "inactive";
+        console.log("Using subscription plan:", subscriptionPlan);
+        
+        // Format join date
+        const joinDate = parsedUserData.updatedAt 
+          ? new Date(parsedUserData.updatedAt) 
+          : new Date();
+        joinDate.setMonth(joinDate.getMonth() - 2); // Assume joined 2 months ago
+        const formattedJoinDate = new Intl.DateTimeFormat('fa-IR', {
+          year: 'numeric',
+          month: 'long',
+          day: 'numeric'
+        }).format(joinDate);
+        
+        // Set user data
+        setUserData({
+          name: parsedUserData.name || "کاربر",
+          phoneNumber: parsedUserData.phoneNumber || "",
+          age: parsedUserData.age || "30",
+          gender: parsedUserData.gender || "male",
+          height: parsedUserData.height || "175",
+          currentWeight: parsedUserData.currentWeight || "75",
+          targetWeight: parsedUserData.targetWeight || "",
+          goal: parsedUserData.goal || "",
+          fitnessLevel: parsedUserData.fitnessLevel || "متوسط",
+          joinDate: formattedJoinDate,
+          workoutCount: parseInt(localStorage.getItem("workoutCount") || "12"),
+          streak: parseInt(localStorage.getItem("streak") || "3"),
+        });
+
+        // Set subscription data
+        setSubscriptionPlan(subscriptionPlan);
+        
+        // Set subscription end date (30 days from now)
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
+        setSubscriptionEndDate(endDate);
+        
+        // Calculate days left
+        const today = new Date();
+        const diffTime = Math.abs(endDate.getTime() - today.getTime());
+        const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+        setDaysLeft(diffDays);
       } catch (error) {
         console.error("Error fetching profile:", error);
         toast({
@@ -150,10 +160,9 @@ const Profile = () => {
   const handleLogout = async () => {
     try {
       // Remove login info from storage
-      localStorage.removeItem("userPhoneNumber");
-      localStorage.removeItem("isLoggedIn");
+      localStorage.removeItem("currentUser");
       
-      navigate("/login");
+      navigate("/phone-login");
       toast({
         title: "خروج موفق",
         description: "شما با موفقیت از حساب کاربری خود خارج شدید.",
@@ -170,12 +179,7 @@ const Profile = () => {
 
   // Get plan display name in Persian
   const getPlanDisplayName = (plan: SubscriptionPlan) => {
-    switch (plan) {
-      case "basic": return "پایه";
-      case "pro": return "حرفه‌ای";
-      case "ultimate": return "نامحدود";
-      default: return "غیرفعال";
-    }
+    return planColors[plan].name;
   };
 
   // Get plan icon
@@ -290,7 +294,7 @@ const Profile = () => {
                     <div className="flex flex-col items-center">
                       <Scale className="h-5 w-5 mb-1 text-muted-foreground" />
                       <span className="text-sm font-medium">وزن</span>
-                      <span className="text-xs text-muted-foreground">{userData.weight ? `${userData.weight} کیلوگرم` : "ثبت نشده"}</span>
+                      <span className="text-xs text-muted-foreground">{userData.currentWeight ? `${userData.currentWeight} کیلوگرم` : "ثبت نشده"}</span>
                     </div>
                   </div>
                 </div>

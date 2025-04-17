@@ -47,8 +47,8 @@ const Payment = () => {
   
   useEffect(() => {
     // Check authentication
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    if (!isLoggedIn) {
+    const currentUser = localStorage.getItem("currentUser");
+    if (!currentUser) {
       toast({
         title: "نیاز به ورود",
         description: "لطفاً ابتدا وارد سیستم شوید.",
@@ -84,16 +84,15 @@ const Payment = () => {
     setIsProcessing(true);
 
     try {
-      const phoneNumber = localStorage.getItem("userPhoneNumber");
+      const currentUser = localStorage.getItem("currentUser");
 
-      if (!phoneNumber) {
+      if (!currentUser) {
         throw new Error("کاربر احراز هویت نشده است");
       }
 
-      // Simulate successful payment and update user subscription in Firestore
+      // Simulate successful payment and update user subscription in localStorage
       setTimeout(async () => {
         try {
-          const profileRef = doc(db, "user_profiles", phoneNumber);
           const params = new URLSearchParams(location.search);
           const duration = params.get('duration') || "1_month";
           
@@ -102,11 +101,22 @@ const Payment = () => {
             duration === "3_months" ? 90 * 24 * 60 * 60 * 1000 :
             365 * 24 * 60 * 60 * 1000;
 
-          await updateDoc(profileRef, {
-            subscription_plan: selectedPlan.id,
-            subscription_start_date: new Date().toISOString(),
-            subscription_end_date: new Date(Date.now() + durationMilliseconds).toISOString(),
-          });
+          // Get current user data from localStorage
+          const currentUserData = localStorage.getItem("currentUser");
+          if (!currentUserData) {
+            throw new Error("کاربر احراز هویت نشده است");
+          }
+          
+          // Parse user data
+          const userData = JSON.parse(currentUserData);
+          
+          // Update subscription information
+          userData.subscription_plan = selectedPlan.id;
+          userData.subscription_start_date = new Date().toISOString();
+          userData.subscription_end_date = new Date(Date.now() + durationMilliseconds).toISOString();
+          
+          // Save updated user data back to localStorage
+          localStorage.setItem("currentUser", JSON.stringify(userData));
 
           toast({
             title: "پرداخت موفقیت‌آمیز",
@@ -138,6 +148,16 @@ const Payment = () => {
 
   // If selected plan is "basic", it's free and we should show a different UI
   if (new URLSearchParams(location.search).get('plan') === 'basic') {
+    // Update user subscription to basic in localStorage
+    const currentUserData = localStorage.getItem("currentUser");
+    if (currentUserData) {
+      const userData = JSON.parse(currentUserData);
+      userData.subscription_plan = "basic";
+      userData.subscription_start_date = new Date().toISOString();
+      userData.subscription_end_date = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toISOString(); // 1 year
+      localStorage.setItem("currentUser", JSON.stringify(userData));
+    }
+    
     return (
       <AppLayout className={getThemeGradient()}>
         <div className="flex min-h-screen flex-col items-center justify-center bg-background p-4">

@@ -78,7 +78,7 @@ const SubscriptionPlans = () => {
         description: "برای خرید اشتراک، ابتدا وارد حساب کاربری خود شوید.",
         variant: "destructive",
       });
-      navigate("/login?redirect=/subscription-plans");
+      navigate("/phone-login?redirect=/subscription-plans");
       return;
     }
     

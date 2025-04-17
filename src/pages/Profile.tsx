@@ -11,10 +11,48 @@ import { db } from "@/integrations/firebase/firebaseConfig";
 import { 
   UserIcon, CrownIcon, MoonIcon, BellIcon, 
   HeadphonesIcon, InfoIcon, LogOutIcon, ChevronRightIcon, 
-  SunIcon, Loader2
+  SunIcon, Loader2, BadgeCheck, Sparkles, CalendarDays, Dumbbell, Scale
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
+import { cn } from "@/lib/utils";
+import { Badge } from "@/components/ui/badge";
+import { Progress } from "@/components/ui/progress";
+
+// Subscription plan types
+type SubscriptionPlan = "basic" | "pro" | "ultimate" | "inactive";
+
+// Theme colors for different subscription plans
+const planColors = {
+  basic: {
+    bg: "bg-slate-700",
+    text: "text-white",
+    border: "border-slate-500",
+    icon: "text-slate-300",
+    gradient: "from-slate-600 to-slate-800"
+  },
+  pro: {
+    bg: "bg-blue-700",
+    text: "text-white",
+    border: "border-blue-500",
+    icon: "text-blue-300",
+    gradient: "from-blue-600 to-blue-900"
+  },
+  ultimate: {
+    bg: "bg-yellow-600",
+    text: "text-white",
+    border: "border-yellow-400",
+    icon: "text-yellow-300",
+    gradient: "from-yellow-500 to-yellow-800"
+  },
+  inactive: {
+    bg: "bg-gray-700",
+    text: "text-gray-200",
+    border: "border-gray-600",
+    icon: "text-gray-400",
+    gradient: "from-gray-700 to-gray-900"
+  }
+};
 
 const Profile = () => {
   const { toast } = useToast();
@@ -29,8 +67,13 @@ const Profile = () => {
     height: "",
     weight: "",
     fitnessLevel: "",
+    joinDate: "",
+    workoutCount: 0,
+    streak: 0,
   });
-  const [subscriptionStatus, setSubscriptionStatus] = useState("inactive");
+  const [subscriptionPlan, setSubscriptionPlan] = useState<SubscriptionPlan>("inactive");
+  const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
+  const [daysLeft, setDaysLeft] = useState<number>(0);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
@@ -49,6 +92,15 @@ const Profile = () => {
         
         if (profileSnap.exists()) {
           const data = profileSnap.data();
+          
+          // Format join date
+          const joinDate = data.created_at ? new Date(data.created_at.toDate()) : new Date();
+          const formattedJoinDate = new Intl.DateTimeFormat('fa-IR', {
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
+          }).format(joinDate);
+          
           setUserData({
             name: data.name || "کاربر",
             phoneNumber: phoneNumber,
@@ -57,13 +109,24 @@ const Profile = () => {
             height: data.height || "",
             weight: data.weight || "",
             fitnessLevel: data.fitnessLevel || "",
+            joinDate: formattedJoinDate,
+            workoutCount: data.workout_count || 0,
+            streak: data.streak || 0,
           });
 
-          // Check subscription status
+          // Check subscription status and plan
           if (data.subscription_end_date) {
-            const endDate = new Date(data.subscription_end_date);
+            const endDate = new Date(data.subscription_end_date.toDate ? data.subscription_end_date.toDate() : data.subscription_end_date);
+            
             if (endDate > new Date()) {
-              setSubscriptionStatus("active");
+              setSubscriptionPlan(data.subscription_plan || "basic");
+              setSubscriptionEndDate(endDate);
+              
+              // Calculate days left
+              const today = new Date();
+              const diffTime = Math.abs(endDate.getTime() - today.getTime());
+              const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+              setDaysLeft(diffDays);
             }
           }
         } else {
@@ -105,6 +168,26 @@ const Profile = () => {
     }
   };
 
+  // Get plan display name in Persian
+  const getPlanDisplayName = (plan: SubscriptionPlan) => {
+    switch (plan) {
+      case "basic": return "پایه";
+      case "pro": return "حرفه‌ای";
+      case "ultimate": return "نامحدود";
+      default: return "غیرفعال";
+    }
+  };
+
+  // Get plan icon
+  const getPlanIcon = (plan: SubscriptionPlan) => {
+    switch (plan) {
+      case "basic": return <BadgeCheck className={`h-6 w-6 ${planColors[plan].icon}`} />;
+      case "pro": return <Sparkles className={`h-6 w-6 ${planColors[plan].icon}`} />;
+      case "ultimate": return <CrownIcon className={`h-6 w-6 ${planColors[plan].icon}`} />;
+      default: return <CrownIcon className={`h-6 w-6 ${planColors[plan].icon}`} />;
+    }
+  };
+
   const menuItems = [
     {
       title: "مشخصات فردی",
@@ -115,6 +198,8 @@ const Profile = () => {
       title: "خرید اشتراک",
       icon: <CrownIcon className="h-5 w-5" />,
       onClick: () => navigate("/subscription-plans"),
+      badge: subscriptionPlan !== "inactive" ? getPlanDisplayName(subscriptionPlan) : undefined,
+      badgeColor: subscriptionPlan !== "inactive" ? planColors[subscriptionPlan].bg : undefined,
     },
     {
       title: theme === 'light' ? 'تاریک' : 'روشن',
@@ -128,9 +213,6 @@ const Profile = () => {
       },
       component: (
         <div className="flex items-center justify-start rtl:flex-row-reverse">
-          <Label htmlFor="theme-mode" className="mr-2">
-            
-          </Label>
           <Switch
             id="theme-mode"
             checked={theme === 'dark'}
@@ -175,57 +257,123 @@ const Profile = () => {
   return (
     <AppLayout>
       <div className="max-w-3xl mx-auto pb-12 px-4">
-        <h1 className="text-2xl font-bold mb-6 text-center">پروفایل</h1>
-        
-        {/* User Profile Card */}
-        <Card className="mb-6">
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="flex-1">
-              <h2 className="text-xl font-bold">{userData.name}</h2>
-              <p className="text-muted-foreground text-sm mt-1 ltr:text-left rtl:text-right">
-                {userData.phoneNumber}
-              </p>
-            </div>
-            <div className="w-16 h-16 rounded-full bg-secondary flex items-center justify-center overflow-hidden">
-              <UserIcon className="h-8 w-8 text-muted-foreground" />
-            </div>
-          </CardContent>
-        </Card>
-        
-        {/* Subscription Status Card */}
-        <Card className={`mb-6 ${theme === 'light' ? 'bg-slate-700' : 'bg-slate-900'} text-white`}>
-          <CardContent className="p-6 flex items-center justify-between">
-            <div className="flex-1">
-              <h2 className="text-lg font-semibold">
-                {subscriptionStatus === "active" 
-                  ? "اشتراک شما فعال است" 
-                  : "در حال حاضر اشتراک فعال ندارید"}
-              </h2>
-            </div>
-            <CrownIcon className="h-6 w-6" />
-          </CardContent>
-        </Card>
+        <div className="relative mb-8">
+          {/* Background header with gradient based on subscription */}
+          <div className={`absolute top-0 left-0 right-0 h-32 bg-gradient-to-r ${planColors[subscriptionPlan].gradient} rounded-b-3xl -z-10`}></div>
+          
+          {/* User Profile Card */}
+          <Card className="mt-16 mb-6 shadow-lg border-0 overflow-visible">
+            <CardContent className="p-0">
+              <div className="flex flex-col items-center -mt-12">
+                <div className={`w-24 h-24 rounded-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} flex items-center justify-center overflow-hidden border-4 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].border : 'border-gray-300'} shadow-xl`}>
+                  <UserIcon className={`h-12 w-12 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].icon : 'text-muted-foreground'}`} />
+                </div>
+                
+                <div className="text-center mt-4 px-6 pb-6 w-full">
+                  <h2 className="text-2xl font-bold">{userData.name}</h2>
+                  <p className="text-muted-foreground text-sm mt-1">
+                    {userData.phoneNumber}
+                  </p>
+                  
+                  {/* User stats */}
+                  <div className="grid grid-cols-3 gap-4 mt-6 text-center">
+                    <div className="flex flex-col items-center">
+                      <CalendarDays className="h-5 w-5 mb-1 text-muted-foreground" />
+                      <span className="text-sm font-medium">عضویت</span>
+                      <span className="text-xs text-muted-foreground">{userData.joinDate}</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <Dumbbell className="h-5 w-5 mb-1 text-muted-foreground" />
+                      <span className="text-sm font-medium">تمرینات</span>
+                      <span className="text-xs text-muted-foreground">{userData.workoutCount} جلسه</span>
+                    </div>
+                    <div className="flex flex-col items-center">
+                      <Scale className="h-5 w-5 mb-1 text-muted-foreground" />
+                      <span className="text-sm font-medium">وزن</span>
+                      <span className="text-xs text-muted-foreground">{userData.weight ? `${userData.weight} کیلوگرم` : "ثبت نشده"}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+          
+          {/* Subscription Status Card */}
+          {subscriptionPlan !== "inactive" && (
+            <Card className={`mb-6 border-0 shadow-lg overflow-hidden`}>
+              <div className={`bg-gradient-to-r ${planColors[subscriptionPlan].gradient} p-1`}>
+                <CardContent className={`${theme === 'light' ? 'bg-white' : 'bg-gray-900'} rounded-md p-4`}>
+                  <div className="flex items-center justify-between">
+                    <div className="flex items-center">
+                      {getPlanIcon(subscriptionPlan)}
+                      <div className="ml-3">
+                        <h3 className="text-lg font-semibold">اشتراک {getPlanDisplayName(subscriptionPlan)}</h3>
+                        <p className="text-xs text-muted-foreground mt-1">
+                          {subscriptionEndDate && `تا ${new Intl.DateTimeFormat('fa-IR').format(subscriptionEndDate)}`}
+                        </p>
+                      </div>
+                    </div>
+                    <Badge className={`${planColors[subscriptionPlan].bg} ${planColors[subscriptionPlan].text}`}>
+                      {daysLeft} روز باقیمانده
+                    </Badge>
+                  </div>
+                  
+                  {/* Progress bar for subscription */}
+                  <div className="mt-4">
+                    <Progress value={daysLeft} max={30} className="h-2" />
+                  </div>
+                </CardContent>
+              </div>
+            </Card>
+          )}
+          
+          {/* Show upgrade card if inactive */}
+          {subscriptionPlan === "inactive" && (
+            <Card className="mb-6 border border-dashed border-yellow-500/50 bg-yellow-500/10 shadow-lg">
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <CrownIcon className="h-6 w-6 text-yellow-500 mr-3" />
+                  <div>
+                    <h3 className="text-lg font-semibold">ارتقا به اشتراک ویژه</h3>
+                    <p className="text-sm text-muted-foreground">برای دسترسی به امکانات بیشتر، اشتراک تهیه کنید</p>
+                  </div>
+                </div>
+                <Button 
+                  className="w-full mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                  onClick={() => navigate("/subscription-plans")}
+                >
+                  مشاهده طرح‌های اشتراک
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
         
         {/* Menu Options */}
-        <Card>
-          <CardContent className="p-4">
-            <div className="space-y-0 divide-y dark:divide-gray-800">
+        <Card className="border-0 shadow-lg rounded-xl overflow-hidden">
+          <CardContent className="p-0">
+            <div className="divide-y dark:divide-gray-800">
               {menuItems.map((item, index) => (
                 <div
                   key={index}
-                  className="w-full py-4 px-2 flex items-center justify-between hover:bg-secondary transition-colors rounded-md cursor-pointer"
+                  className="w-full py-4 px-4 flex items-center justify-between hover:bg-secondary/50 transition-colors cursor-pointer"
                   onClick={item.component ? undefined : item.onClick}
                 >
                   <div 
                     className="flex items-center"
                     onClick={item.component ? item.onClick : undefined}
                   >
-                    <ChevronRightIcon className="h-5 w-5 ml-2 rtl:rotate-180" />
-                    <span className="text-lg">{item.title}</span>
+                    <ChevronRightIcon className="h-5 w-5 ml-3 rtl:rotate-180 text-muted-foreground" />
+                    <span className="text-base font-medium">{item.title}</span>
+                    {item.badge && (
+                      <Badge className={`mr-2 ${item.badgeColor}`}>
+                        {item.badge}
+                      </Badge>
+                    )}
                   </div>
                   <div className="flex items-center">
                     {item.component && <div className="ml-4">{item.component}</div>}
-                    <div className="bg-secondary p-3 rounded-full">
+                    <div className={`${theme === 'light' ? 'bg-gray-100' : 'bg-gray-800'} p-2 rounded-full`}>
                       {item.icon}
                     </div>
                   </div>

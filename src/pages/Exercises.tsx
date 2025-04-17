@@ -1,9 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import AppLayout from "@/components/Layout/AppLayout";
 import { exercises } from "@/data/exercises";
 import { MuscleGroup, Exercise } from "@/types";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Swiper, SwiperSlide } from "swiper/react";
+import "swiper/css";
 
 const muscleGroups: MuscleGroup[] = [
   'کل بدن',
@@ -158,39 +159,55 @@ const weeklyPlan = [
   }
 ];
 
+const daysOfWeek = [
+  "شنبه",
+  "یکشنبه",
+  "دوشنبه",
+  "سه‌شنبه",
+  "چهارشنبه",
+  "پنج‌شنبه",
+  "جمعه",
+];
+
+const getTodayDay = () => {
+  const daysOfWeek = ["شنبه", "یکشنبه", "دوشنبه", "سه‌شنبه", "چهارشنبه", "پنج‌شنبه", "جمعه"];
+  const today = new Date();
+  const adjustedDay = (today.getDay() + 1) % 7; // Adjust to start the week from Saturday
+  return daysOfWeek[adjustedDay];
+};
+
 const ExercisesPage = () => {
-  const [selectedTab, setSelectedTab] = useState<MuscleGroup | "همه">("همه");
   const [selectedExercise, setSelectedExercise] = useState<Exercise | null>(null);
+  const [selectedDay, setSelectedDay] = useState(getTodayDay());
+
+  useEffect(() => {
+    setSelectedDay(getTodayDay());
+  }, []);
 
   return (
     <AppLayout>
-      <h1 className="text-2xl font-bold mb-6">کتابخانه تمرین‌ها</h1>
+      <h1 className="text-2xl font-bold mb-6">برنامه هفتگی تمرین‌ها</h1>
 
-      <Tabs defaultValue="شنبه" value={selectedTab} onValueChange={(value) => setSelectedTab(value as any)}>
-        <TabsList className="mb-6 w-full flex flex-col items-end gap-4 bg-gray-100 p-2 rounded-lg shadow-md">
-          {weeklyPlan.map((day) => (
-            <TabsTrigger
-              key={day.day}
-              value={day.day}
-              className="px-4 py-2 rounded-full text-sm font-medium transition-colors duration-200 hover:bg-yellow-500 hover:text-black focus:outline-none focus:ring-2 focus:ring-yellow-500 focus:ring-offset-2"
-            >
-              {day.day}
-            </TabsTrigger>
-          ))}
-        </TabsList>
-
-        {weeklyPlan.map((day) => (
-          <TabsContent key={day.day} value={day.day} className="mt-0">
-            {day.exercises.map((exercise, index) => (
-              <div key={index} className="mb-4">
-                <h3 className="font-bold">{exercise.name}</h3>
-                <p>ست‌ها: {exercise.sets} | تکرار: {exercise.reps} | استراحت: {exercise.rest}</p>
-                <p className="text-muted-foreground">{exercise.description}</p>
-              </div>
-            ))}
-          </TabsContent>
+      <Swiper spaceBetween={20} slidesPerView={1} className="w-full" initialSlide={new Date().getDay()}>
+        {daysOfWeek.map((day, index) => (
+          <SwiperSlide key={index}>
+            <div className={`rounded-lg border text-card-foreground bg-gray-900 border-gray-800 overflow-hidden shadow-lg p-6 ${day === selectedDay ? 'ring-2 ring-yellow-500' : ''}`}>
+              <h3 className="text-xl font-bold mb-2">{day}</h3>
+              <p className="text-sm text-gray-400">برنامه تمرین برای این روز</p>
+              <ul className="mt-4 space-y-2">
+                <li className="flex justify-between items-center">
+                  <span>تمرین ۱</span>
+                  <span className="text-xs text-gray-500">۴ ست × ۱۲ تکرار</span>
+                </li>
+                <li className="flex justify-between items-center">
+                  <span>تمرین ۲</span>
+                  <span className="text-xs text-gray-500">۳ ست × ۱۰ تکرار</span>
+                </li>
+              </ul>
+            </div>
+          </SwiperSlide>
         ))}
-      </Tabs>
+      </Swiper>
 
       <Dialog open={!!selectedExercise} onOpenChange={() => setSelectedExercise(null)}>
         {selectedExercise && (

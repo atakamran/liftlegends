@@ -9,8 +9,6 @@ import { useToast } from "@/hooks/use-toast";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { getCurrentUserProfile } from "@/services/profileService"; // Import the function to fetch user profile
-import { auth, db } from "@/integrations/firebase/firebaseConfig"; // Corrected import path for Firebase auth and db
-import { doc, getDoc } from "firebase/firestore"; // Import Firestore functions
 
 interface Message {
   id: string;
@@ -42,35 +40,7 @@ const AiPlanner = () => {
     scrollToBottom();
   }, [messages]);
 
-  useEffect(() => {
-    const checkSubscription = async () => {
-      try {
-        const user = auth.currentUser;
-        if (!user) {
-          navigate('/login');
-          return;
-        }
-
-        const profileRef = doc(db, 'user_profiles', user.uid);
-        const profileSnap = await getDoc(profileRef);
-
-        if (profileSnap.exists()) {
-          const profileData = profileSnap.data();
-          if (profileData.subscription_plan !== 'ultimate') {
-            navigate('/subscription-plans');
-          }
-        } else {
-          navigate('/subscription-plans');
-        }
-      } catch (error) {
-        console.error("Error checking subscription: ", error);
-        navigate('/subscription-plans');
-      }
-    };
-
-    checkSubscription();
-  }, [navigate]);
-
+ 
   const generateRandomId = () => {
     return Math.random().toString(36).substring(2, 15);
   };
@@ -186,11 +156,10 @@ const AiPlanner = () => {
   return (
     <AppLayout>
       <div className="flex flex-col space-y-4">
-        <h1 className="text-2xl font-bold">مشاور هوش مصنوعی تمرین و تغذیه</h1>
         
         <Card className="flex-1">
           <CardHeader>
-            <CardTitle>چت با مشاور هوش مصنوعی</CardTitle>
+            {/* <CardTitle>چت با مشاور هوش مصنوعی</CardTitle> */}
           </CardHeader>
           <CardContent className="flex flex-col">
             <ScrollArea className="h-[50vh] pr-4">

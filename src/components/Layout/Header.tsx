@@ -52,16 +52,6 @@ const Header: React.FC = () => {
     <header className="border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-10">
       <div className="container mx-auto px-4 py-3">
         {/* Main Header with Logo */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center">
-            <img
-              src={theme === 'dark' ? '/lovable-uploads/white-logo.png' : '/lovable-uploads/black-logo.png'}
-              alt="Lift Legends Logo"
-              className="h-8 mr-2"
-            />
-            <span className="text-xl font-bold">Lift Legends</span>
-          </div>
-        </div>
         
         {/* Weekly Stats Section - Only shown on homepage */}
         {isHomePage && (

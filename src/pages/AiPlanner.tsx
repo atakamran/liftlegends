@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from "react";
-import { Send, User, Bot } from "lucide-react";
+import { Send, User, Bot, Loader2, Lock } from "lucide-react";
 import { useNavigate } from "react-router-dom"; // Import navigate function
 import AppLayout from "@/components/Layout/AppLayout";
 import { Button } from "@/components/ui/button";
@@ -30,6 +30,7 @@ const AiPlanner = () => {
     }
   ]);
   const [isLoading, setIsLoading] = useState(false);
+  const [canAccessAiPlanner, setCanAccessAiPlanner] = useState(true); // State for access control
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const scrollToBottom = () => {
@@ -152,6 +153,32 @@ const AiPlanner = () => {
       setPrompt("");
     }, 1500);
   };
+
+  if (isLoading) {
+    return (
+      <AppLayout className="flex flex-col items-center justify-center min-h-screen">
+        <Loader2 className="h-8 w-8 animate-spin" />
+        <p className="mt-2">در حال بررسی دسترسی...</p>
+      </AppLayout>
+    );
+  }
+
+  if (!canAccessAiPlanner) {
+    return (
+      <AppLayout className="flex flex-col items-center justify-center">
+        <div className="text-center max-w-md py-12">
+          <Lock className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
+          <h2 className="text-2xl font-bold mb-2">دسترسی محدود شده</h2>
+          <p className="text-muted-foreground mb-6">
+            برای دسترسی به مربی هوشمند، نیاز به اشتراک Ultimate دارید.
+          </p>
+          <Button onClick={() => navigate("/subscription-plans")}>
+            مشاهده پلن‌های اشتراک
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
 
   return (
     <AppLayout>

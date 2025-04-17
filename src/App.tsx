@@ -7,6 +7,7 @@ import { BrowserRouter, Routes, Route } from "react-router-dom";
 import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import ExercisesPage from "./pages/Exercises";
+import DayWorkoutPage from "./pages/DayWorkout";
 import WorkoutTracker from "./pages/WorkoutTracker";
 import Profile from "./pages/Profile";
 import PersonalInfo from "./pages/PersonalInfo";
@@ -39,6 +40,7 @@ const App = () => (
             <Route path="/subscription-plans" element={<SubscriptionPlans />} />
             <Route path="/home" element={<Index />} />
             <Route path="/exercises" element={<ExercisesPage />} />
+            <Route path="/day-workout/:day" element={<DayWorkoutPage />} />
             <Route path="/workout-tracker" element={<WorkoutTracker />} />
             <Route path="/profile" element={<Profile />} />
             <Route path="/personal-info" element={<PersonalInfo />} />

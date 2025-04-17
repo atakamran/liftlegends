@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Dumbbell, ChevronRight, Sparkles, Lock, Star, Play, Calendar } from "lucide-react";
@@ -8,6 +7,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { hasFeatureAccess } from "@/services/subscriptionService";
 import { useTheme } from "@/context/ThemeContext";
 import { Progress } from "@/components/ui/progress";
+import { getTodayExercise, getTodayDay } from "../services/exerciseService"; // Import the functions to fetch today's exercise and day
 
 const Index = () => {
   const [userPlan, setUserPlan] = useState({ plan: 'basic', label: 'پلن رایگان', isActive: true, remainingTime: "" });
@@ -75,17 +75,8 @@ const Index = () => {
     fetchUserData();
   }, [navigate]);
 
-  // Today's workout data
-  const todayWorkout = {
-    name: "تمرین کل بدن",
-    description: "30 دقیقه، شدت متوسط",
-    exercises: [
-      { name: "پرس سینه", sets: 4, reps: 12, equipment: "هالتر" },
-      { name: "اسکوات", sets: 3, reps: 15, equipment: "وزن بدن" },
-      { name: "پارویی", sets: 4, reps: 12, equipment: "دمبل" },
-      { name: "شنا سوئدی", sets: 3, reps: 15, equipment: "وزن بدن" }
-    ]
-  };
+  // Today's workout data based on current day of the week
+  const todayExercise = getTodayExercise(); // Fetch today's exercise based on the day of the week
 
   // Weekly progress statistics
   const weeklyStats = {
@@ -118,47 +109,43 @@ const Index = () => {
 
       {/* Today's Workout Section */}
       <section className="w-full py-4">
-        <Card className={`${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-white border-gray-200'} overflow-hidden shadow-lg`}>
-          <div className={`absolute top-0 right-0 h-full w-1 ${theme === 'dark' ? 'bg-yellow-500' : 'bg-yellow-500'}`}></div>
-          <CardHeader className="pb-2">
+        <Card 
+          className={`rounded-lg border text-card-foreground ${theme === 'dark' ? 'bg-gray-900 border-gray-800' : 'bg-gray-800 border-gray-700'} overflow-hidden shadow-lg text-white cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-xl ring-4 ring-yellow-500`}
+          onClick={() => navigate(`/day-workout/${encodeURIComponent(getTodayDay())}`)}
+        >
+          <CardHeader className="flex flex-col space-y-1.5 p-6 pb-2">
             <div className="flex justify-between items-center">
-              <CardTitle className="text-xl font-bold flex items-center">
-                <Dumbbell className={`mr-2 h-5 w-5 ${getAccentColor()}`} />
+              <h3 className="tracking-tight text-xl font-bold flex items-center">
+                <Dumbbell className="mr-2 h-5 w-5 text-yellow-400" />
                 تمرین امروز
-              </CardTitle>
-              <span className={`text-xs font-medium py-1 px-2 rounded-full ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-200'}`}>
-                {todayWorkout.description}
+              </h3>
+              <span className="text-xs font-medium py-1 px-2 rounded-full bg-yellow-500 text-black">
+                {todayExercise.duration} دقیقه، {todayExercise.intensity}
               </span>
             </div>
-            <CardDescription className={`${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
-              {todayWorkout.name}
-            </CardDescription>
+            <p className="text-sm text-gray-400">{todayExercise.description}</p>
           </CardHeader>
-          
-          <CardContent className="space-y-4">
-            {todayWorkout.exercises.map((exercise, index) => (
-              <div key={index} className="flex items-center justify-between py-3 border-b last:border-0 border-gray-800">
+          <CardContent className="p-6 pt-0 space-y-4">
+            {todayExercise.exercises.map((exercise, index) => (
+              <div
+                key={index}
+                className={`flex items-center justify-between py-3 border-b last:border-0 ${theme === 'dark' ? 'border-gray-800' : 'border-gray-700'}`}
+              >
                 <div className="flex items-center">
-                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-100'}`}>
+                  <div className={`w-8 h-8 rounded-full flex items-center justify-center mr-3 ${theme === 'dark' ? 'bg-gray-800' : 'bg-gray-700'}`}>
                     {index + 1}
                   </div>
                   <div>
                     <h3 className="font-semibold text-base">{exercise.name}</h3>
-                    <p className={`text-xs ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                    <p className="text-xs text-gray-400">
                       {exercise.sets} ست × {exercise.reps} تکرار • {exercise.equipment}
                     </p>
                   </div>
                 </div>
-                <ChevronRight className={`h-5 w-5 ${theme === 'dark' ? 'text-gray-500' : 'text-gray-400'}`} />
+                <ChevronRight className="h-5 w-5 text-yellow-500" />
               </div>
             ))}
-            
-            <Button 
-              className={`w-full mt-4 text-white font-bold shadow-lg rounded-xl h-12 ${getButtonGradient()}`}
-              onClick={() => navigate("/workout-tracker")}
-            >
-              <Play className="h-5 w-5 mr-2" /> شروع تمرین
-            </Button>
+
           </CardContent>
         </Card>
       </section>

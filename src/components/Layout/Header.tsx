@@ -50,7 +50,7 @@ const Header: React.FC = () => {
 
   return (
     <header className="border-b border-border/50 sticky top-0 bg-background/80 backdrop-blur-md z-10">
-      <div className="container mx-auto px-4 py-3">
+      <div className="container mx-auto px-4 py-0">
         {/* Main Header with Logo */}
         
         {/* Weekly Stats Section - Only shown on homepage */}

@@ -38,7 +38,7 @@ const Supplements = () => {
           <Lock className="mx-auto h-12 w-12 mb-4 text-muted-foreground" />
           <h2 className="text-2xl font-bold mb-2">دسترسی محدود شده</h2>
           <p className="text-muted-foreground mb-6">
-            برای دسترسی به بخش مکمل‌ها و استروئیدها، نیاز به اشتراک Ultimate دارید.
+            برای دسترسی به بخش مکمل‌ها و استروئیدها، نیاز به اشتراک pro دارید.
           </p>
           <Button onClick={() => navigate("/subscription-plans")}>
             مشاهده پلن‌های اشتراک

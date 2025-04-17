@@ -4,7 +4,12 @@ import AppLayout from "@/components/Layout/AppLayout";
 import { exercises } from "@/data/exercises";
 import { MuscleGroup, Exercise } from "@/types";
 import { Swiper, SwiperSlide } from "swiper/react";
+import { Pagination, Navigation, EffectCards, EffectCoverflow } from "swiper/modules";
 import "swiper/css";
+import "swiper/css/pagination";
+import "swiper/css/navigation";
+import "swiper/css/effect-coverflow";
+import "@/styles/swiper-custom.css";
 import { weeklyPlan, daysOfWeek, getTodayDay } from "@/services/exerciseService";
 import { useTheme } from "@/context/ThemeContext";
 
@@ -40,6 +45,14 @@ const ExercisesPage = () => {
     setSelectedDay(getTodayDay());
   }, []);
   
+  // Function to handle slide change
+  const handleSlideChange = (swiper) => {
+    const newIndex = swiper.activeIndex;
+    if (weeklyPlan[newIndex]) {
+      setSelectedDay(weeklyPlan[newIndex].day);
+    }
+  };
+  
   // Function to handle clicking on a day card
   const handleDayClick = (day: string) => {
     navigate(`/day-workout/${encodeURIComponent(day)}`);
@@ -67,39 +80,108 @@ const ExercisesPage = () => {
 
   return (
     <AppLayout>
-      <h1 className="text-2xl font-bold mb-6">برنامه هفتگی تمرین‌ها</h1>
+      <div className="space-y-6 mb-6">
+        <div className="flex justify-between items-center">
+          <h1 className="text-2xl font-bold">برنامه هفتگی تمرین‌ها</h1>
+          <div className="flex items-center gap-2 text-sm text-gray-400">
+            <span className="animate-pulse">⟸</span>
+            <span>اسلاید کنید</span>
+            <span className="animate-pulse">⟹</span>
+          </div>
+        </div>
+        
+        <div className="bg-gray-800/30 rounded-full h-2 overflow-hidden">
+          <div 
+            className="bg-gradient-to-r from-yellow-500 to-yellow-600 h-full rounded-full transition-all duration-500"
+            style={{ 
+              width: `${(daysOfWeek.indexOf(selectedDay) + 1) / daysOfWeek.length * 100}%` 
+            }}
+          ></div>
+        </div>
+        
+        <div className="flex justify-between items-center">
+          <span className="text-xs text-gray-500">شنبه</span>
+          <div className="flex items-center gap-1">
+            <span className="text-xs text-gray-500">پیشرفت هفتگی</span>
+            <span className="text-xs bg-yellow-500/20 text-yellow-500 px-2 py-0.5 rounded-full">
+              {daysOfWeek.indexOf(selectedDay) + 1}/{daysOfWeek.length}
+            </span>
+          </div>
+          <span className="text-xs text-gray-500">جمعه</span>
+        </div>
+      </div>
 
       <Swiper 
-        spaceBetween={20} 
-        slidesPerView={1} 
-        className="w-full" 
+        spaceBetween={10} 
+        slidesPerView={1.15} 
+        centeredSlides={true}
         initialSlide={daysOfWeek.indexOf(selectedDay)}
+        className="w-full py-4" 
+        modules={[Pagination, Navigation, EffectCoverflow]}
+        effect="coverflow"
+        coverflowEffect={{
+          rotate: 5,
+          stretch: 0,
+          depth: 100,
+          modifier: 1,
+          slideShadows: false,
+        }}
+        pagination={{
+          clickable: true,
+          dynamicBullets: true,
+        }}
+        navigation={true}
+        onSlideChange={handleSlideChange}
+        breakpoints={{
+          640: {
+            slidesPerView: 1.2,
+            spaceBetween: 15,
+          },
+          768: {
+            slidesPerView: 1.5,
+            spaceBetween: 20,
+          },
+          1024: {
+            slidesPerView: 2.2,
+            spaceBetween: 30,
+          },
+        }}
       >
         {weeklyPlan.map((dayPlan, index) => (
-          <SwiperSlide key={index}>
+          <SwiperSlide key={index} className="pb-4">
             <div 
-              className={`rounded-lg border ${getCardTextColor()} ${getCardBgColor()} ${getCardBorderColor()} overflow-hidden shadow-lg p-6 h-[400px] flex flex-col cursor-pointer transition-transform hover:scale-[1.01] hover:shadow-xl`}
+              className={`workout-card rounded-2xl border ${getCardTextColor()} ${getCardBgColor()} ${getCardBorderColor()} overflow-hidden shadow-lg p-5 h-[350px] flex flex-col cursor-pointer transition-all duration-300 hover:scale-[1.02] hover:shadow-xl backdrop-blur-sm bg-opacity-90`}
               onClick={() => handleDayClick(dayPlan.day)}
+              style={{
+                transform: dayPlan.day === selectedDay ? 'translateY(-8px)' : 'translateY(0)',
+              }}
             >
-              <div className="flex justify-between items-center mb-2">
+              <div className="flex justify-between items-center mb-3">
                 <h3 className="text-xl font-bold">{dayPlan.day}</h3>
-                {dayPlan.day === selectedDay && (
-                  <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full">امروز</span>
+                {dayPlan.day === getTodayDay() && (
+                  <span className="text-xs bg-yellow-500 text-black px-2 py-1 rounded-full animate-pulse">امروز</span>
                 )}
               </div>
-              <p className="text-sm text-gray-400">تمرین {dayPlan.muscleGroup}</p>
-              <div className="mt-4 overflow-y-auto flex-grow">
+              <div className="flex items-center gap-2 mb-4">
+                <div className="w-1.5 h-6 bg-yellow-500 rounded-full"></div>
+                <p className="text-sm text-gray-400">تمرین {dayPlan.muscleGroup}</p>
+              </div>
+              <div className="mt-2 overflow-y-auto flex-grow scrollbar-thin scrollbar-thumb-gray-700 scrollbar-track-transparent pr-1">
                 <ul className="space-y-2">
                   {dayPlan.exercises.map((exercise, idx) => (
                     <li 
                       key={idx} 
-                      className={`flex justify-between items-center ${getHoverBgColor()} p-2 rounded ${dayPlan.day === selectedDay ? 'bg-yellow-500/10' : ''}`}
+                      className={`flex justify-between items-center ${getHoverBgColor()} p-2.5 rounded-lg ${dayPlan.day === selectedDay ? 'bg-yellow-500/10' : ''} transition-colors duration-200`}
                     >
                       <span className={`truncate ${dayPlan.day === selectedDay ? 'text-yellow-500 font-bold' : ''}`}>{exercise.name}</span>
-                      <span className={`text-xs whitespace-nowrap ${dayPlan.day === selectedDay ? 'text-yellow-400' : 'text-gray-400'}`}>{exercise.sets} ست × {exercise.reps} تکرار</span>
+                      <span className={`text-xs whitespace-nowrap px-2 py-1 rounded-full bg-gray-800/50 ${dayPlan.day === selectedDay ? 'text-yellow-400' : 'text-gray-400'}`}>{exercise.sets} × {exercise.reps}</span>
                     </li>
                   ))}
                 </ul>
+              </div>
+              <div className="mt-3 pt-3 border-t border-gray-800/50 flex justify-between items-center">
+                <span className="text-xs text-gray-500">{dayPlan.exercises.length} تمرین</span>
+                <span className="text-xs bg-gray-800 text-gray-400 px-2 py-1 rounded-full">مشاهده جزئیات</span>
               </div>
             </div>
           </SwiperSlide>

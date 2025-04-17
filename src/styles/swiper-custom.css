@@ -1,0 +1,82 @@
+/* Custom styles for Swiper */
+
+/* Pagination bullets */
+.swiper-pagination-bullet {
+  width: 8px;
+  height: 8px;
+  background: rgba(255, 255, 255, 0.3);
+  opacity: 0.7;
+  transition: all 0.3s ease;
+}
+
+.swiper-pagination-bullet-active {
+  background: #f59e0b;
+  width: 20px;
+  border-radius: 4px;
+  opacity: 1;
+}
+
+/* Navigation buttons */
+.swiper-button-next,
+.swiper-button-prev {
+  color: #f59e0b;
+  background: rgba(0, 0, 0, 0.3);
+  width: 35px;
+  height: 35px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.3s ease;
+}
+
+.swiper-button-next:hover,
+.swiper-button-prev:hover {
+  background: rgba(0, 0, 0, 0.5);
+  transform: scale(1.1);
+}
+
+.swiper-button-next:after,
+.swiper-button-prev:after {
+  font-size: 18px;
+  font-weight: bold;
+}
+
+/* Card hover effect */
+.swiper-slide-active .workout-card {
+  transform: translateY(-8px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.3);
+}
+
+/* Custom scrollbar for exercise list */
+.scrollbar-thin::-webkit-scrollbar {
+  width: 4px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb {
+  background-color: rgba(156, 163, 175, 0.3);
+  border-radius: 20px;
+}
+
+.scrollbar-thin::-webkit-scrollbar-thumb:hover {
+  background-color: rgba(156, 163, 175, 0.5);
+}
+
+/* Dark mode adjustments */
+.dark .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.dark .swiper-button-next,
+.dark .swiper-button-prev {
+  background: rgba(30, 41, 59, 0.7);
+}
+
+.dark .swiper-button-next:hover,
+.dark .swiper-button-prev:hover {
+  background: rgba(30, 41, 59, 0.9);
+}

@@ -90,10 +90,27 @@ const Registration = () => {
     setIsLoading(true);
     
     // Check if user already exists in localStorage
-    const storedUsers = localStorage.getItem("users") ? 
-      JSON.parse(localStorage.getItem("users") || "[]") : [];
+    // Define a type for user data
+    interface UserData {
+      phoneNumber: string;
+      password: string;
+      name: string;
+      age: number | string;
+      gender: string;
+      currentWeight: string;
+      height: string;
+      targetWeight: string;
+      activityLevel: string;
+      goal: string;
+      subscription_plan?: string;
+      permissions?: string;
+      createdAt?: string;
+    }
     
-    const userExists = storedUsers.some((user: any) => user.phoneNumber === formData.phoneNumber);
+    const storedUsers = localStorage.getItem("users") ? 
+      JSON.parse(localStorage.getItem("users") || "[]") as UserData[] : [];
+    
+    const userExists = storedUsers.some((user: UserData) => user.phoneNumber === formData.phoneNumber);
     
     setTimeout(() => {
       if (userExists) {
@@ -239,28 +256,57 @@ const Registration = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center galaxy-background">
+    <div className="flex flex-col min-h-screen galaxy-background">
       <div className="stars"></div>
       <div className="stars2"></div>
       <div className="stars3"></div>
-      <Card className={`w-full max-w-md backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'} mx-4 my-8`}>
-        <div className="absolute top-0 left-0 w-full flex items-center px-4 py-2 space-x-4 mb-4" style={{ marginBottom: '2rem', paddingBottom: '1rem' }}>
-          <Button 
-            onClick={handlePreviousStep} 
-            className="h-10 w-10 rounded-full bg-transparent hover:bg-white/10 text-white"
-            variant="ghost"
-          >
-            <ChevronRight className="h-6 w-6 font-bold" />
-          </Button>
+      
+      <div className="relative w-full py-6 px-4 flex justify-between items-center z-10">
+        <button 
+          onClick={handlePreviousStep} 
+          className="text-white hover:text-gray-200 transition-colors flex items-center"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          برگشت
+        </button>
+        <div className="text-white text-lg font-bold">ثبت‌نام با شماره</div>
+      </div>
+      
+      <div className="flex-1 flex items-center justify-center">
+      
+      <Card className={`w-full max-w-md backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'} mx-4 my-8 mb-16`}>
+        <div className={`h-1 w-full ${theme === 'dark' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 'bg-gradient-to-r from-gray-800 to-black'}`}></div>
+        <div className="w-full flex items-center px-4 py-2 space-x-4 mb-4">
           <Progress value={progress} className={`flex-1 h-2 rounded-full ${theme === 'dark' ? 'bg-gray-700' : 'bg-gray-300'}`} />
         </div>
-        <div 
-        className="h-6">
-        </div>
+        <div className="h-6"></div>
         <CardContent className="space-y-4 pt-12 p-6">
           {renderStep()}
+          
+          {currentStep === 1 && (
+            <div className="mt-8 text-center">
+              <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+                حساب کاربری دارید؟{" "}
+                <button 
+                  onClick={() => navigate("/phone-login")} 
+                  className={`${theme === 'dark' ? 'text-yellow-400' : 'text-black'} font-semibold hover:underline`}
+                >
+                  ورود به حساب
+                </button>
+              </p>
+              <button 
+                onClick={() => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." })} 
+                className={`text-sm mt-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} hover:underline`}
+              >
+                رمز عبور خود را فراموش کرده‌اید؟
+              </button>
+            </div>
+          )}
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

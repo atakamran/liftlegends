@@ -18,10 +18,17 @@ import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 // Subscription plan types
-type SubscriptionPlan = "basic" | "pro" | "ultimate" | "inactive";
+type SubscriptionPlan = "basic" | "pro" | "ultimate";
 
 // Theme colors for different subscription plans
-const planColors = {
+const planColors: Record<SubscriptionPlan, {
+  bg: string;
+  text: string;
+  border: string;
+  icon: string;
+  gradient: string;
+  name: string;
+}> = {
   basic: {
     bg: "bg-slate-700",
     text: "text-white",
@@ -45,14 +52,6 @@ const planColors = {
     icon: "text-yellow-300",
     gradient: "from-yellow-500 to-yellow-800",
     name: "نامحدود"
-  },
-  inactive: {
-    bg: "bg-gray-700",
-    text: "text-gray-200",
-    border: "border-gray-600",
-    icon: "text-gray-400",
-    gradient: "from-gray-700 to-gray-900",
-    name: "غیرفعال"
   }
 };
 
@@ -75,7 +74,7 @@ const Profile = () => {
     workoutCount: 0,
     streak: 0,
   });
-  const [subscriptionPlan, setSubscriptionPlan] = useState<SubscriptionPlan>("inactive");
+  const [subscriptionPlan, setSubscriptionPlan] = useState<SubscriptionPlan>("basic");
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
   const [daysLeft, setDaysLeft] = useState<number>(0);
 
@@ -94,12 +93,12 @@ const Profile = () => {
         const parsedUserData = JSON.parse(currentUserData);
         
         // Get subscription plan from currentUser
-        const plan = parsedUserData.subscription_plan || "inactive";
+        const plan = parsedUserData.subscription_plan || "basic";
         console.log("Subscription plan from currentUser:", plan);
         const validPlans: SubscriptionPlan[] = ["basic", "pro", "ultimate"];
         const subscriptionPlan = validPlans.includes(plan as SubscriptionPlan) 
           ? plan as SubscriptionPlan 
-          : "inactive";
+          : "basic";
         console.log("Using subscription plan:", subscriptionPlan);
         
         // Format join date
@@ -117,7 +116,7 @@ const Profile = () => {
         setUserData({
           name: parsedUserData.name || "کاربر",
           phoneNumber: parsedUserData.phoneNumber || "",
-          age: parsedUserData.age || "30",
+          age: parsedUserData.age || "",
           gender: parsedUserData.gender || "",
           height: parsedUserData.height || "",
           currentWeight: parsedUserData.currentWeight || "",
@@ -202,8 +201,8 @@ const Profile = () => {
       title: "خرید اشتراک",
       icon: <CrownIcon className="h-5 w-5" />,
       onClick: () => navigate("/subscription-plans"),
-      badge: subscriptionPlan !== "inactive" ? getPlanDisplayName(subscriptionPlan) : undefined,
-      badgeColor: subscriptionPlan !== "inactive" ? planColors[subscriptionPlan].bg : undefined,
+      badge: getPlanDisplayName(subscriptionPlan),
+      badgeColor: planColors[subscriptionPlan].bg,
     },
     {
       title: theme === 'light' ? 'تاریک' : 'روشن',
@@ -269,8 +268,8 @@ const Profile = () => {
           <Card className="mt-16 mb-6 shadow-lg border-0 overflow-visible">
             <CardContent className="p-0">
               <div className="flex flex-col  items-center -mt-12">
-                <div className={`w-24 h-24 rounded-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} flex items-center justify-center overflow-hidden border-4 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].border : 'border-gray-300'} shadow-xl`}>
-                  <UserIcon className={`h-12 w-12 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].icon : 'text-muted-foreground'}`} />
+                <div className={`w-24 h-24 rounded-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} flex items-center justify-center overflow-hidden border-4 ${planColors[subscriptionPlan].border} shadow-xl`}>
+                  <UserIcon className={`h-12 w-12 ${planColors[subscriptionPlan].icon}`} />
                 </div>
                 
                 <div className="text-center mt-4 px-6 pb-6 w-full">
@@ -303,7 +302,7 @@ const Profile = () => {
           </Card>
           
           {/* Subscription Status Card */}
-          {subscriptionPlan !== "inactive" && (
+          {(
             <Card className={`mb-6 border-0 shadow-lg overflow-hidden`}>
               <div className={`bg-gradient-to-r ${planColors[subscriptionPlan].gradient} p-1`}>
                 <CardContent className={`${theme === 'light' ? 'bg-white' : 'bg-gray-900'} rounded-md p-4`}>
@@ -331,26 +330,7 @@ const Profile = () => {
             </Card>
           )}
           
-          {/* Show upgrade card if inactive */}
-          {subscriptionPlan === "inactive" && (
-            <Card className="mb-6 border border-dashed border-yellow-500/50 bg-yellow-500/10 shadow-lg">
-              <CardContent className="p-4">
-                <div className="flex items-center">
-                  <CrownIcon className="h-6 w-6 text-yellow-500 mr-3" />
-                  <div>
-                    <h3 className="text-lg font-semibold">ارتقا به اشتراک ویژه</h3>
-                    <p className="text-sm text-muted-foreground">برای دسترسی به امکانات بیشتر، اشتراک تهیه کنید</p>
-                  </div>
-                </div>
-                <Button 
-                  className="w-full mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
-                  onClick={() => navigate("/subscription-plans")}
-                >
-                  مشاهده طرح‌های اشتراک
-                </Button>
-              </CardContent>
-            </Card>
-          )}
+          {/* Upgrade card removed as all users now have at least basic subscription */}
         </div>
         
         {/* Menu Options */}

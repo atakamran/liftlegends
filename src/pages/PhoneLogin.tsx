@@ -7,6 +7,23 @@ import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
 import "./Login.css";
 
+// User interface based on the application's user structure
+interface User {
+  phoneNumber: string;
+  password: string;
+  name?: string;
+  age?: number;
+  gender?: string;
+  currentWeight?: string;
+  height?: string;
+  targetWeight?: string;
+  activityLevel?: string;
+  goal?: string;
+  subscription_plan?: string;
+  permissions?: string;
+  createdAt?: string;
+}
+
 const PhoneLogin = () => {
   const [phoneNumber, setPhoneNumber] = useState("");
   const [password, setPassword] = useState("");
@@ -59,11 +76,11 @@ const PhoneLogin = () => {
     setIsLoading(true);
     
     // Get user data from localStorage
-    const storedUsers = localStorage.getItem("users") ? 
+    const storedUsers: User[] = localStorage.getItem("users") ? 
       JSON.parse(localStorage.getItem("users") || "[]") : [];
     
     // Find user by phone number
-    const user = storedUsers.find((u: any) => u.phoneNumber === phoneNumber);
+    const user = storedUsers.find((u: User) => u.phoneNumber === phoneNumber);
     
     setTimeout(() => {
       if (user && user.password === password) {
@@ -91,20 +108,36 @@ const PhoneLogin = () => {
   };
 
   return (
-    <div className="flex min-h-screen items-center justify-center galaxy-background">
+    <div className="flex flex-col min-h-screen galaxy-background">
       <div className="stars"></div>
       <div className="stars2"></div>
       <div className="stars3"></div>
-      <div className="absolute top-0 left-0 w-full py-6 px-4 flex justify-between items-center z-10">
+      <div className="relative w-full py-6 px-4 flex justify-between items-center z-10">
         <button 
           onClick={() => navigate("/")} 
-          className="text-white hover:text-gray-200 transition-colors"
+          className="text-white hover:text-gray-200 transition-colors flex items-center"
         >
-          برگشت به صفحه اصلی
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 ml-1" viewBox="0 0 20 20" fill="currentColor">
+            <path fillRule="evenodd" d="M12.707 5.293a1 1 0 010 1.414L9.414 10l3.293 3.293a1 1 0 01-1.414 1.414l-4-4a1 1 0 010-1.414l4-4a1 1 0 011.414 0z" clipRule="evenodd" />
+          </svg>
+          برگشت
         </button>
+        <div className="text-white text-lg font-bold">ورود با شماره</div>
       </div>
-      <Card className={`w-full max-w-md mx-4 backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
+      
+      <div className="flex-1 flex items-center justify-center">
+      <Card className={`w-full max-w-md mx-4 mb-16 backdrop-blur-md border-0 shadow-2xl ${theme === 'dark' ? 'bg-black/70' : 'bg-white/70'}`}>
+        <div className={`h-1 w-full ${theme === 'dark' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600' : 'bg-gradient-to-r from-gray-800 to-black'}`}></div>
         <CardContent className="p-6">
+          <div className="text-center mb-8">
+            <h1 className={`text-2xl font-bold ${theme === 'dark' ? 'text-white' : 'text-gray-800'}`}>
+              ورود به حساب کاربری
+            </h1>
+            <p className={`mt-2 ${theme === 'dark' ? 'text-gray-300' : 'text-gray-600'}`}>
+              برای استفاده از امکانات لیفت لجندز وارد شوید
+            </p>
+          </div>
+          
           <PhoneStep
             phoneNumber={phoneNumber}
             updatePhoneNumber={handlePhoneNumberChange}
@@ -114,8 +147,27 @@ const PhoneLogin = () => {
             isLoading={isLoading}
             isDarkTheme={theme === 'dark'}
           />
+          
+          <div className="mt-6 text-center">
+            <p className={`text-sm ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'}`}>
+              حساب کاربری ندارید؟{" "}
+              <button 
+                onClick={() => navigate("/registration")} 
+                className={`${theme === 'dark' ? 'text-yellow-400' : 'text-black'} font-semibold hover:underline`}
+              >
+                ثبت‌نام کنید
+              </button>
+            </p>
+            <button 
+              onClick={() => toast({ title: "به زودی", description: "این قابلیت به زودی اضافه خواهد شد." })} 
+              className={`text-sm mt-2 ${theme === 'dark' ? 'text-gray-400' : 'text-gray-600'} hover:underline`}
+            >
+              رمز عبور خود را فراموش کرده‌اید؟
+            </button>
+          </div>
         </CardContent>
       </Card>
+      </div>
     </div>
   );
 };

@@ -1,5 +1,4 @@
 // Import exercises from data file
-import { exercises } from '../data/exercises';
 
 // Define days of the week in Persian
 export const daysOfWeek = [
@@ -378,24 +377,27 @@ const weeklyWorkouts = {
   },
 };
 
+// Function to convert JavaScript day to Persian calendar day index
+// JavaScript: 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+// Persian: 0 = Saturday, 1 = Sunday, ..., 6 = Friday
+const convertToPersianDayIndex = (jsDay) => {
+  // Sunday (0) -> 1, Monday (1) -> 2, ..., Saturday (6) -> 0
+  return jsDay === 0 ? 1 : jsDay === 6 ? 0 : jsDay + 1;
+};
+
 // Function to get today's day in Persian calendar
 export const getTodayDay = () => {
   const today = new Date();
-  // In JavaScript, getDay() returns 0 for Sunday, 1 for Monday, etc.
-  // We need to adjust it for the Persian calendar where the week starts with Saturday (6)
-  // Saturday: 6 -> 0, Sunday: 0 -> 1, Monday: 1 -> 2, ..., Friday: 5 -> 6
-  const dayIndex = today.getDay() === 6 ? 0 : today.getDay() + 1;
-  return daysOfWeek[dayIndex];
+  const jsDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const persianDayIndex = convertToPersianDayIndex(jsDay);
+  return daysOfWeek[persianDayIndex];
 };
 
 export const getTodayExercise = () => {
-  // Get current day of week (0 = Saturday, 1 = Sunday, ..., 6 = Friday in Persian calendar)
-  const today = new Date().getDay();
-  
-  // Convert from JavaScript day (0 = Sunday) to Persian calendar day (0 = Saturday)
-  // Sunday (0) -> 1, Monday (1) -> 2, ..., Saturday (6) -> 0
-  const persianDay = today === 0 ? 6 : today - 1;
+  const today = new Date();
+  const jsDay = today.getDay(); // 0 = Sunday, 1 = Monday, ..., 6 = Saturday
+  const persianDayIndex = convertToPersianDayIndex(jsDay);
   
   // Return the workout for today
-  return weeklyWorkouts[persianDay];
+  return weeklyWorkouts[persianDayIndex];
 };

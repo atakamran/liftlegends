@@ -159,10 +159,10 @@ const Profile = () => {
 
   const handleLogout = async () => {
     try {
-      // Remove login info from storage
-      localStorage.removeItem("currentUser");
+      // Just set isLoggedIn to false without removing user data
+      localStorage.setItem("isLoggedIn", "false");
       
-      navigate("/phone-login");
+      navigate("/");
       toast({
         title: "خروج موفق",
         description: "شما با موفقیت از حساب کاربری خود خارج شدید.",

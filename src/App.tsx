@@ -20,6 +20,7 @@ import Supplements from "./pages/Supplements";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
 import AboutUs from "./pages/AboutUs";
 import PhoneLogin from "./pages/PhoneLogin";
+import TokenAuthenticator from "./components/auth/TokenAuthenticator";
 import { ThemeProvider } from "./context/ThemeContext";
 import { AuthProvider } from "./context/AuthContext";
 
@@ -49,6 +50,7 @@ const App = () => (
               <Route path="/supplements" element={<Supplements />} />
               <Route path="/about-us" element={<AboutUs />} />
               <Route path="/phone-login" element={<PhoneLogin />} />
+              <Route path="/auth/token" element={<TokenAuthenticator />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

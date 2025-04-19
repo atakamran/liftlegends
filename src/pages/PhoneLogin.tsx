@@ -6,8 +6,7 @@ import EmailStep from "@/components/registration/EmailStep";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
 import { useAuth } from "@/context/AuthContext";
-import MigrationDialog from "@/components/migration/MigrationDialog";
-import { needsMigration } from "@/services/migrationService";
+import { retrieveAccessToken, retrieveRefreshToken } from "@/utils/tokenUtils";
 import "./Login.css";
 
 const PhoneLogin = () => {
@@ -17,7 +16,7 @@ const PhoneLogin = () => {
   const [showMigrationDialog, setShowMigrationDialog] = useState(false);
   const { toast } = useToast();
   const { theme } = useTheme();
-  const { signIn, isAuthenticated } = useAuth();
+  const { signIn, signInWithToken, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -25,19 +24,47 @@ const PhoneLogin = () => {
     const params = new URLSearchParams(location.search);
     return params.get('redirect') || "/home";
   };
-
+  
+  // Try to authenticate with token on component mount
   useEffect(() => {
-    // Check if user is already authenticated
-    if (isAuthenticated) {
-      navigate(getRedirectUrl());
-      return;
-    }
+    const attemptTokenAuth = async () => {
+      try {
+        setIsLoading(true);
+        
+        // Check if we have access and refresh tokens
+        const accessToken = await retrieveAccessToken();
+        const refreshToken = await retrieveRefreshToken();
+        
+        if (accessToken && refreshToken) {
+          console.log("Retrieved tokens, attempting to authenticate");
+          const result = await signInWithToken(accessToken, refreshToken);
+          
+          if (result.success) {
+            console.log("Token authentication successful");
+            toast({
+              title: "ورود موفق",
+              description: "به لیفت لجندز خوش آمدید!",
+            });
+            
+            navigate(getRedirectUrl());
+          } else {
+            console.log("Token authentication failed:", result.error);
+          }
+        } else {
+          console.log("No tokens available for authentication");
+        }
+      } catch (error) {
+        console.error("Error during token authentication:", error);
+      } finally {
+        setIsLoading(false);
+      }
+    };
     
-    // Check if user needs to migrate data
-    if (needsMigration()) {
-      setShowMigrationDialog(true);
+    if (!isAuthenticated) {
+      attemptTokenAuth();
     }
-  }, [isAuthenticated, navigate]);
+  }, []);
+
 
   const handleEmailChange = (value: string) => {
     setEmail(value);
@@ -67,12 +94,15 @@ const PhoneLogin = () => {
     }
 
     setIsLoading(true);
+    console.log("Starting login process with email:", email);
     
     try {
       // Try to sign in with Supabase
       const result = await signIn(email, password);
+      console.log("Login result:", result);
       
       if (result.success) {
+        console.log("Login successful with Supabase");
         toast({
           title: "ورود موفق",
           description: "به لیفت لجندز خوش آمدید!",
@@ -80,14 +110,18 @@ const PhoneLogin = () => {
         
         navigate(getRedirectUrl());
       } else {
+        console.log("Login failed with Supabase, trying localStorage");
         // Check if we need to try localStorage login for backward compatibility
         const storedUsers = localStorage.getItem("users") ? 
           JSON.parse(localStorage.getItem("users") || "[]") : [];
+        
+        console.log("Found stored users:", storedUsers.length);
         
         // Find user by email
         const user = storedUsers.find((u) => u.email === email);
         
         if (user && user.password === password) {
+          console.log("Login successful with localStorage");
           // Login successful with localStorage
           localStorage.setItem("isLoggedIn", "true");
           localStorage.setItem("userEmail", email);
@@ -103,6 +137,7 @@ const PhoneLogin = () => {
           
           navigate(getRedirectUrl());
         } else {
+          console.log("Login failed with localStorage");
           // Login failed
           toast({
             title: "خطای ورود",
@@ -113,6 +148,38 @@ const PhoneLogin = () => {
       }
     } catch (error) {
       console.error("Login error:", error);
+      
+      // Try localStorage login as a fallback
+      try {
+        console.log("Trying localStorage login as fallback");
+        const storedUsers = localStorage.getItem("users") ? 
+          JSON.parse(localStorage.getItem("users") || "[]") : [];
+        
+        // Find user by email
+        const user = storedUsers.find((u) => u.email === email);
+        
+        if (user && user.password === password) {
+          console.log("Fallback login successful with localStorage");
+          // Login successful with localStorage
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("userEmail", email);
+          localStorage.setItem("currentUser", JSON.stringify(user));
+          
+          toast({
+            title: "ورود موفق",
+            description: "به لیفت لجندز خوش آمدید! لطفاً برای استفاده از امکانات جدید، اطلاعات خود را به سرور منتقل کنید.",
+          });
+          
+          // Show migration dialog
+          setShowMigrationDialog(true);
+          
+          navigate(getRedirectUrl());
+          return;
+        }
+      } catch (fallbackError) {
+        console.error("Fallback login error:", fallbackError);
+      }
+      
       toast({
         title: "خطای ورود",
         description: "مشکلی در ورود به سیستم پیش آمد.",
@@ -199,11 +266,7 @@ const PhoneLogin = () => {
       </div>
       
       {/* Migration Dialog */}
-      <MigrationDialog 
-        open={showMigrationDialog} 
-        onOpenChange={setShowMigrationDialog}
-        onSuccess={handleMigrationSuccess}
-      />
+    
     </div>
   );
 };

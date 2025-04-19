@@ -100,6 +100,49 @@ export async function signIn(email: string, password: string) {
   }
 }
 
+export async function signInWithToken(accessToken: string, refreshToken: string) {
+  try {
+    console.log("Attempting to sign in with access token");
+    
+    // Set the session with the provided tokens
+    const { data, error } = await supabase.auth.setSession({
+      access_token: accessToken,
+      refresh_token: refreshToken
+    });
+
+    if (error) throw error;
+
+    if (data.user) {
+      // Get user profile data
+      const { data: profileData, error: profileError } = await supabase
+        .from('user_profiles')
+        .select('*')
+        .eq('user_id', data.user.id)
+        .single();
+
+      if (profileError && profileError.code !== 'PGRST116') {
+        // PGRST116 is "no rows returned" which is fine for new users
+        throw profileError;
+      }
+
+      return { 
+        success: true, 
+        user: data.user,
+        profile: profileData || null,
+        session: data.session
+      };
+    }
+    
+    return { success: false, error: "No user returned from token login" };
+  } catch (error) {
+    console.error("Error signing in with token:", error);
+    return { 
+      success: false, 
+      error: error instanceof Error ? error.message : "Unknown error during token login" 
+    };
+  }
+}
+
 export async function signOut() {
   try {
     const { error } = await supabase.auth.signOut();

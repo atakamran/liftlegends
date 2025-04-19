@@ -87,7 +87,7 @@ const EmailStep: React.FC<EmailStepProps> = ({
               در حال پردازش...
             </>
           ) : (
-            "ثبت نام"
+            "ورود"
           )}
         </Button>
       </div>

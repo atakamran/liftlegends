@@ -9,6 +9,7 @@ import { supabase } from "@/integrations/supabase/client";
 import { User, SupabaseUserProfile } from "@/types";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
+import { ensureAuthenticated, refreshSession } from "@/utils/supabaseHelpers";
 
 interface AuthContextType {
   user: User | null;
@@ -18,6 +19,10 @@ interface AuthContextType {
   signIn: (
     phoneNumber: string,
     password: string
+  ) => Promise<{ success: boolean; error?: string }>;
+  signInWithToken: (
+    accessToken: string,
+    refreshToken: string
   ) => Promise<{ success: boolean; error?: string }>;
   signUp: (
     userData: Partial<User>,
@@ -176,6 +181,7 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signIn = async (email: string, password: string) => {
     try {
       setIsLoading(true);
+      console.log("Attempting to sign in with email:", email);
 
       // Use email for Supabase auth
       const { data, error } = await supabase.auth.signInWithPassword({
@@ -183,45 +189,133 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         password,
       });
 
-      if (error) throw error;
+      if (error) {
+        console.error("Supabase auth error:", error);
+        throw error;
+      }
 
       if (data.user) {
-        // Get user profile
-        const { data: profileData, error: profileError } = await supabase
-          .from("user_profiles")
-          .select("*")
-          .eq("user_id", data.user.id)
-          .single();
+        console.log("User authenticated successfully:", data.user.id);
+        
+        try {
+          // Get user profile
+          const { data: profileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", data.user.id)
+            .single();
 
-        if (profileError && profileError.code !== "PGRST116") {
-          console.error("Error fetching user profile:", profileError);
+          if (profileError) {
+            console.error("Error fetching user profile:", profileError);
+            
+            // If the profile doesn't exist, create one
+            if (profileError.code === "PGRST116") {
+              console.log("Profile not found, creating a new one");
+              
+              // Refresh the session to ensure we have a valid token
+              const refreshSuccessful = await refreshSession();
+              if (!refreshSuccessful) {
+                console.error("Failed to refresh session");
+              }
+              
+              // Ensure the user is authenticated
+              const userId = await ensureAuthenticated();
+              if (!userId) {
+                console.error("User not authenticated after signin");
+                throw new Error("Authentication failed after signin");
+              }
+              
+              console.log("User authenticated with ID:", userId);
+              
+              // Create a basic profile for the user
+              const profileData = {
+                user_id: data.user.id,
+                name: "",
+                subscription_plan: "basic",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+              
+              console.log("Profile data to insert:", profileData);
+              
+              const { data: newProfile, error: createError } = await supabase
+                .from("user_profiles")
+                .insert(profileData)
+                .select();
+              
+              if (createError) {
+                console.error("Error creating user profile:", createError);
+              } else if (newProfile && newProfile.length > 0) {
+                console.log("New profile created successfully");
+                
+                // Convert Supabase user to app User format with the new profile
+                const appUser: User = {
+                  email,
+                  name: "",
+                  age: "",
+                  gender: "",
+                  currentWeight: "",
+                  height: "",
+                  targetWeight: "",
+                  goal: "",
+                  activityLevel: "",
+                  subscription_plan: "basic",
+                  subscription_start_date: "",
+                  subscription_end_date: "",
+                  createdAt: newProfile[0].created_at || "",
+                  updatedAt: newProfile[0].updated_at || "",
+                };
+
+                setUser(appUser);
+                setProfile(newProfile[0]);
+                setIsAuthenticated(true);
+
+                return { success: true };
+              }
+            }
+          } else {
+            console.log("User profile retrieved successfully");
+            
+            // Convert Supabase user to app User format
+            const appUser: User = {
+              email,
+              name: profileData?.name || "",
+              age: profileData?.age?.toString() || "",
+              gender: profileData?.gender || "",
+              currentWeight: profileData?.weight?.toString() || "",
+              height: profileData?.height?.toString() || "",
+              targetWeight: profileData?.target_weight?.toString() || "",
+              goal: profileData?.primary_goal || "",
+              activityLevel: profileData?.fitness_level || "",
+              subscription_plan: profileData?.subscription_plan || "basic",
+              subscription_start_date: profileData?.subscription_start_date || "",
+              subscription_end_date: profileData?.subscription_end_date || "",
+              createdAt: profileData?.created_at || "",
+              updatedAt: profileData?.updated_at || "",
+            };
+
+            setUser(appUser);
+            setProfile(profileData);
+            setIsAuthenticated(true);
+
+            return { success: true };
+          }
+        } catch (profileError) {
+          console.error("Error in profile handling:", profileError);
+          // Even if there's an error with the profile, the user is authenticated
+          setUser({ email, name: "", age: "", gender: "", currentWeight: "", height: "", targetWeight: "", goal: "", activityLevel: "", subscription_plan: "basic" });
+          setProfile(null);
+          setIsAuthenticated(true);
+          return { success: true };
         }
-
-        // Convert Supabase user to app User format
-        const appUser: User = {
-          email,
-          name: profileData?.name || "",
-          age: profileData?.age?.toString() || "",
-          gender: profileData?.gender || "",
-          currentWeight: profileData?.weight?.toString() || "",
-          height: profileData?.height?.toString() || "",
-          targetWeight: profileData?.target_weight?.toString() || "",
-          goal: profileData?.primary_goal || "",
-          activityLevel: profileData?.fitness_level || "",
-          subscription_plan: profileData?.subscription_plan || "basic",
-          subscription_start_date: profileData?.subscription_start_date || "",
-          subscription_end_date: profileData?.subscription_end_date || "",
-          createdAt: profileData?.created_at || "",
-          updatedAt: profileData?.updated_at || "",
-        };
-
-        setUser(appUser);
-        setProfile(profileData || null);
+        
+        // Default success case if we get here
+        setUser({ email, name: "", age: "", gender: "", currentWeight: "", height: "", targetWeight: "", goal: "", activityLevel: "", subscription_plan: "basic" });
         setIsAuthenticated(true);
-
         return { success: true };
       }
 
+      console.log("No user returned from authentication");
       return { success: false, error: "خطا در ورود به سیستم" };
     } catch (error) {
       console.error("Error signing in:", error);
@@ -237,12 +331,15 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
   const signUp = async (userData: Partial<User>, password: string) => {
     try {
       setIsLoading(true);
+      console.log("Starting signup process");
 
       const email = userData.email;
       if (!email) {
+        console.error("Email is required");
         return { success: false, error: "ایمیل الزامی است" };
       }
 
+      console.log("Creating auth user with email:", email);
       // Use email for Supabase auth
       // Create auth user
       const { data: authData, error: authError } = await supabase.auth.signUp({
@@ -255,13 +352,34 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
         },
       });
 
-      if (authError) throw authError;
+      if (authError) {
+        console.error("Error creating auth user:", authError);
+        throw authError;
+      }
       
       if (authData.user) {
-        // Create user profile with fields that match the database schema exactly
-        const { error: profileError } = await supabase
-          .from("user_profiles")
-          .insert({
+        console.log("Auth user created successfully:", authData.user.id);
+        
+        try {
+          console.log("Creating user profile");
+          
+          // Refresh the session to ensure we have a valid token
+          const refreshSuccessful = await refreshSession();
+          if (!refreshSuccessful) {
+            console.error("Failed to refresh session");
+          }
+          
+          // Ensure the user is authenticated
+          const userId = await ensureAuthenticated();
+          if (!userId) {
+            console.error("User not authenticated after signup");
+            throw new Error("Authentication failed after signup");
+          }
+          
+          console.log("User authenticated with ID:", userId);
+          
+          // Create user profile with fields that match the database schema exactly
+          const profileData = {
             user_id: authData.user.id,
             name: userData.name,
             age: userData.age ? Number(userData.age) : null,
@@ -280,25 +398,83 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
             subscription_end_date: new Date(
               Date.now() + 30 * 24 * 60 * 60 * 1000
             ).toISOString(), // 30 days
-            // Set default values for other fields in the schema
-            dietary_restrictions: null,
-            dietary_restrictions_details: null,
-            steroids_interest: null,
-            takes_supplements: null,
-            training_days_per_week: null,
-            training_place: null,
             created_at: new Date().toISOString(),
             updated_at: new Date().toISOString()
-          });
+          };
+          
+          console.log("Profile data to insert:", profileData);
+          
+          // Insert the profile data
+          const { data: insertedProfileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .insert(profileData)
+            .select();
 
-        if (profileError) throw profileError;
+          if (profileError) {
+            console.error("Error creating user profile:", profileError);
+            throw profileError;
+          }
 
-        // Refresh user data
-        await refreshUserData();
-
+          console.log("User profile created successfully");
+          
+          // Set the user data directly instead of refreshing
+          if (insertedProfileData && insertedProfileData.length > 0) {
+            const appUser: User = {
+              email,
+              name: userData.name || "",
+              age: userData.age || "",
+              gender: userData.gender || "",
+              currentWeight: userData.currentWeight || "",
+              height: userData.height || "",
+              targetWeight: userData.targetWeight || "",
+              goal: userData.goal || "",
+              activityLevel: userData.activityLevel || "",
+              subscription_plan: userData.subscription_plan || "basic",
+              subscription_start_date: new Date().toISOString(),
+              subscription_end_date: new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString(),
+              createdAt: new Date().toISOString(),
+              updatedAt: new Date().toISOString(),
+            };
+            
+            setUser(appUser);
+            setProfile(insertedProfileData[0]);
+            setIsAuthenticated(true);
+            
+            console.log("User data set successfully");
+            return { success: true };
+          }
+        } catch (error) {
+          console.error("Error in profile creation:", error);
+          
+          // Even if profile creation fails, the user is registered
+          const appUser: User = {
+            email,
+            name: userData.name || "",
+            age: userData.age || "",
+            gender: userData.gender || "",
+            currentWeight: userData.currentWeight || "",
+            height: userData.height || "",
+            targetWeight: userData.targetWeight || "",
+            goal: userData.goal || "",
+            activityLevel: userData.activityLevel || "",
+            subscription_plan: "basic",
+            subscription_start_date: "",
+            subscription_end_date: "",
+            createdAt: new Date().toISOString(),
+            updatedAt: new Date().toISOString(),
+          };
+          
+          setUser(appUser);
+          setIsAuthenticated(true);
+          
+          return { success: true, error: "حساب کاربری ایجاد شد اما مشکلی در ذخیره پروفایل پیش آمد." };
+        }
+        
+        // Default success case
         return { success: true };
       }
 
+      console.error("No user returned from signup");
       return { success: false, error: "خطا در ثبت نام" };
     } catch (error) {
       console.error("Error signing up:", error);
@@ -487,12 +663,170 @@ export const AuthProvider: React.FC<{ children: ReactNode }> = ({
     }
   };
 
+  const signInWithToken = async (accessToken: string, refreshToken: string) => {
+    try {
+      setIsLoading(true);
+      console.log("Attempting to sign in with access token");
+
+      // Set the session with the provided tokens
+      const { data, error } = await supabase.auth.setSession({
+        access_token: accessToken,
+        refresh_token: refreshToken
+      });
+
+      if (error) {
+        console.error("Supabase auth error:", error);
+        throw error;
+      }
+
+      if (data.user) {
+        console.log("User authenticated successfully with token:", data.user.id);
+        
+        try {
+          // Get user profile
+          const { data: profileData, error: profileError } = await supabase
+            .from("user_profiles")
+            .select("*")
+            .eq("user_id", data.user.id)
+            .single();
+
+          if (profileError) {
+            console.error("Error fetching user profile:", profileError);
+            
+            // If the profile doesn't exist, create one
+            if (profileError.code === "PGRST116") {
+              console.log("Profile not found, creating a new one");
+              
+              // Create a basic profile for the user
+              const profileData = {
+                user_id: data.user.id,
+                name: "",
+                subscription_plan: "basic",
+                created_at: new Date().toISOString(),
+                updated_at: new Date().toISOString()
+              };
+              
+              console.log("Profile data to insert:", profileData);
+              
+              const { data: newProfile, error: createError } = await supabase
+                .from("user_profiles")
+                .insert(profileData)
+                .select();
+              
+              if (createError) {
+                console.error("Error creating user profile:", createError);
+              } else if (newProfile && newProfile.length > 0) {
+                console.log("New profile created successfully");
+                
+                // Convert Supabase user to app User format with the new profile
+                const appUser: User = {
+                  email: data.user.email || "",
+                  name: "",
+                  age: "",
+                  gender: "",
+                  currentWeight: "",
+                  height: "",
+                  targetWeight: "",
+                  goal: "",
+                  activityLevel: "",
+                  subscription_plan: "basic",
+                  subscription_start_date: "",
+                  subscription_end_date: "",
+                  createdAt: newProfile[0].created_at || "",
+                  updatedAt: newProfile[0].updated_at || "",
+                };
+
+                setUser(appUser);
+                setProfile(newProfile[0]);
+                setIsAuthenticated(true);
+
+                return { success: true };
+              }
+            }
+          } else {
+            console.log("User profile retrieved successfully");
+            
+            // Convert Supabase user to app User format
+            const appUser: User = {
+              email: data.user.email || "",
+              name: profileData?.name || "",
+              age: profileData?.age?.toString() || "",
+              gender: profileData?.gender || "",
+              currentWeight: profileData?.weight?.toString() || "",
+              height: profileData?.height?.toString() || "",
+              targetWeight: profileData?.target_weight?.toString() || "",
+              goal: profileData?.primary_goal || "",
+              activityLevel: profileData?.fitness_level || "",
+              subscription_plan: profileData?.subscription_plan || "basic",
+              subscription_start_date: profileData?.subscription_start_date || "",
+              subscription_end_date: profileData?.subscription_end_date || "",
+              createdAt: profileData?.created_at || "",
+              updatedAt: profileData?.updated_at || "",
+            };
+
+            setUser(appUser);
+            setProfile(profileData);
+            setIsAuthenticated(true);
+
+            return { success: true };
+          }
+        } catch (profileError) {
+          console.error("Error in profile handling:", profileError);
+          // Even if there's an error with the profile, the user is authenticated
+          setUser({ 
+            email: data.user.email || "", 
+            name: "", 
+            age: "", 
+            gender: "", 
+            currentWeight: "", 
+            height: "", 
+            targetWeight: "", 
+            goal: "", 
+            activityLevel: "", 
+            subscription_plan: "basic" 
+          });
+          setProfile(null);
+          setIsAuthenticated(true);
+          return { success: true };
+        }
+        
+        // Default success case if we get here
+        setUser({ 
+          email: data.user.email || "", 
+          name: "", 
+          age: "", 
+          gender: "", 
+          currentWeight: "", 
+          height: "", 
+          targetWeight: "", 
+          goal: "", 
+          activityLevel: "", 
+          subscription_plan: "basic" 
+        });
+        setIsAuthenticated(true);
+        return { success: true };
+      }
+
+      console.log("No user returned from token authentication");
+      return { success: false, error: "خطا در ورود به سیستم" };
+    } catch (error) {
+      console.error("Error signing in with token:", error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : "خطا در ورود به سیستم",
+      };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const value = {
     user,
     profile,
     isLoading,
     isAuthenticated,
     signIn,
+    signInWithToken,
     signUp,
     signOut,
     updateProfile,

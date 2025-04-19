@@ -3,7 +3,7 @@ import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { useToast } from "@/hooks/use-toast";
 import { useNavigate } from "react-router-dom";
-import PhoneStep from "@/components/registration/PhoneStep";
+import EmailStep from "@/components/registration/EmailStep";
 import NameStep from "@/components/registration/NameStep";
 import GenderStep from "@/components/registration/GenderStep";
 import PhysicalInfoStep from "@/components/registration/PhysicalInfoStep";
@@ -11,13 +11,15 @@ import ActivityLevelStep from "@/components/registration/ActivityLevelStep";
 import GoalStep from "@/components/registration/GoalStep";
 import { Card, CardContent } from "@/components/ui/card";
 import { ChevronRight } from "lucide-react";
-import { useTheme } from "@/context/ThemeContext";
+import { useTheme, useAuth } from "@/context";
+import { supabase } from "@/integrations/supabase/client";
 import "./Login.css"; // Reuse the galaxy animation
 
 const Registration = () => {
   const navigate = useNavigate();
   const { toast } = useToast();
   const { theme } = useTheme();
+  const { signUp } = useAuth();
   const [currentStep, setCurrentStep] = useState(1);
   const [progress, setProgress] = useState(0);
   const [isLoading, setIsLoading] = useState(false);
@@ -27,7 +29,7 @@ const Registration = () => {
   
   // Form data state
   const [formData, setFormData] = useState({
-    phoneNumber: "",
+    email: "",
     password: "",
     name: "",
     age: "",
@@ -68,11 +70,11 @@ const Registration = () => {
     }
   };
   
-  const handlePhoneStep = () => {
-    if (!formData.phoneNumber || formData.phoneNumber.length < 11 || !formData.phoneNumber.startsWith("09")) {
+  const handleEmailStep = async () => {
+    if (!formData.email || !formData.email.includes('@')) {
       toast({
-        title: "شماره تلفن نامعتبر",
-        description: "لطفاً یک شماره تلفن معتبر وارد کنید.",
+        title: "ایمیل نامعتبر",
+        description: "لطفاً یک ایمیل معتبر وارد کنید.",
         variant: "destructive",
       });
       return;
@@ -89,41 +91,34 @@ const Registration = () => {
     
     setIsLoading(true);
     
-    // Check if user already exists in localStorage
-    // Define a type for user data
-    interface UserData {
-      phoneNumber: string;
-      password: string;
-      name: string;
-      age: number | string;
-      gender: string;
-      currentWeight: string;
-      height: string;
-      targetWeight: string;
-      activityLevel: string;
-      goal: string;
-      subscription_plan?: string;
-      permissions?: string;
-      createdAt?: string;
-    }
-    
-    const storedUsers = localStorage.getItem("users") ? 
-      JSON.parse(localStorage.getItem("users") || "[]") as UserData[] : [];
-    
-    const userExists = storedUsers.some((user: UserData) => user.phoneNumber === formData.phoneNumber);
-    
-    setTimeout(() => {
-      if (userExists) {
+    try {
+      // Check if user already exists in Supabase
+      // Check if user exists in Supabase
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: formData.email,
+        password: formData.password,
+      });
+      
+      if (data.user) {
+        // User exists
         toast({
           title: "خطا در ثبت نام",
-          description: "این شماره تلفن قبلا ثبت شده است.",
+          description: "این ایمیل قبلا ثبت شده است.",
           variant: "destructive",
         });
-      } else {
-        handleNextStep(); // Go to the next step if phone number is valid and not registered
+        setIsLoading(false);
+        return;
       }
+      
+      // Email is valid and not registered in Supabase, proceed to next step
+      handleNextStep();
+    } catch (error) {
+      console.error("Error checking user:", error);
+      // If we get an error, it's likely because the user doesn't exist, so we can proceed
+      handleNextStep();
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
   };
   
   const handleCompleteRegistration = async () => {
@@ -131,43 +126,38 @@ const Registration = () => {
 
     // Create user profile object
     const profileData = {
-      phoneNumber: formData.phoneNumber,
+      email: formData.email,
       password: formData.password,
       name: formData.name,
-      age: parseInt(formData.age) || 0, // تبدیل به عدد
+      age: formData.age,
       gender: formData.gender,
       currentWeight: formData.currentWeight,
       height: formData.height,
       targetWeight: formData.targetWeight,
       activityLevel: formData.activityLevel,
       goal: formData.goal,
-      subscription_plan: "ultimate", // Default plan
-      permissions: "all", // Temporarily grant all permissions
+      subscription_plan: "basic", // Default plan
       createdAt: new Date().toISOString()
     };
 
     try {
-      // Get existing users from localStorage
-      const storedUsers = localStorage.getItem("users") ? 
-        JSON.parse(localStorage.getItem("users") || "[]") : [];
+      // Register user with Supabase
+      const result = await signUp(profileData, formData.password);
       
-      // Add new user
-      storedUsers.push(profileData);
-      
-      // Save updated users list
-      localStorage.setItem("users", JSON.stringify(storedUsers));
-      
-      // Set login status
-      localStorage.setItem("isLoggedIn", "true");
-      localStorage.setItem("userPhoneNumber", formData.phoneNumber);
-      localStorage.setItem("currentUser", JSON.stringify(profileData));
-      
-      toast({
-        title: "ثبت نام موفقیت‌آمیز",
-        description: "حساب کاربری شما با موفقیت ایجاد شد.",
-      });
-      
-      navigate("/home");
+      if (result.success) {
+        toast({
+          title: "ثبت نام موفقیت‌آمیز",
+          description: "حساب کاربری شما با موفقیت ایجاد شد.",
+        });
+        
+        navigate("/home");
+      } else {
+        toast({
+          title: "خطا در ثبت نام",
+          description: result.error || "مشکلی در ثبت نام پیش آمد. لطفاً دوباره تلاش کنید.",
+          variant: "destructive",
+        });
+      }
     } catch (error) {
       console.error("Error saving user profile: ", error);
       toast({
@@ -184,10 +174,10 @@ const Registration = () => {
     switch (currentStep) {
       case 1:
         return (
-          <PhoneStep 
-            phoneNumber={formData.phoneNumber}
-            updatePhoneNumber={(value) => updateFormData("phoneNumber", value)}
-            onSendCode={handlePhoneStep}
+          <EmailStep 
+            email={formData.email}
+            updateEmail={(value) => updateFormData("email", value)}
+            onSendCode={handleEmailStep}
             isLoading={isLoading}
             password={formData.password}
             updatePassword={(value) => updateFormData("password", value)}

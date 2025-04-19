@@ -13,6 +13,7 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
@@ -59,6 +60,7 @@ const Profile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
+  const { user, profile, isLoading, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({
     name: "",
@@ -81,31 +83,22 @@ const Profile = () => {
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        // Get data from localStorage
-        const currentUserData = localStorage.getItem("currentUser");
-        
-        if (!currentUserData) {
+        if (!user) {
           navigate("/phone-login");
           return;
         }
         
-        // Parse user data from currentUser
-        const parsedUserData = JSON.parse(currentUserData);
-        
-        // Get subscription plan from currentUser
-        const plan = parsedUserData.subscription_plan || "basic";
-        console.log("Subscription plan from currentUser:", plan);
+        // Get subscription plan from user data
+        const plan = profile?.subscription_plan || "basic";
         const validPlans: SubscriptionPlan[] = ["basic", "pro", "ultimate"];
         const subscriptionPlan = validPlans.includes(plan as SubscriptionPlan) 
           ? plan as SubscriptionPlan 
           : "basic";
-        console.log("Using subscription plan:", subscriptionPlan);
         
         // Format join date
-        const joinDate = parsedUserData.updatedAt 
-          ? new Date(parsedUserData.updatedAt) 
+        const joinDate = profile?.created_at 
+          ? new Date(profile.created_at) 
           : new Date();
-        joinDate.setMonth(joinDate.getMonth() - 2); // Assume joined 2 months ago
         const formattedJoinDate = new Intl.DateTimeFormat('fa-IR', {
           year: 'numeric',
           month: 'long',
@@ -114,26 +107,27 @@ const Profile = () => {
         
         // Set user data
         setUserData({
-          name: parsedUserData.name || "کاربر",
-          phoneNumber: parsedUserData.phoneNumber || "",
-          age: parsedUserData.age || "",
-          gender: parsedUserData.gender || "",
-          height: parsedUserData.height || "",
-          currentWeight: parsedUserData.currentWeight || "",
-          targetWeight: parsedUserData.targetWeight || "",
-          goal: parsedUserData.goal || "",
-          fitnessLevel: parsedUserData.fitnessLevel || "متوسط",
+          name: user.name || "کاربر",
+          phoneNumber: user.phoneNumber || "",
+          age: user.age?.toString() || "",
+          gender: user.gender || "",
+          height: user.height || "",
+          currentWeight: user.currentWeight || "",
+          targetWeight: user.targetWeight || "",
+          goal: user.goal || "",
+          fitnessLevel: user.activityLevel || "متوسط",
           joinDate: formattedJoinDate,
-          workoutCount: parseInt(localStorage.getItem("workoutCount") || "12"),
-          streak: parseInt(localStorage.getItem("streak") || "3"),
+          workoutCount: 12, // Default value, should be fetched from Supabase
+          streak: 3, // Default value, should be fetched from Supabase
         });
 
         // Set subscription data
         setSubscriptionPlan(subscriptionPlan);
         
-        // Set subscription end date (30 days from now)
-        const endDate = new Date();
-        endDate.setDate(endDate.getDate() + 30);
+        // Set subscription end date from profile
+        const endDate = profile?.subscription_end_date 
+          ? new Date(profile.subscription_end_date) 
+          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
         setSubscriptionEndDate(endDate);
         
         // Calculate days left
@@ -153,19 +147,15 @@ const Profile = () => {
       }
     };
 
-    fetchUserProfile();
-  }, [navigate, toast]);
+    if (!isLoading) {
+      fetchUserProfile();
+    }
+  }, [user, profile, isLoading, navigate, toast]);
 
   const handleLogout = async () => {
     try {
-      // Just set isLoggedIn to false without removing user data
-      localStorage.setItem("isLoggedIn", "false");
-      
-      navigate("/");
-      toast({
-        title: "خروج موفق",
-        description: "شما با موفقیت از حساب کاربری خود خارج شدید.",
-      });
+      await signOut();
+      // Navigation and toast are handled in the signOut function
     } catch (error) {
       console.error("Error signing out:", error);
       toast({
@@ -187,7 +177,11 @@ const Profile = () => {
       case "basic": return <BadgeCheck className={`h-6 w-6 ${planColors[plan].icon}`} />;
       case "pro": return <Sparkles className={`h-6 w-6 ${planColors[plan].icon}`} />;
       case "ultimate": return <CrownIcon className={`h-6 w-6 ${planColors[plan].icon}`} />;
-      default: return <CrownIcon className={`h-6 w-6 ${planColors[plan].icon}`} />;
+      default: {
+        // This ensures TypeScript knows plan is SubscriptionPlan in default case
+        const fallbackPlan: SubscriptionPlan = "basic";
+        return <CrownIcon className={`h-6 w-6 ${planColors[fallbackPlan].icon}`} />;
+      }
     }
   };
 

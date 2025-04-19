@@ -26,6 +26,7 @@ export type Database = {
           subscription_plan: string | null
           subscription_start_date: string | null
           takes_supplements: boolean | null
+          target_weight: number | null
           training_days_per_week: string | null
           training_place: string | null
           updated_at: string | null
@@ -48,6 +49,7 @@ export type Database = {
           subscription_plan?: string | null
           subscription_start_date?: string | null
           takes_supplements?: boolean | null
+          target_weight?: number | null
           training_days_per_week?: string | null
           training_place?: string | null
           updated_at?: string | null
@@ -70,11 +72,39 @@ export type Database = {
           subscription_plan?: string | null
           subscription_start_date?: string | null
           takes_supplements?: boolean | null
+          target_weight?: number | null
           training_days_per_week?: string | null
           training_place?: string | null
           updated_at?: string | null
           user_id?: string | null
           weight?: number | null
+        }
+        Relationships: []
+      }
+      completed_exercises: {
+        Row: {
+          id: string
+          user_id: string
+          day: string
+          exercise_name: string
+          completed_at: string
+          created_at: string | null
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          day: string
+          exercise_name: string
+          completed_at: string
+          created_at?: string | null
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          day?: string
+          exercise_name?: string
+          completed_at?: string
+          created_at?: string | null
         }
         Relationships: []
       }

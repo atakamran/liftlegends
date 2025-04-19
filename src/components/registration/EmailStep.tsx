@@ -1,4 +1,3 @@
-
 import React from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -6,7 +5,7 @@ import { Loader2 } from "lucide-react";
 import { useTheme } from "@/context/ThemeContext";
 import { useNavigate } from "react-router-dom";
 
-interface PhoneStepProps {
+interface EmailStepProps {
   email: string;
   updateEmail: (value: string) => void;
   password: string;
@@ -16,7 +15,7 @@ interface PhoneStepProps {
   isDarkTheme: boolean;
 }
 
-const PhoneStep: React.FC<PhoneStepProps> = ({
+const EmailStep: React.FC<EmailStepProps> = ({
   email,
   updateEmail,
   password,
@@ -78,6 +77,7 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
       
       <div className="w-full mt-8">
         <Button 
+          onClick={onSendCode} 
           className={`w-full h-12 text-lg rounded-lg ${theme === 'dark' ? 'bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700' : 'bg-gradient-to-r from-gray-800 to-black hover:from-black hover:to-gray-900'} text-white shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02]`}
           disabled={isLoading || !email || !email.includes('@') || !password || password.length < 4}
         >
@@ -103,4 +103,4 @@ const PhoneStep: React.FC<PhoneStepProps> = ({
   );
 };
 
-export default PhoneStep;
+export default EmailStep;

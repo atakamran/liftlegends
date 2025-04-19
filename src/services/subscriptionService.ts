@@ -1,6 +1,4 @@
-import { auth } from "@/integrations/firebase/firebaseConfig";
-import { doc, getDoc, setDoc } from "firebase/firestore";
-import { db } from "@/integrations/firebase/firebaseConfig";
+import { supabase } from "@/integrations/supabase/client";
 
 export type SubscriptionPlan = 'basic' | 'pro' | 'ultimate';
 
@@ -11,28 +9,43 @@ export interface UserSubscription {
   isActive: boolean;
 }
 
-// Replace Supabase session retrieval with Firebase Authentication
+// Get current user session from Supabase
 export async function getSession() {
-  const user = auth.currentUser;
-  if (!user) {
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session || !session.user) {
     throw new Error("User not logged in");
   }
-  return user;
+  return session.user;
 }
 
-// Replace Supabase database operations with Firestore
+// Supabase database operations for subscriptions
 export async function saveSubscriptionData(userId: string, subscriptionData: any) {
-  const subscriptionRef = doc(db, "subscriptions", userId);
-  await setDoc(subscriptionRef, subscriptionData, { merge: true });
+  const { error } = await supabase
+    .from('subscriptions')
+    .upsert({ 
+      user_id: userId,
+      ...subscriptionData 
+    });
+  
+  if (error) {
+    console.error("Error saving subscription data:", error);
+    throw error;
+  }
 }
 
 export async function getSubscriptionData(userId: string) {
-  const subscriptionRef = doc(db, "subscriptions", userId);
-  const subscriptionSnap = await getDoc(subscriptionRef);
-  if (!subscriptionSnap.exists()) {
-    return null;
+  const { data, error } = await supabase
+    .from('subscriptions')
+    .select('*')
+    .eq('user_id', userId)
+    .single();
+  
+  if (error && error.code !== 'PGRST116') { // PGRST116 is "no rows returned" which is fine
+    console.error("Error getting subscription data:", error);
+    throw error;
   }
-  return subscriptionSnap.data();
+  
+  return data;
 }
 
 // Function to get the current user's subscription
@@ -45,8 +58,8 @@ export async function getUserSubscription(): Promise<UserSubscription | null> {
       return null;
     }
 
-    // Get user subscription info from Firestore
-    const data = await getSubscriptionData(user.uid);
+    // Get user subscription info from Supabase
+    const data = await getSubscriptionData(user.id);
 
     // If no data or no subscription plan is set, default to basic
     if (!data || !data.subscription_plan) {

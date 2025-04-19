@@ -2,34 +2,22 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { Card, CardContent } from "@/components/ui/card";
-import PhoneStep from "@/components/registration/PhoneStep";
+import EmailStep from "@/components/registration/EmailStep";
 import { useToast } from "@/hooks/use-toast";
 import { useTheme } from "@/context/ThemeContext";
+import { useAuth } from "@/context/AuthContext";
+import MigrationDialog from "@/components/migration/MigrationDialog";
+import { needsMigration } from "@/services/migrationService";
 import "./Login.css";
 
-// User interface based on the application's user structure
-interface User {
-  phoneNumber: string;
-  password: string;
-  name?: string;
-  age?: number;
-  gender?: string;
-  currentWeight?: string;
-  height?: string;
-  targetWeight?: string;
-  activityLevel?: string;
-  goal?: string;
-  subscription_plan?: string;
-  permissions?: string;
-  createdAt?: string;
-}
-
 const PhoneLogin = () => {
-  const [phoneNumber, setPhoneNumber] = useState("");
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [isLoading, setIsLoading] = useState(false);
+  const [showMigrationDialog, setShowMigrationDialog] = useState(false);
   const { toast } = useToast();
   const { theme } = useTheme();
+  const { signIn, isAuthenticated } = useAuth();
   const navigate = useNavigate();
   const location = useLocation();
   
@@ -39,26 +27,31 @@ const PhoneLogin = () => {
   };
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isLoggedIn") === "true";
-    if (isLoggedIn) {
+    // Check if user is already authenticated
+    if (isAuthenticated) {
       navigate(getRedirectUrl());
+      return;
     }
-  }, [navigate]);
+    
+    // Check if user needs to migrate data
+    if (needsMigration()) {
+      setShowMigrationDialog(true);
+    }
+  }, [isAuthenticated, navigate]);
 
-  const handlePhoneNumberChange = (value: string) => {
-    const numbersOnly = value.replace(/[^0-9]/g, "");
-    setPhoneNumber(numbersOnly);
+  const handleEmailChange = (value: string) => {
+    setEmail(value);
   };
 
   const handlePasswordChange = (value: string) => {
     setPassword(value);
   };
 
-  const handleLogin = () => {
-    if (!phoneNumber || phoneNumber.length < 11 || !phoneNumber.startsWith("09")) {
+  const handleLogin = async () => {
+    if (!email || !email.includes('@')) {
       toast({
-        title: "شماره موبایل نامعتبر",
-        description: "لطفاً یک شماره موبایل معتبر وارد کنید.",
+        title: "ایمیل نامعتبر",
+        description: "لطفاً یک ایمیل معتبر وارد کنید.",
         variant: "destructive",
       });
       return;
@@ -75,20 +68,11 @@ const PhoneLogin = () => {
 
     setIsLoading(true);
     
-    // Get user data from localStorage
-    const storedUsers: User[] = localStorage.getItem("users") ? 
-      JSON.parse(localStorage.getItem("users") || "[]") : [];
-    
-    // Find user by phone number
-    const user = storedUsers.find((u: User) => u.phoneNumber === phoneNumber);
-    
-    setTimeout(() => {
-      if (user && user.password === password) {
-        // Login successful
-        localStorage.setItem("isLoggedIn", "true");
-        localStorage.setItem("userPhoneNumber", phoneNumber);
-        localStorage.setItem("currentUser", JSON.stringify(user));
-        
+    try {
+      // Try to sign in with Supabase
+      const result = await signIn(email, password);
+      
+      if (result.success) {
         toast({
           title: "ورود موفق",
           description: "به لیفت لجندز خوش آمدید!",
@@ -96,15 +80,60 @@ const PhoneLogin = () => {
         
         navigate(getRedirectUrl());
       } else {
-        // Login failed
-        toast({
-          title: "خطای ورود",
-          description: "شماره موبایل یا رمز عبور اشتباه است.",
-          variant: "destructive",
-        });
+        // Check if we need to try localStorage login for backward compatibility
+        const storedUsers = localStorage.getItem("users") ? 
+          JSON.parse(localStorage.getItem("users") || "[]") : [];
+        
+        // Find user by email
+        const user = storedUsers.find((u) => u.email === email);
+        
+        if (user && user.password === password) {
+          // Login successful with localStorage
+          localStorage.setItem("isLoggedIn", "true");
+          localStorage.setItem("userEmail", email);
+          localStorage.setItem("currentUser", JSON.stringify(user));
+          
+          toast({
+            title: "ورود موفق",
+            description: "به لیفت لجندز خوش آمدید! لطفاً برای استفاده از امکانات جدید، اطلاعات خود را به سرور منتقل کنید.",
+          });
+          
+          // Show migration dialog
+          setShowMigrationDialog(true);
+          
+          navigate(getRedirectUrl());
+        } else {
+          // Login failed
+          toast({
+            title: "خطای ورود",
+            description: result.error || "ایمیل یا رمز عبور اشتباه است.",
+            variant: "destructive",
+          });
+        }
       }
+    } catch (error) {
+      console.error("Login error:", error);
+      toast({
+        title: "خطای ورود",
+        description: "مشکلی در ورود به سیستم پیش آمد.",
+        variant: "destructive",
+      });
+    } finally {
       setIsLoading(false);
-    }, 1000);
+    }
+  };
+
+  const handleMigrationSuccess = () => {
+    toast({
+      title: "انتقال موفق",
+      description: "اطلاعات شما با موفقیت به سرور منتقل شد. لطفاً دوباره وارد شوید.",
+    });
+    
+    // Clear localStorage login state
+    localStorage.setItem("isLoggedIn", "false");
+    
+    // Redirect to login page
+    navigate("/phone-login");
   };
 
   return (
@@ -138,9 +167,9 @@ const PhoneLogin = () => {
             </p>
           </div>
           
-          <PhoneStep
-            phoneNumber={phoneNumber}
-            updatePhoneNumber={handlePhoneNumberChange}
+          <EmailStep
+            email={email}
+            updateEmail={handleEmailChange}
             password={password}
             updatePassword={handlePasswordChange}
             onSendCode={handleLogin}
@@ -168,6 +197,13 @@ const PhoneLogin = () => {
         </CardContent>
       </Card>
       </div>
+      
+      {/* Migration Dialog */}
+      <MigrationDialog 
+        open={showMigrationDialog} 
+        onOpenChange={setShowMigrationDialog}
+        onSuccess={handleMigrationSuccess}
+      />
     </div>
   );
 };

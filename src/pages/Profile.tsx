@@ -13,23 +13,15 @@ import {
 } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useTheme } from "@/context/ThemeContext";
-import { useAuth } from "@/context";
 import { cn } from "@/lib/utils";
 import { Badge } from "@/components/ui/badge";
 import { Progress } from "@/components/ui/progress";
 
 // Subscription plan types
-type SubscriptionPlan = "basic" | "pro" | "ultimate";
+type SubscriptionPlan = "basic" | "pro" | "ultimate" | "inactive";
 
 // Theme colors for different subscription plans
-const planColors: Record<SubscriptionPlan, {
-  bg: string;
-  text: string;
-  border: string;
-  icon: string;
-  gradient: string;
-  name: string;
-}> = {
+const planColors = {
   basic: {
     bg: "bg-slate-700",
     text: "text-white",
@@ -53,6 +45,14 @@ const planColors: Record<SubscriptionPlan, {
     icon: "text-yellow-300",
     gradient: "from-yellow-500 to-yellow-800",
     name: "نامحدود"
+  },
+  inactive: {
+    bg: "bg-gray-700",
+    text: "text-gray-200",
+    border: "border-gray-600",
+    icon: "text-gray-400",
+    gradient: "from-gray-700 to-gray-900",
+    name: "غیرفعال"
   }
 };
 
@@ -60,7 +60,6 @@ const Profile = () => {
   const { toast } = useToast();
   const navigate = useNavigate();
   const { theme, toggleTheme } = useTheme();
-  const { user, profile, isLoading, signOut } = useAuth();
   const [loading, setLoading] = useState(true);
   const [userData, setUserData] = useState({
     name: "",
@@ -76,29 +75,38 @@ const Profile = () => {
     workoutCount: 0,
     streak: 0,
   });
-  const [subscriptionPlan, setSubscriptionPlan] = useState<SubscriptionPlan>("basic");
+  const [subscriptionPlan, setSubscriptionPlan] = useState<SubscriptionPlan>("inactive");
   const [subscriptionEndDate, setSubscriptionEndDate] = useState<Date | null>(null);
   const [daysLeft, setDaysLeft] = useState<number>(0);
 
   useEffect(() => {
     const fetchUserProfile = async () => {
       try {
-        if (!user) {
+        // Get data from localStorage
+        const currentUserData = localStorage.getItem("currentUser");
+        
+        if (!currentUserData) {
           navigate("/phone-login");
           return;
         }
         
-        // Get subscription plan from user data
-        const plan = profile?.subscription_plan || "basic";
+        // Parse user data from currentUser
+        const parsedUserData = JSON.parse(currentUserData);
+        
+        // Get subscription plan from currentUser
+        const plan = parsedUserData.subscription_plan || "inactive";
+        console.log("Subscription plan from currentUser:", plan);
         const validPlans: SubscriptionPlan[] = ["basic", "pro", "ultimate"];
         const subscriptionPlan = validPlans.includes(plan as SubscriptionPlan) 
           ? plan as SubscriptionPlan 
-          : "basic";
+          : "inactive";
+        console.log("Using subscription plan:", subscriptionPlan);
         
         // Format join date
-        const joinDate = profile?.created_at 
-          ? new Date(profile.created_at) 
+        const joinDate = parsedUserData.updatedAt 
+          ? new Date(parsedUserData.updatedAt) 
           : new Date();
+        joinDate.setMonth(joinDate.getMonth() - 2); // Assume joined 2 months ago
         const formattedJoinDate = new Intl.DateTimeFormat('fa-IR', {
           year: 'numeric',
           month: 'long',
@@ -107,27 +115,26 @@ const Profile = () => {
         
         // Set user data
         setUserData({
-          name: user.name || "کاربر",
-          phoneNumber: user.phoneNumber || "",
-          age: user.age?.toString() || "",
-          gender: user.gender || "",
-          height: user.height || "",
-          currentWeight: user.currentWeight || "",
-          targetWeight: user.targetWeight || "",
-          goal: user.goal || "",
-          fitnessLevel: user.activityLevel || "متوسط",
+          name: parsedUserData.name || "کاربر",
+          phoneNumber: parsedUserData.phoneNumber || "",
+          age: parsedUserData.age || "30",
+          gender: parsedUserData.gender || "",
+          height: parsedUserData.height || "",
+          currentWeight: parsedUserData.currentWeight || "",
+          targetWeight: parsedUserData.targetWeight || "",
+          goal: parsedUserData.goal || "",
+          fitnessLevel: parsedUserData.fitnessLevel || "متوسط",
           joinDate: formattedJoinDate,
-          workoutCount: 12, // Default value, should be fetched from Supabase
-          streak: 3, // Default value, should be fetched from Supabase
+          workoutCount: parseInt(localStorage.getItem("workoutCount") || "12"),
+          streak: parseInt(localStorage.getItem("streak") || "3"),
         });
 
         // Set subscription data
         setSubscriptionPlan(subscriptionPlan);
         
-        // Set subscription end date from profile
-        const endDate = profile?.subscription_end_date 
-          ? new Date(profile.subscription_end_date) 
-          : new Date(Date.now() + 30 * 24 * 60 * 60 * 1000); // Default 30 days
+        // Set subscription end date (30 days from now)
+        const endDate = new Date();
+        endDate.setDate(endDate.getDate() + 30);
         setSubscriptionEndDate(endDate);
         
         // Calculate days left
@@ -147,15 +154,19 @@ const Profile = () => {
       }
     };
 
-    if (!isLoading) {
-      fetchUserProfile();
-    }
-  }, [user, profile, isLoading, navigate, toast]);
+    fetchUserProfile();
+  }, [navigate, toast]);
 
   const handleLogout = async () => {
     try {
-      await signOut();
-      // Navigation and toast are handled in the signOut function
+      // Just set isLoggedIn to false without removing user data
+      localStorage.setItem("isLoggedIn", "false");
+      
+      navigate("/");
+      toast({
+        title: "خروج موفق",
+        description: "شما با موفقیت از حساب کاربری خود خارج شدید.",
+      });
     } catch (error) {
       console.error("Error signing out:", error);
       toast({
@@ -177,11 +188,7 @@ const Profile = () => {
       case "basic": return <BadgeCheck className={`h-6 w-6 ${planColors[plan].icon}`} />;
       case "pro": return <Sparkles className={`h-6 w-6 ${planColors[plan].icon}`} />;
       case "ultimate": return <CrownIcon className={`h-6 w-6 ${planColors[plan].icon}`} />;
-      default: {
-        // This ensures TypeScript knows plan is SubscriptionPlan in default case
-        const fallbackPlan: SubscriptionPlan = "basic";
-        return <CrownIcon className={`h-6 w-6 ${planColors[fallbackPlan].icon}`} />;
-      }
+      default: return <CrownIcon className={`h-6 w-6 ${planColors[plan].icon}`} />;
     }
   };
 
@@ -195,8 +202,8 @@ const Profile = () => {
       title: "خرید اشتراک",
       icon: <CrownIcon className="h-5 w-5" />,
       onClick: () => navigate("/subscription-plans"),
-      badge: getPlanDisplayName(subscriptionPlan),
-      badgeColor: planColors[subscriptionPlan].bg,
+      badge: subscriptionPlan !== "inactive" ? getPlanDisplayName(subscriptionPlan) : undefined,
+      badgeColor: subscriptionPlan !== "inactive" ? planColors[subscriptionPlan].bg : undefined,
     },
     {
       title: theme === 'light' ? 'تاریک' : 'روشن',
@@ -262,8 +269,8 @@ const Profile = () => {
           <Card className="mt-16 mb-6 shadow-lg border-0 overflow-visible">
             <CardContent className="p-0">
               <div className="flex flex-col  items-center -mt-12">
-                <div className={`w-24 h-24 rounded-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} flex items-center justify-center overflow-hidden border-4 ${planColors[subscriptionPlan].border} shadow-xl`}>
-                  <UserIcon className={`h-12 w-12 ${planColors[subscriptionPlan].icon}`} />
+                <div className={`w-24 h-24 rounded-full ${theme === 'light' ? 'bg-white' : 'bg-gray-800'} flex items-center justify-center overflow-hidden border-4 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].border : 'border-gray-300'} shadow-xl`}>
+                  <UserIcon className={`h-12 w-12 ${subscriptionPlan !== 'inactive' ? planColors[subscriptionPlan].icon : 'text-muted-foreground'}`} />
                 </div>
                 
                 <div className="text-center mt-4 px-6 pb-6 w-full">
@@ -296,7 +303,7 @@ const Profile = () => {
           </Card>
           
           {/* Subscription Status Card */}
-          {(
+          {subscriptionPlan !== "inactive" && (
             <Card className={`mb-6 border-0 shadow-lg overflow-hidden`}>
               <div className={`bg-gradient-to-r ${planColors[subscriptionPlan].gradient} p-1`}>
                 <CardContent className={`${theme === 'light' ? 'bg-white' : 'bg-gray-900'} rounded-md p-4`}>
@@ -324,7 +331,26 @@ const Profile = () => {
             </Card>
           )}
           
-          {/* Upgrade card removed as all users now have at least basic subscription */}
+          {/* Show upgrade card if inactive */}
+          {subscriptionPlan === "inactive" && (
+            <Card className="mb-6 border border-dashed border-yellow-500/50 bg-yellow-500/10 shadow-lg">
+              <CardContent className="p-4">
+                <div className="flex items-center">
+                  <CrownIcon className="h-6 w-6 text-yellow-500 mr-3" />
+                  <div>
+                    <h3 className="text-lg font-semibold">ارتقا به اشتراک ویژه</h3>
+                    <p className="text-sm text-muted-foreground">برای دسترسی به امکانات بیشتر، اشتراک تهیه کنید</p>
+                  </div>
+                </div>
+                <Button 
+                  className="w-full mt-3 bg-gradient-to-r from-yellow-500 to-yellow-600 hover:from-yellow-600 hover:to-yellow-700 text-white"
+                  onClick={() => navigate("/subscription-plans")}
+                >
+                  مشاهده طرح‌های اشتراک
+                </Button>
+              </CardContent>
+            </Card>
+          )}
         </div>
         
         {/* Menu Options */}

@@ -7,20 +7,4 @@ const supabaseUrl = 'https://wagixhjktcodkdkgtgdj.supabase.co';
 // Use the anon key which is safe to use in browser clients
 const supabaseKey = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6IndhZ2l4aGprdGNvZGtka2d0Z2RqIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDQyMTUxMjMsImV4cCI6MjA1OTc5MTEyM30.AmzMxE1izRhgdTUbqxGY6FLLL0QWoxn21Y2nmV1uSCw';
 
-// Create the Supabase client with additional options
-export const supabase = createClient<Database>(supabaseUrl, supabaseKey, {
-  auth: {
-    autoRefreshToken: true,
-    persistSession: true,
-    detectSessionInUrl: true,
-    storageKey: 'supabase.auth.token',
-  },
-  global: {
-    headers: {
-      'X-Client-Info': 'liftlegends-app',
-    },
-  },
-  db: {
-    schema: 'public',
-  },
-});
+export const supabase = createClient<Database>(supabaseUrl, supabaseKey);

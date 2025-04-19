@@ -20,43 +20,38 @@ import Supplements from "./pages/Supplements";
 import SubscriptionPlans from "./pages/SubscriptionPlans";
 import AboutUs from "./pages/AboutUs";
 import PhoneLogin from "./pages/PhoneLogin";
-import TokenAuthenticator from "./components/auth/TokenAuthenticator";
 import { ThemeProvider } from "./context/ThemeContext";
-import { AuthProvider } from "./context/AuthContext";
 
 const queryClient = new QueryClient();
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
-    <BrowserRouter>
-      <ThemeProvider>
-        <AuthProvider>
-          <TooltipProvider>
-            <Toaster />
-            <Sonner />
-            <Routes>
-              <Route path="/" element={<SplashScreen />} />
-              <Route path="/login" element={<Login />} />
-              <Route path="/register" element={<Registration />} />
-              <Route path="/payment" element={<Payment />} />
-              <Route path="/subscription-plans" element={<SubscriptionPlans />} />
-              <Route path="/home" element={<Index />} />
-              <Route path="/exercises" element={<ExercisesPage />} />
-              <Route path="/day-workout/:day" element={<DayWorkoutPage />} />
-              <Route path="/profile" element={<Profile />} />
-              <Route path="/personal-info" element={<PersonalInfo />} />
-              <Route path="/ai-planner" element={<AiPlanner />} />
-              <Route path="/food-plans" element={<FoodPlans />} />
-              <Route path="/supplements" element={<Supplements />} />
-              <Route path="/about-us" element={<AboutUs />} />
-              <Route path="/phone-login" element={<PhoneLogin />} />
-              <Route path="/auth/token" element={<TokenAuthenticator />} />
-              <Route path="*" element={<NotFound />} />
-            </Routes>
-          </TooltipProvider>
-        </AuthProvider>
-      </ThemeProvider>
-    </BrowserRouter>
+    <ThemeProvider>
+      <TooltipProvider>
+        <Toaster />
+        <Sonner />
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<SplashScreen />} />
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Registration />} />
+            <Route path="/payment" element={<Payment />} />
+            <Route path="/subscription-plans" element={<SubscriptionPlans />} />
+            <Route path="/home" element={<Index />} />
+            <Route path="/exercises" element={<ExercisesPage />} />
+            <Route path="/day-workout/:day" element={<DayWorkoutPage />} />
+            <Route path="/profile" element={<Profile />} />
+            <Route path="/personal-info" element={<PersonalInfo />} />
+            <Route path="/ai-planner" element={<AiPlanner />} />
+            <Route path="/food-plans" element={<FoodPlans />} />
+            <Route path="/supplements" element={<Supplements />} />
+            <Route path="/about-us" element={<AboutUs />} />
+            <Route path="/phone-login" element={<PhoneLogin />} />
+            <Route path="*" element={<NotFound />} />
+          </Routes>
+        </BrowserRouter>
+      </TooltipProvider>
+    </ThemeProvider>
   </QueryClientProvider>
 );
 

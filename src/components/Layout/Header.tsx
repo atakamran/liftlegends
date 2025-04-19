@@ -2,25 +2,10 @@
 import React, { useState, useEffect } from "react";
 import { Link, useLocation, useNavigate } from "react-router-dom";
 import { Dumbbell } from "lucide-react";
+import { db } from "@/integrations/firebase/firebaseConfig";
+import { doc, getDoc } from "firebase/firestore";
 import { useTheme } from "@/context/ThemeContext";
 import { useToast } from "@/hooks/use-toast";
-
-// User interface based on the application's user structure
-interface User {
-  phoneNumber: string;
-  password: string;
-  name?: string;
-  age?: number;
-  gender?: string;
-  currentWeight?: string;
-  height?: string;
-  targetWeight?: string;
-  activityLevel?: string;
-  goal?: string;
-  subscription_plan?: string;
-  permissions?: string;
-  createdAt?: string;
-}
 
 const Header: React.FC = () => {
   const [username, setUsername] = useState("کاربر");
@@ -31,48 +16,32 @@ const Header: React.FC = () => {
   const { toast } = useToast();
 
   const handleSignOut = () => {
-    // Set isLoggedIn to false instead of removing it
-    localStorage.setItem("isLoggedIn", "false");
-    // We keep the user data in localStorage but mark them as logged out
+    localStorage.removeItem("userPhoneNumber");
+    localStorage.removeItem("isLoggedIn");
+    navigate("/login");
     toast({
       title: "خروج موفق",
       description: "شما با موفقیت از حساب کاربری خود خارج شدید.",
     });
-    navigate("/login");
   };
 
-  // Fetch user name from localStorage
+  // Fetch user name
   useEffect(() => {
-    const fetchUserName = () => {
+    const fetchUserName = async () => {
       try {
-        // Try to get user data from currentUser in localStorage
-        const currentUserData = localStorage.getItem("currentUser");
+        const phoneNumber = localStorage.getItem("userPhoneNumber");
+        if (!phoneNumber) return;
         
-        if (currentUserData) {
-          // Parse the JSON data
-          const userData = JSON.parse(currentUserData) as User;
-          // Set the username from the parsed data
+        const userRef = doc(db, "user_profiles", phoneNumber);
+        const userSnap = await getDoc(userRef);
+        
+        if (userSnap.exists()) {
+          const userData = userSnap.data();
           const name = userData.name || "کاربر";
           setUsername(name);
-        } else {
-          // Fallback to checking users array if currentUser is not available
-          const phoneNumber = localStorage.getItem("userPhoneNumber");
-          if (!phoneNumber) return;
-          
-          // Get all users from localStorage
-          const usersData = localStorage.getItem("users");
-          if (usersData) {
-            const users = JSON.parse(usersData) as User[];
-            // Find the user with matching phone number
-            const user = users.find((user: User) => user.phoneNumber === phoneNumber);
-            if (user) {
-              const name = user.name || "کاربر";
-              setUsername(name);
-            }
-          }
         }
       } catch (error) {
-        console.error("Error fetching user profile from localStorage: ", error);
+        console.error("Error fetching user profile: ", error);
       }
     };
 

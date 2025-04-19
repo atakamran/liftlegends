@@ -1,127 +1,49 @@
 
-/* Modern theme-adaptive background */
-.modern-bg {
+.galaxy-background {
+  background: linear-gradient(to bottom, #000000, #121212, #000000);
   overflow: hidden;
   position: relative;
-  transition: background-color 0.3s ease;
 }
 
-/* Dark theme */
-.dark .modern-bg {
-  background-color: #000000;
-}
-
-/* Light theme */
-.light .modern-bg {
-  background-color: #ffffff;
-}
-
-/* Gold accent lines */
-.gold-accent-line {
+.stars, .stars2, .stars3 {
   position: absolute;
-  height: 1px;
-  background: linear-gradient(to right, transparent, rgba(250, 204, 21, 0.5), transparent);
-  opacity: 0.5;
-}
-
-/* Light theme adjustments */
-.light .gold-accent-line {
-  background: linear-gradient(to right, transparent, rgba(202, 138, 4, 0.5), transparent);
-}
-
-.gold-accent-line.horizontal {
-  width: 100%;
+  top: 0;
   left: 0;
-}
-
-.gold-accent-line.vertical {
-  width: 1px;
+  right: 0;
+  bottom: 0;
+  width: 100%;
   height: 100%;
-  background: linear-gradient(to bottom, transparent, rgba(250, 204, 21, 0.5), transparent);
-}
-
-.gold-accent-line.diagonal {
-  width: 150%;
-  height: 1px;
-  transform: rotate(45deg);
-  transform-origin: 0 0;
-}
-
-/* Gold particle */
-.gold-particle {
-  position: absolute;
-  background-color: rgba(250, 204, 21, 0.8);
-  border-radius: 50%;
-  box-shadow: 0 0 5px rgba(250, 204, 21, 0.5);
-  opacity: 0;
-  animation: float-gold-particle var(--duration, 8s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
-}
-
-@keyframes float-gold-particle {
-  0% {
-    opacity: 0;
-    transform: translateY(0) translateX(0);
-  }
-  20% {
-    opacity: var(--opacity, 0.8);
-  }
-  80% {
-    opacity: var(--opacity, 0.8);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(var(--distance, -50px)) translateX(var(--drift, 0px));
-  }
-}
-
-/* Gold glow effect */
-.gold-glow {
-  box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
-  transition: box-shadow 0.3s ease;
-}
-
-.gold-glow:hover {
-  box-shadow: 0 0 25px rgba(250, 204, 21, 0.8);
-}
-
-/* Gold border */
-.gold-border {
-  border: 1px solid rgba(250, 204, 21, 0.3);
-  box-shadow: 0 0 10px rgba(250, 204, 21, 0.1);
-}
-
-/* Floating particles */
-.particle {
-  position: absolute;
-  background: white;
-  border-radius: 50%;
-  opacity: 0;
+  display: block;
   pointer-events: none;
-  mix-blend-mode: screen;
-  animation: float-up var(--duration, 10s) ease-in-out infinite;
-  animation-delay: var(--delay, 0s);
-  width: var(--size, 2px);
-  height: var(--size, 2px);
-  left: var(--x, 50%);
-  bottom: -10px;
-  box-shadow: 0 0 var(--glow, 5px) var(--color, rgba(255, 255, 255, 0.8));
 }
 
-@keyframes float-up {
-  0% {
-    opacity: 0;
-    transform: translateY(0) translateX(0);
+.stars {
+  background: transparent url(/star-field-1.png) repeat top center;
+  z-index: 0;
+  animation: move-stars 100s linear infinite;
+  opacity: 0.6;
+}
+
+.stars2 {
+  background: transparent url(/star-field-2.png) repeat top center;
+  z-index: 1;
+  animation: move-stars 150s linear infinite;
+  opacity: 0.4;
+}
+
+.stars3 {
+  background: transparent url(/star-field-3.png) repeat top center;
+  z-index: 2;
+  animation: move-stars 200s linear infinite;
+  opacity: 0.2;
+}
+
+@keyframes move-stars {
+  from {
+    transform: translateY(0);
   }
-  10% {
-    opacity: var(--opacity, 0.8);
-  }
-  90% {
-    opacity: var(--opacity, 0.8);
-  }
-  100% {
-    opacity: 0;
-    transform: translateY(calc(-100vh - 10px)) translateX(var(--drift, 0px));
+  to {
+    transform: translateY(1000px);
   }
 }
 
